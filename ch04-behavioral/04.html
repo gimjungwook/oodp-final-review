@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>04 · 옵서버 패턴 — Chapter 4</title>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<div class="scroll-progress"></div>
+<div class="topbar"></div>
+
+<div class="ch-layout">
+  <aside class="ch-nav"><nav><ol></ol></nav></aside>
+  <main class="ch-main">
+
+    <header class="ch-head">
+      <span class="kicker">Sub-Chapter 04 · 행위 패턴</span>
+      <h1>옵서버 패턴,<br><span class="t-style">바뀌면 모두에게 알린다</span></h1>
+      <p class="lede">하나의 데이터가 바뀌면 그것을 보고 있던 여러 화면이 동시에 갱신되어야 한다. 스프레드시트, 알림, 이벤트 리스너. 옵서버는 이 "일대다 통보 관계"를 주제가 구독자 목록만 알고 일괄 통보하도록 만들어, 양쪽의 결합을 끊는다.</p>
+    </header>
+
+    <div class="prose">
+      <p>옵서버 패턴(Observer Pattern)의 의도는 이렇다. <strong>한 객체(주제, Subject)의 상태가 변하면, 그 객체에 의존하는 모든 객체(관찰자, Observer)에게 자동으로 통보되어 갱신되는 일대다(one-to-many) 의존 관계를 정의한다.</strong> 핵심은 "변화의 원천"과 "그 변화에 반응하는 쪽"을 분리하되, 둘 사이의 갱신이 <em>자동으로</em> 일어나게 만드는 것이다. 주제는 누가 자기를 보고 있는지 구체적으로 알 필요 없이 "구독자 목록"만 들고 있다가, 자기 상태가 바뀌면 그 목록 전체에 한 번에 통보한다.</p>
+
+      <p>왜 필요한가? 어떤 데이터 하나가 여러 표현에 동시에 반영되어야 하는 상황은 흔하다. 스프레드시트의 셀 값이 바뀌면 그것을 그리는 막대그래프, 원그래프, 요약 표가 모두 다시 그려져야 한다. 가장 단순한 방법은 데이터를 가진 객체가 화면들을 직접 알고 하나하나 호출하는 것이다. 그러나 이렇게 하면 새 화면(예: 선그래프)을 추가할 때마다 데이터 객체의 코드를 열어 고쳐야 한다. 이는 <strong>개방-폐쇄 원칙(OCP, Open-Closed Principle)</strong> 위반이고, 데이터 객체가 모든 화면의 구체 타입에 강하게 결합되는 결과를 낳는다. 옵서버는 주제가 관찰자의 <em>구체 타입을 모른 채</em> 추상 인터페이스로만 통보하게 해, 새 관찰자를 추가해도 주제 코드는 닫힌 채로 두게 한다. 이것이 <strong>느슨한 결합(loose coupling)</strong>의 대표 사례다.</p>
+
+      <div class="analogy">
+        <b>유튜브 채널 구독.</b> 한 채널(주제)에 수많은 구독자(관찰자)가 있다. 채널은 구독자 한 명 한 명이 누구인지, 무엇을 하는 사람인지 알 필요가 없다 — 그저 "구독자 목록"만 들고 있다. 새 영상이 올라오면(상태 변화) 채널은 목록 전체에 알림을 한 번에 보낸다(notify). 구독을 새로 누르면 목록에 추가되고(attach), 구독을 취소하면 빠진다(detach). 채널과 구독자는 서로의 세부를 모른 채 "알림"이라는 약속으로만 연결된다. 옵서버가 정확히 이 구조다.
+      </div>
+
+      <h2>구조 — 주제는 목록만, 관찰자는 인터페이스만</h2>
+      <p>구조는 두 축으로 이뤄진다. 한 축은 변화의 원천인 <code>Subject</code>다. <code>Subject</code>는 관찰자들을 등록하고 해제하는 <code>attach(Observer)</code>, <code>detach(Observer)</code>와, 상태 변경을 모두에게 알리는 <code>notify()</code>를 가진다. 내부적으로는 관찰자들을 <code>List&lt;Observer&gt;</code>로 보관한다 — 단 <strong>구체 타입이 아니라 <code>Observer</code> 인터페이스 타입의 목록</strong>이라는 점이 결정적이다. 다른 축은 <code>Observer</code> 인터페이스다. 모든 관찰자는 통보를 받았을 때 자신을 갱신하는 <code>update()</code> 하나만 공유한다.</p>
+
+      <p>구체 클래스 쪽을 보면 <code>ConcreteSubject</code>가 실제 상태(<code>state</code>)와 그것을 읽는 <code>getState()</code>를 가지고, <code>ConcreteObserver</code>가 <code>update()</code>를 구현해 통보를 받으면 주제의 새 상태를 반영한다. 핵심은 <code>Subject</code>가 <code>Observer</code> 추상 인터페이스에만 의존한다는 것이다. 새 관찰자를 더하고 싶으면 <code>Observer</code>를 구현하는 클래스를 하나 만들고 <code>attach</code>로 등록만 하면 끝이다 — 주제 코드는 손대지 않는다.</p>
+    </div>
+
+    <div class="widget">
+      <div class="widget-frame">
+        <div class="widget-label"><span class="lab-no">UML 04</span><span>옵서버 클래스 다이어그램 · Subject가 Observer 목록에 일괄 통보</span></div>
+        <pre class="mermaid">
+classDiagram
+    class Subject {
+        -observers : List~Observer~
+        +attach(Observer)
+        +detach(Observer)
+        +notify()
+    }
+    class Observer {
+        +update()
+    }
+    class ConcreteSubject {
+        -state
+        +getState()
+    }
+    class ConcreteObserver {
+        +update()
+    }
+    Subject &lt;|-- ConcreteSubject
+    Observer &lt;|.. ConcreteObserver
+    Subject o--&gt; Observer : 구독자 목록
+    ConcreteObserver ..&gt; ConcreteSubject : 상태 조회
+        </pre>
+      </div>
+      <p class="widget-cap">Subject는 Observer 인터페이스 목록(o--> 합성 연관)만 들고 있고, 관찰자의 구체 타입은 모른다. 새 관찰자는 점선 화살표(실현)로 Observer를 구현하는 클래스를 하나 더 추가하고 attach로 등록하기만 하면 된다. 점선 의존(..>)은 통보를 받은 관찰자가 주제에서 새 상태를 당겨 읽는 풀 방식의 경로다.</p>
+    </div>
+
+    <div class="prose">
+      <h2>참여자와 협력</h2>
+      <p><strong>Subject</strong>는 관찰자 등록/해제(<code>attach</code>/<code>detach</code>)와 일괄 통보(<code>notify</code>)를 책임진다. <strong>Observer</strong>는 통보를 받을 때 호출되는 <code>update()</code> 인터페이스를 선언한다. <strong>ConcreteSubject</strong>는 관심 대상이 되는 상태를 보관하고, 그 상태가 바뀌면 스스로 <code>notify()</code>를 부른다. <strong>ConcreteObserver</strong>는 <code>update()</code>를 구현해 통보 시 자신을 주제 상태에 맞춰 갱신한다.</p>
+
+      <p>협력의 흐름은 이렇다. 관찰자들이 먼저 <code>attach()</code>로 주제에 자신을 등록한다. 이후 <code>ConcreteSubject</code>의 상태가 바뀌면, 주제는 <code>notify()</code>를 호출해 목록에 든 모든 관찰자의 <code>update()</code>를 차례로 부른다. 각 관찰자는 <code>update()</code> 안에서 필요한 데이터를 반영한다. 여기서 통보에 데이터를 어떻게 실어 보내느냐가 두 갈래로 갈린다.</p>
+
+      <h3>푸시(push) vs 풀(pull)</h3>
+      <p><strong>푸시 방식</strong>은 주제가 <code>update(새로운_데이터)</code>처럼 바뀐 값을 통보에 직접 실어 보낸다. 관찰자는 인자로 받은 값을 바로 쓰면 되어 간단하지만, 주제가 "관찰자들이 무엇을 필요로 하는지" 가정해야 하므로 불필요한 데이터까지 보내거나 인터페이스가 특정 관찰자에 치우칠 수 있다. <strong>풀 방식</strong>은 주제가 "바뀌었다"는 신호만 보내고(<code>update()</code>), 관찰자가 필요한 만큼 <code>subject.getState()</code>로 직접 당겨 읽는다. 관찰자가 자기에게 필요한 것만 가져가므로 유연하지만, 주제 참조를 들고 추가 호출을 해야 한다. 시험에서는 이 둘의 트레이드오프를 묻는 문제가 단골이다.</p>
+
+      <h2>코드 — 구독자 목록과 일괄 통보</h2>
+      <p>날씨 관측소를 예로 보자. 관측소(주제)의 측정값이 바뀌면, 현재 날씨 화면과 통계 화면이 동시에 갱신되어야 한다. 관측소는 화면들의 구체 타입을 모른 채 <code>Observer</code> 목록에만 통보한다.</p>
+    </div>
+
+    <div class="widget">
+      <div class="widget-frame">
+        <div class="widget-label"><span class="lab-no">CODE 04</span><span>날씨 관측소 옵서버 (일괄 자동 통보)</span></div>
+        <pre class="code"><code>// 관찰자 공통 인터페이스 — 통보를 받으면 자신을 갱신
+interface Observer {
+    void update(float temp);          // 푸시: 바뀐 값을 실어 보냄
+}
+
+// 주제 인터페이스 — 등록/해제/통보
+interface Subject {
+    void attach(Observer o);
+    void detach(Observer o);
+    void notifyObservers();
+}
+
+// 구체 주제 — 구독자 목록만 알고, 구체 타입은 모른다
+class WeatherStation implements Subject {
+    private final List&lt;Observer&gt; observers = new ArrayList&lt;&gt;();
+    private float temp;
+
+    public void attach(Observer o) { observers.add(o); }
+    public void detach(Observer o) { observers.remove(o); }
+    public void notifyObservers() {
+        for (Observer o : observers) o.update(temp);   // 일괄 통보
+    }
+    public void setTemp(float t) {                      // 상태 변경 시
+        this.temp = t;
+        notifyObservers();                             // 자동으로 통보
+    }
+}
+
+// 구체 관찰자들 — 각자 자기 방식으로 갱신
+class CurrentDisplay implements Observer {
+    public void update(float temp) { System.out.println("현재 온도: " + temp); }
+}
+class StatsDisplay implements Observer {
+    public void update(float temp) { /* 평균/최댓값 갱신 */ }
+}
+
+// 사용 — 관찰자를 등록만 하면, 이후 변경은 자동 반영
+WeatherStation station = new WeatherStation();
+station.attach(new CurrentDisplay());
+station.attach(new StatsDisplay());
+station.setTemp(26.5f);   // 두 화면이 동시에 자동 갱신된다</code></pre>
+      </div>
+      <p class="widget-cap">새 화면(예: 예보 화면)을 추가하려면 Observer를 구현하는 클래스를 만들어 attach로 등록만 하면 된다. WeatherStation 코드는 전혀 바뀌지 않는다 — 확장에는 열려 있고 수정에는 닫혀 있다(OCP). 위 코드는 푸시 방식이며, 풀 방식이라면 update()는 인자 없이 호출되고 관찰자가 station.getTemp()로 직접 읽는다.</p>
+    </div>
+
+    <div class="prose">
+      <h2>결과 — 무엇을 얻고 무엇을 치르는가</h2>
+      <div class="pattern-card">
+        <div class="pc"><h5>참여자</h5><p>Subject(attach/detach/notify), Observer(update 인터페이스), ConcreteSubject(상태 보유), ConcreteObserver(갱신 구현)</p></div>
+        <div class="pc"><h5>장점</h5><p>주제와 관찰자의 느슨한 결합, 일대다 자동 통보, 관찰자 추가 시 주제 무수정(OCP), 런타임에 구독/해지 가능</p></div>
+        <div class="pc"><h5>단점</h5><p>통보 순서 예측 불가, 갱신 연쇄로 인한 성능/무한 통보 위험, 메모리 누수(detach 누락) 주의</p></div>
+      </div>
+
+      <div class="trap">
+        <b>시험 함정.</b> ① 핵심 키워드는 <em>일대다(one-to-many) 의존</em>과 <em>느슨한 결합</em>이다 — 주제는 관찰자의 구체 타입을 모른 채 <code>Observer</code> 인터페이스로만 통보한다. ② <strong>푸시 vs 풀</strong> 구분이 단골 출제다 — 푸시는 주제가 값을 실어 보내고(간단·경직), 풀은 관찰자가 <code>getState()</code>로 당겨 읽는다(유연·추가 호출). ③ 대표 적용은 MVC의 모델-뷰 갱신, 이벤트 리스너다. ④ <code>detach</code>를 빠뜨리면 관찰자가 계속 통보를 받아 메모리 누수가 난다(lapsed listener 문제).
+      </div>
+
+      <h2>다음으로 — 변화의 분리에서 흐름의 고정으로</h2>
+      <p>옵서버는 "변화가 일어나는 쪽"과 "그 변화에 반응하는 쪽"을 통보로 느슨하게 이었다. 분리한 것은 <em>통보의 관계</em>다. 다음 sub-chapter의 <strong>템플릿 메서드 패턴(Template Method Pattern)</strong>은 분리의 결이 다르다 — 여기서는 알고리즘의 <em>골격은 고정해 두고 가변 단계만</em> 떼어 낸다. 옵서버가 합성(구독자 목록)으로 결합을 끊었다면, 템플릿 메서드는 상속으로 흐름을 통제한다. 같은 "변하는 부분을 분리한다"는 목표가 어떻게 다른 수단으로 갈라지는지를 다음 장에서 확인하자.</p>
+    </div>
+
+    <nav class="ch-foot"></nav>
+  </main>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', themeVariables: { fontFamily: 'inherit' } });
+</script>
+<script>
+const SUBS = [
+  { no:'01', t:'스트래티지 (Strategy)' },
+  { no:'02', t:'스테이트 (State)' },
+  { no:'03', t:'커맨드 (Command)' },
+  { no:'04', t:'옵서버 (Observer)' },
+  { no:'05', t:'템플릿 메서드 (Template Method)' },
+  { no:'06', t:'이터레이터 (Iterator)' },
+];
+function buildNav(cur) {
+  const ol = document.querySelector('.ch-nav ol');
+  ol.innerHTML = SUBS.map(s => `<li><a href="${s.no}.html"${s.no===cur?' class="current"':''}>${s.t}</a></li>`).join('');
+  const tb = document.querySelector('.topbar');
+  tb.innerHTML = `<a class="home" href="index.html">← Ch.04 표지</a><span class="ch-mini">SUB ${cur} / ${String(SUBS.length).padStart(2,'0')}</span>`;
+  const i = SUBS.findIndex(s => s.no === cur);
+  const prev = i > 0 ? SUBS[i-1] : { no:'', t:'챕터 표지로' };
+  const next = i < SUBS.length-1 ? SUBS[i+1] : { no:'', t:'챕터 표지로' };
+  const prevHref = prev.no ? prev.no+'.html' : 'index.html';
+  const nextHref = next.no ? next.no+'.html' : 'index.html';
+  document.querySelector('.ch-foot').innerHTML =
+    `<a href="${prevHref}"><div class="dir">← 이전</div><div class="ti">${prev.t}</div></a>` +
+    `<a href="${nextHref}" class="next"><div class="dir">다음 →</div><div class="ti">${next.t}</div></a>`;
+}
+function progressBar() {
+  const bar = document.querySelector('.scroll-progress');
+  document.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max>0 ? (h.scrollTop/max)*100 : 0) + '%';
+  }, { passive: true });
+}
+window.addEventListener('load', () => { buildNav('04'); progressBar(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C · UML 손그림 — Problem Set</title>
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+  .q { max-width: var(--measure); margin: 1.4rem auto .6rem; padding: 1.2rem 1.4rem; background: #fff; border: 1px solid var(--line); border-radius: 14px; }
+  .q .qn { font-family: var(--mono); font-size: .72rem; letter-spacing: .1em; color: var(--style); font-weight: 700; }
+  .q h3 { margin: .35rem 0 .5rem; font-size: 1.18rem; }
+  .q .ask { margin: 0; font-size: .96rem; color: var(--ink); line-height: 1.7; }
+  details.ans { max-width: var(--wide); margin: -.2rem auto 2.4rem; padding-inline: 1.4rem; }
+  details.ans > summary { list-style: none; display: inline-flex; align-items: center; gap: .4rem; cursor: pointer; font-family: var(--mono); font-size: .76rem; font-weight: 700; letter-spacing: .04em; padding: .5rem .95rem; border-radius: 999px; background: var(--ink); color: var(--paper); border: none; transition: transform .12s var(--ease), background .15s; }
+  details.ans > summary::-webkit-details-marker { display: none; }
+  details.ans > summary:hover { transform: translateY(-1px); background: #000; }
+  details.ans[open] > summary { background: var(--style); }
+  .ans-frame { margin: .8rem 0 0; background: #fff; border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow-plate); overflow: hidden; }
+  .ans-frame .lab { display: flex; gap: .7rem; padding: .85rem 1.1rem; border-bottom: 1px solid var(--line-soft); font-family: var(--mono); font-size: .74rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); }
+  .ans-frame .lab b { color: var(--style); font-weight: 700; }
+  .uml-pair { display: grid; grid-template-columns: 1fr 1fr; }
+  .uml-pair .col { border-right: 1px solid var(--line-soft); }
+  .uml-pair .col:last-child { border-right: none; }
+  .uml-pair .col h5 { margin: 0; padding: .6rem 1rem; font-family: var(--mono); font-size: .72rem; letter-spacing: .06em; color: var(--structure); border-bottom: 1px dashed var(--line-soft); }
+  @media (max-width:640px){ .uml-pair { grid-template-columns: 1fr; } .uml-pair .col { border-right: none; border-bottom: 1px solid var(--line-soft); } }
+  .scoring { margin: 0; padding: 1rem 1.3rem; background: var(--structure-bg); border-top: 1px solid var(--structure-lo); }
+  .scoring .st { display: block; font-family: var(--mono); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; color: var(--structure); font-weight: 700; margin-bottom: .45rem; }
+  .scoring p { margin: 0; font-size: .92rem; color: var(--ink); line-height: 1.7; }
+  .scoring p b { color: #1B64DA; }
+  .scoring p + p { margin-top: .5rem; }
+</style>
+</head>
+<body>
+<div class="scroll-progress"></div>
+<div class="topbar"></div>
+
+<div class="ch-layout">
+  <aside class="ch-nav"><nav><ol></ol></nav></aside>
+  <main class="ch-main">
+
+    <header class="ch-head">
+      <span class="kicker">Course C · UML 손그림</span>
+      <h1>화살표로,<br><span class="t-style">관계를 증명하기</span></h1>
+      <p class="lede">패턴의 정답은 "어떤 클래스가 있다"가 아니라 "어떤 관계(상속/구현/합성)가 어느 방향으로 걸려 있다"이다. 세 문제를 종이에 직접 그린 뒤, 정답 다이어그램과 화살표 방향까지 대조하라.</p>
+    </header>
+
+    <div class="prose">
+      <p>UML 채점에서 점수는 박스가 아니라 <strong>화살표</strong>에서 갈린다. 상속(<code>&lt;|--</code> 실선 빈 삼각형), 인터페이스 구현(<code>&lt;|..</code> 점선 빈 삼각형), 합성/연관(<code>o--&gt;</code> 보유 후 위임)을 구분해 그려야 한다. 같은 박스 구성이라도 화살표 방향과 종류가 다르면 다른 패턴이다 — 특히 Strategy와 State는 구조가 같아서 <em>주석</em>으로만 갈린다. 먼저 그리고, 펼친 정답과 한 획씩 대조하라.</p>
+    </div>
+
+    <div class="q">
+      <span class="qn">C1</span>
+      <h3>스트래티지(Strategy) vs 스테이트(State)</h3>
+      <p class="ask">두 패턴의 클래스 다이어그램을 나란히 그리고, <strong>구조는 같은데 무엇이 다른지</strong>를 화살표/주석으로 표시하라.</p>
+    </div>
+    <details class="ans">
+      <summary>정답 보기 ▸ C1</summary>
+      <div class="ans-frame">
+        <div class="lab"><b>UML C1</b><span>구조는 동일, 의미는 다름</span></div>
+        <div class="uml-pair">
+          <div class="col">
+            <h5>Strategy — 외부가 전략을 선택</h5>
+            <pre class="mermaid">
+classDiagram
+    class Context {
+        -strategy : Strategy
+        +setStrategy(s)
+        +execute()
+    }
+    class Strategy {
+        &lt;&lt;interface&gt;&gt;
+        +algorithm()
+    }
+    class ConcreteStrategyA {
+        +algorithm()
+    }
+    class ConcreteStrategyB {
+        +algorithm()
+    }
+    Context o--&gt; Strategy : 합성, 위임
+    Strategy &lt;|.. ConcreteStrategyA
+    Strategy &lt;|.. ConcreteStrategyB
+            </pre>
+          </div>
+          <div class="col">
+            <h5>State — 상태가 다음 상태로 전이</h5>
+            <pre class="mermaid">
+classDiagram
+    class Context {
+        -state : State
+        +setState(s)
+        +request()
+    }
+    class State {
+        &lt;&lt;interface&gt;&gt;
+        +handle(ctx)
+    }
+    class ConcreteStateA {
+        +handle(ctx)
+    }
+    class ConcreteStateB {
+        +handle(ctx)
+    }
+    Context o--&gt; State : 합성, 위임
+    State &lt;|.. ConcreteStateA
+    State &lt;|.. ConcreteStateB
+    ConcreteStateA --&gt; ConcreteStateB : ctx.setState 전이
+            </pre>
+          </div>
+        </div>
+        <div class="scoring">
+          <span class="st">채점 포인트</span>
+          <p>두 다이어그램 모두 <b>Context o--&gt; 인터페이스</b>(합성, 위임) 골격이 동일해야 한다. 박스만 그려서는 둘을 구분할 수 없다는 점이 핵심.</p>
+          <p>차이는 두 곳. ① <b>누가 선택하는가</b> — Strategy는 외부(클라이언트)가 setStrategy로 고르고, State는 ConcreteState가 ctx.setState로 스스로 다음 상태를 정한다. ② <b>구체끼리의 관계</b> — 전략들은 서로 모르지만(연결선 없음), 상태들은 <b>전이 화살표(ConcreteStateA --&gt; ConcreteStateB)</b>로 연결된다. 이 전이 화살표가 State임을 증명하는 결정타.</p>
+        </div>
+      </div>
+    </details>
+
+    <div class="q">
+      <span class="qn">C2</span>
+      <h3>데커레이터(Decorator)</h3>
+      <p class="ask">데커레이터 구조를 그려라. 이때 데커레이터가 <code>Component</code>를 <strong>구현하면서 동시에 멤버로 가지는</strong> 부분을 명확히 표시하라.</p>
+    </div>
+    <details class="ans">
+      <summary>정답 보기 ▸ C2</summary>
+      <div class="ans-frame">
+        <div class="lab"><b>UML C2</b><span>구현 + 감쌈의 동시성</span></div>
+        <pre class="mermaid">
+classDiagram
+    class Component {
+        &lt;&lt;interface&gt;&gt;
+        +operation()
+    }
+    class ConcreteComponent {
+        +operation()
+    }
+    class Decorator {
+        -wrapped : Component
+        +operation()
+    }
+    class ConcreteDecorator {
+        +operation()
+        +addedBehavior()
+    }
+    Component &lt;|.. ConcreteComponent
+    Component &lt;|.. Decorator : 구현
+    Decorator o--&gt; Component : 감쌈, 멤버 보유
+    Decorator &lt;|-- ConcreteDecorator
+        </pre>
+        <div class="scoring">
+          <span class="st">채점 포인트</span>
+          <p>핵심은 Decorator에서 나가는 <b>두 화살표가 동시에</b> Component를 향하는 것. ① <b>Component &lt;|.. Decorator</b>(점선 구현) — 데커레이터도 Component인 척해야 클라이언트가 동일하게 다룬다. ② <b>Decorator o--&gt; Component</b>(합성, 감쌈) — 안에 다른 Component를 멤버로 들고 operation()을 위임한 뒤 자기 기능을 더한다.</p>
+          <p>이 <b>"구현 + 감쌈" 동시성</b>이 빠지면 0점에 가깝다. 감쌈만 있고 구현이 없으면 단순 합성, 구현만 있고 감쌈이 없으면 그냥 상속/구현일 뿐 데커레이터가 아니다. wrapped 멤버 타입이 ConcreteComponent가 아니라 <b>Component(추상)</b>여야 데커레이터끼리도 중첩된다는 점도 표시하면 가점.</p>
+        </div>
+      </div>
+    </details>
+
+    <div class="q">
+      <span class="qn">C3</span>
+      <h3>커맨드(Command) — 4역할의 화살표</h3>
+      <p class="ask">Command, ConcreteCommand, Invoker, Receiver <strong>4역할의 화살표 방향</strong>을 정확히 그려라.</p>
+    </div>
+    <details class="ans">
+      <summary>정답 보기 ▸ C3</summary>
+      <div class="ans-frame">
+        <div class="lab"><b>UML C3</b><span>인보커는 리시버를 모른다</span></div>
+        <pre class="mermaid">
+classDiagram
+    class Invoker {
+        -command : Command
+        +setCommand(c)
+        +invoke()
+    }
+    class Command {
+        &lt;&lt;interface&gt;&gt;
+        +execute()
+    }
+    class ConcreteCommand {
+        -receiver : Receiver
+        +execute()
+    }
+    class Receiver {
+        +action()
+    }
+    Invoker o--&gt; Command : 커맨드만 안다
+    Command &lt;|.. ConcreteCommand : 구현
+    ConcreteCommand --&gt; Receiver : 실제 일 위임
+        </pre>
+        <div class="scoring">
+          <span class="st">채점 포인트</span>
+          <p>세 화살표의 방향이 전부 맞아야 한다. ① <b>Invoker o--&gt; Command</b> — 인보커는 추상 Command만 보유하고 invoke()에서 execute()를 부른다. ② <b>Command &lt;|.. ConcreteCommand</b>(점선 구현). ③ <b>ConcreteCommand --&gt; Receiver</b> — execute() 안에서 receiver.action()으로 실제 일을 위임한다.</p>
+          <p>가장 흔한 오답은 <b>Invoker가 Receiver를 직접 가리키게</b> 그리는 것. 인보커가 리시버를 모른다는 점(요청자와 수행자의 분리)이 Command의 존재 이유이자 채점의 핵심이다. 이 분리 덕분에 같은 인보커에 다른 커맨드를 끼워 undo, 큐잉, 매크로가 가능해진다.</p>
+        </div>
+      </div>
+    </details>
+
+    <nav class="ch-foot"></nav>
+  </main>
+</div>
+
+<script>
+const SUBS = [
+  { no:'recall',    t:'A. 패턴 백지작성' },
+  { no:'scenarios', t:'B. 시나리오→패턴' },
+  { no:'uml',       t:'C. UML 손그림' },
+  { no:'compare',   t:'D. 비교 빈칸' },
+];
+function buildNav(cur) {
+  const ol = document.querySelector('.ch-nav ol');
+  ol.innerHTML = SUBS.map(s => `<li><a href="${s.no}.html"${s.no===cur?' class="current"':''}>${s.t}</a></li>`).join('');
+  const tb = document.querySelector('.topbar');
+  const i = SUBS.findIndex(s => s.no === cur);
+  tb.innerHTML = `<a class="home" href="index.html">← Problem Set 표지</a><span class="ch-mini">SET · ${String(i+1).padStart(2,'0')} / ${String(SUBS.length).padStart(2,'0')}</span>`;
+  const prev = i > 0 ? SUBS[i-1] : { no:'', t:'표지로' };
+  const next = i < SUBS.length-1 ? SUBS[i+1] : { no:'', t:'표지로' };
+  const prevHref = prev.no ? prev.no+'.html' : 'index.html';
+  const nextHref = next.no ? next.no+'.html' : 'index.html';
+  document.querySelector('.ch-foot').innerHTML =
+    `<a href="${prevHref}"><div class="dir">← 이전</div><div class="ti">${prev.t}</div></a>` +
+    `<a href="${nextHref}" class="next"><div class="dir">다음 →</div><div class="ti">${next.t}</div></a>`;
+}
+function progressBar() {
+  const bar = document.querySelector('.scroll-progress');
+  document.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max>0 ? (h.scrollTop/max)*100 : 0) + '%';
+  }, { passive: true });
+}
+window.addEventListener('load', () => { buildNav('uml'); progressBar(); });
+</script>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', themeVariables: { fontFamily: 'inherit' } });
+</script>
+</body>
+</html>

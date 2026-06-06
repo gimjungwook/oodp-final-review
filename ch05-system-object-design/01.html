@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>01 · 시스템 설계 — Chapter 5</title>
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+  .pattern-card { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: .8rem; margin: 1.4rem 0; }
+  .pc { background: var(--paper-2); border: 1px solid var(--line-soft); border-radius: 10px; padding: .9rem 1rem; }
+  .pc h5 { margin: 0 0 .35rem; font-family: var(--mono); font-size: .68rem; letter-spacing: .1em; color: var(--ink-faint); text-transform: uppercase; }
+  .pc p { margin: 0; font-size: .9rem; color: var(--ink); line-height: 1.5; }
+  .mermaid { display: flex; justify-content: center; padding: 1.2rem .8rem; background: #fff; }
+  .trap { border-left: 3px solid var(--style); background: var(--style-bg); border-radius: 0 10px 10px 0; padding: 1rem 1.2rem; margin: 1.4rem 0; }
+  .trap b { color: var(--style); }
+</style>
+</head>
+<body>
+<div class="scroll-progress"></div>
+<div class="topbar"></div>
+
+<div class="ch-layout">
+  <aside class="ch-nav"><nav><ol></ol></nav></aside>
+  <main class="ch-main">
+
+    <header class="ch-head">
+      <span class="kicker">Sub-Chapter 01 · 시스템 설계</span>
+      <h1>시스템 설계,<br><span class="t-style">큰 덩어리로 나누는 일</span></h1>
+      <p class="lede">분석은 "무엇을 만들지"를 정한다. 구현은 "어떻게 짤지"를 정한다. 그 사이에는 건널 수 없어 보이는 강이 있다. 시스템 설계(System Design)는 그 강을 건너는 다리다.</p>
+    </header>
+
+    <div class="prose">
+      <p>시스템 설계(System Design)의 위치를 한 문장으로 말하면 이렇다. <strong>분석(무엇을, what)에서 구현(어떻게, how)으로 넘어가는 다리</strong>다. 분석 단계에서 우리는 "사용자가 무엇을 원하는가"를 유스케이스(use case)와 분석 객체 모델로 정리했다. 그런데 그것을 바로 코드로 옮길 수는 없다. 수백 개의 클래스를 한 덩어리로 짜면 아무도 손댈 수 없는 거대한 진흙공이 된다. 시스템 설계는 그 사이에서 <em>전체 시스템을 다룰 만한 크기의 큰 덩어리로 먼저 나누고</em>, 그 덩어리들이 살아갈 골격(아키텍처)을 정하는 일이다.</p>
+
+      <p>왜 이 단계가 따로 필요한가? 작은 패턴 하나하나(앞 장의 싱글톤, 어댑터, 전략)는 결국 "이미 클래스 단위로 쪼개진 작은 구조"를 잘 짜는 도구다. 그러나 그 도구를 쓰려면 먼저 <strong>어디에 무엇을 둘지</strong>가 정해져 있어야 한다. 도시를 짓는다고 해보자. 벽돌 쌓는 법(패턴)을 아무리 잘 알아도, 주거 구역, 상업 구역, 도로망(서브시스템과 아키텍처)을 먼저 구획하지 않으면 도시는 엉킨다. 시스템 설계는 이 구획 단계다.</p>
+
+      <div class="analogy">
+        <b>도시 구획과 건물.</b> 분석은 "이 도시에 사는 사람들이 무엇을 필요로 하는가"(주거, 일자리, 이동)를 조사한 결과다. 시스템 설계는 그 필요를 <em>주거 지구, 상업 지구, 교통망</em>이라는 큰 구역(서브시스템)으로 나누고, 격자형으로 갈지 방사형으로 갈지(아키텍처 스타일)를 정한다. 구역 안에서 개별 건물을 어떤 공법으로 올릴지(디자인 패턴, 객체 설계)는 그 다음 일이다. 구역을 잘못 나누면 아무리 좋은 건물도 동선이 꼬인다.
+      </div>
+
+      <h2>핵심 활동 1 — 서브시스템 분해</h2>
+      <p>시스템 설계의 가장 중요한 활동은 <strong>서브시스템 분해(Subsystem Decomposition)</strong>다. 시스템을 여러 부분으로 나누되, 좋은 분해는 두 가지를 동시에 달성해야 한다. 첫째, <strong>높은 응집도(high cohesion)</strong> — 한 서브시스템 안의 요소들은 서로 긴밀하게 관련되어 한 가지 책임에 집중한다. 둘째, <strong>낮은 결합도(low coupling)</strong> — 서브시스템 사이의 의존은 최소한으로, 좁은 인터페이스로만 연결된다.</p>
+      <p>이 둘이 왜 함께 가야 하는가? 응집도가 높으면 한 가지를 바꿀 때 한 서브시스템만 손대면 된다(변경의 국소화). 결합도가 낮으면 한 서브시스템을 바꿔도 다른 서브시스템이 흔들리지 않는다(변경의 차단). 반대로 결합도가 높으면 작은 변경이 시스템 전체로 번지는 연쇄 수정이 일어난다. 좋은 분해의 시험 판별법은 간단하다. "이 요구가 바뀌면 몇 개의 서브시스템을 고쳐야 하는가?" 답이 하나에 가까울수록 좋은 분해다.</p>
+
+      <h2>핵심 활동 2 — 계층 대 분할</h2>
+      <p>서브시스템을 조직하는 두 가지 방향이 있다. <strong>계층(Layer)</strong>은 수직 구조다. 상위 계층이 하위 계층의 서비스를 사용하되, 그 반대 방향 의존은 없다. 표현(presentation), 논리(business logic), 데이터(data)로 나누는 3계층이 대표적이다. 상위는 하위가 무엇을 어떻게 하는지 모른 채 인터페이스만 쓴다. <strong>분할(Partition)</strong>은 수평 구조다. 대등한 동료(peer) 서브시스템들이 서로 협력한다. 예를 들어 한 운영체제 안의 파일 관리, 프로세스 관리, 메모리 관리는 서로 위아래가 아니라 옆에 나란히 선 동료다.</p>
+      <p>실전에서는 둘을 섞는다. 먼저 큰 계층으로 나눈 뒤, 각 계층 안을 다시 동료 서브시스템으로 분할한다. 아래 다이어그램은 계층과 분할이 한 시스템 안에서 어떻게 공존하는지를 보여준다.</p>
+    </div>
+
+    <div class="widget">
+      <div class="widget-frame">
+        <div class="widget-label"><span class="lab-no">DIAGRAM 01</span><span>계층(수직) 안에 분할(수평)이 들어가는 구조</span></div>
+        <pre class="mermaid">
+flowchart TD
+    subgraph L1 ["표현 계층 (Presentation)"]
+        UI1["웹 화면"]
+        UI2["모바일 화면"]
+    end
+    subgraph L2 ["논리 계층 (Business Logic)"]
+        S1["주문 서비스"]
+        S2["결제 서비스"]
+        S3["재고 서비스"]
+    end
+    subgraph L3 ["데이터 계층 (Data)"]
+        DB[("DB / 영속성")]
+    end
+    L1 --> L2
+    L2 --> L3
+    S1 -. 협력 .- S2
+    S2 -. 협력 .- S3
+        </pre>
+      </div>
+      <p class="widget-cap">위아래 화살표는 계층 의존(상위가 하위 서비스를 사용)이다. 점선은 같은 논리 계층 안에서 대등한 서브시스템끼리의 분할 협력이다. 의존이 한 방향(위에서 아래)으로만 흐르고, 같은 층 내부는 좁은 인터페이스로만 옆을 보는 것이 좋은 분해의 모습이다.</p>
+    </div>
+
+    <div class="prose">
+      <h2>핵심 활동 3 — 아키텍처 스타일</h2>
+      <p>서브시스템을 어떤 골격으로 엮을지는 검증된 아키텍처 스타일(architectural style) 중에서 고른다. 매번 처음부터 짜는 대신, 상황에 맞는 검증된 틀을 가져다 쓰는 것이다. 시험에 자주 나오는 다섯 가지를 정리한다.</p>
+
+      <div class="pattern-card">
+        <div class="pc"><h5>클라이언트-서버</h5><p>요청을 보내는 클라이언트와 서비스를 제공하는 서버로 분리. 책임이 명확하지만 서버가 병목이 될 수 있다.</p></div>
+        <div class="pc"><h5>3계층 / 4계층</h5><p>표현, 논리, 데이터로 수직 분리. 각 층을 독립적으로 교체, 확장할 수 있다.</p></div>
+        <div class="pc"><h5>MVC</h5><p>모델(데이터), 뷰(표현), 컨트롤러(입력 조정)로 관심사 분리. UI 변경이 데이터 로직을 건드리지 않게 한다.</p></div>
+        <div class="pc"><h5>파이프-필터</h5><p>데이터가 필터들을 거쳐 변환되며 흐른다. 각 필터가 독립적이라 재조합과 병렬화가 쉽다.</p></div>
+        <div class="pc"><h5>리포지토리</h5><p>중앙 저장소(공유 데이터)를 여러 서브시스템이 접근. 데이터 중심 시스템에 적합하나 저장소가 결합점이 된다.</p></div>
+      </div>
+
+      <p>어느 스타일도 무료가 아니다. 클라이언트-서버는 책임이 깔끔하지만 서버 부하가 몰린다. MVC는 관심사가 분리되지만 작은 기능에도 세 조각을 만들어야 해 초기 비용이 든다. 스타일 선택 자체가 곧 트레이드오프의 선택이다.</p>
+
+      <h2>핵심 활동 4 — 설계 목표와 트레이드오프</h2>
+      <p>시스템 설계의 결정들은 진공에서 이뤄지지 않는다. <strong>설계 목표(Design Goals)</strong>는 성능, 신뢰성, 비용, 유지보수성, 보안 같은 <em>비기능 요구(non-functional requirement)</em>들이다. 문제는 이들이 서로 충돌한다는 점이다. 응답 속도를 올리려고 캐시를 깔면 메모리 비용과 일관성 위험이 올라간다. 신뢰성을 위해 이중화하면 비용이 두 배가 된다. 그래서 시스템 설계의 본질은 "정답을 찾는 것"이 아니라 <strong>충돌하는 목표 사이의 트레이드오프를 명시적으로 결정하고 그 근거를 남기는 것</strong>이다. 시험에서 "이 설계 결정의 트레이드오프는?"이 단골인 이유다.</p>
+
+      <h2>나머지 활동 — 영속성, 접근 제어, 경계 조건</h2>
+      <p>위 네 활동 외에도 시스템 설계는 몇 가지를 더 확정한다. <strong>하드웨어-소프트웨어 매핑</strong>은 어떤 서브시스템을 어느 노드(서버, 클라이언트, 임베디드 장치)에 둘지 정한다. <strong>데이터 영속성(persistence) 관리</strong>는 객체가 프로그램 종료 후에도 살아남도록 파일이나 데이터베이스에 저장하는 방식을 정한다. <strong>접근 제어(access control)</strong>는 누가 어떤 객체에 무슨 권한으로 접근하는지를 설계한다. <strong>전역 제어 흐름(global control flow)</strong>은 시스템이 절차적으로 흐르는지, 이벤트 구동인지, 스레드 기반인지를 정한다. 마지막으로 <strong>경계 조건(boundary condition)</strong> — 시스템의 시작(startup), 종료(shutdown), 예외(exception, failure) 상황을 어떻게 다룰지를 설계한다. 정상 동작보다 이 경계 처리에서 실제 시스템이 무너지는 경우가 많아 시험에서도 빠지지 않는다.</p>
+
+      <div class="pattern-card">
+        <div class="pc"><h5>위치</h5><p>분석(무엇을)과 객체 설계/구현(어떻게) 사이의 다리</p></div>
+        <div class="pc"><h5>좋은 분해</h5><p>높은 응집도 + 낮은 결합도 = 변경의 국소화와 차단</p></div>
+        <div class="pc"><h5>핵심 산출물</h5><p>서브시스템 분해, 아키텍처 스타일, 설계 목표 결정</p></div>
+      </div>
+
+      <div class="trap">
+        <b>시험 함정.</b> ① <strong>계층(Layer) 대 분할(Partition)</strong>을 뒤집어 출제한다 — 계층은 수직(상위가 하위 서비스 사용), 분할은 수평(대등한 동료)이다. ② "좋은 분해의 기준"을 물으면 응집도와 결합도를 <em>방향까지</em> 정확히 — 응집도는 높게, 결합도는 낮게다. ③ 설계 목표는 단일 정답이 아니라 <strong>트레이드오프</strong>다. "성능과 비용을 동시에 최대화"는 함정 보기다. ④ 경계 조건은 시작, 종료, 예외 처리이지 일반적인 정상 흐름이 아니다.</p>
+      </div>
+
+      <p>시스템 설계가 큰 구역을 나누고 골격을 세웠다면, 다음 sub-chapter의 객체 설계는 그 구역 안으로 들어가 분석 모델의 클래스 하나하나를 실제로 동작하는 코드로 옮긴다. 바로 그 단계에서 앞 장에서 익힌 디자인 패턴이 "변경에 강한 코드를 만드는 도구"로 투입된다.</p>
+    </div>
+
+    <nav class="ch-foot"></nav>
+  </main>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', themeVariables: { fontFamily: 'inherit' } });
+</script>
+<script>
+const SUBS = [
+  { no:'01', t:'시스템 설계 (System Design)' },
+  { no:'02', t:'객체 설계 (Object Design)' },
+];
+function buildNav(cur) {
+  const ol = document.querySelector('.ch-nav ol');
+  ol.innerHTML = SUBS.map(s => `<li><a href="${s.no}.html"${s.no===cur?' class="current"':''}>${s.t}</a></li>`).join('');
+  const tb = document.querySelector('.topbar');
+  tb.innerHTML = `<a class="home" href="index.html">← Ch.05 표지</a><span class="ch-mini">SUB ${cur} / ${String(SUBS.length).padStart(2,'0')}</span>`;
+  const i = SUBS.findIndex(s => s.no === cur);
+  const prev = i > 0 ? SUBS[i-1] : { no:'', t:'챕터 표지로' };
+  const next = i < SUBS.length-1 ? SUBS[i+1] : { no:'', t:'챕터 표지로' };
+  const prevHref = prev.no ? prev.no+'.html' : 'index.html';
+  const nextHref = next.no ? next.no+'.html' : 'index.html';
+  document.querySelector('.ch-foot').innerHTML =
+    `<a href="${prevHref}"><div class="dir">← 이전</div><div class="ti">${prev.t}</div></a>` +
+    `<a href="${nextHref}" class="next"><div class="dir">다음 →</div><div class="ti">${next.t}</div></a>`;
+}
+function progressBar() {
+  const bar = document.querySelector('.scroll-progress');
+  document.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max>0 ? (h.scrollTop/max)*100 : 0) + '%';
+  }, { passive: true });
+}
+window.addEventListener('load', () => { buildNav('01'); progressBar(); });
+</script>
+</body>
+</html>

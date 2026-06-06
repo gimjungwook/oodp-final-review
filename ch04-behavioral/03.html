@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>03 · 커맨드 패턴 — Chapter 4</title>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<div class="scroll-progress"></div>
+<div class="topbar"></div>
+
+<div class="ch-layout">
+  <aside class="ch-nav"><nav><ol></ol></nav></aside>
+  <main class="ch-main">
+
+    <header class="ch-head">
+      <span class="kicker">Sub-Chapter 03 · 행위 패턴</span>
+      <h1>커맨드 패턴,<br><span class="t-style">요청을 객체로 포장하다</span></h1>
+      <p class="lede">리모컨 버튼은 무엇을 켜는지 몰라도 동작한다. "조명을 켜라"는 요청을 객체로 만들면, 그 요청을 변수에 담고, 큐에 쌓고, 로그로 남기고, 되돌릴(undo) 수 있다. 커맨드는 호출하는 쪽과 실제 일하는 쪽 사이에 "요청 객체"를 끼워 넣는다.</p>
+    </header>
+
+    <div class="prose">
+      <p>커맨드 패턴(Command Pattern)의 의도는 이렇다. <strong>요청(request)을 하나의 객체로 캡슐화한다. 그러면 서로 다른 요청으로 클라이언트를 매개변수화하고, 요청을 큐에 넣거나 로그로 기록하며, 실행 취소(undo)가 가능한 연산을 지원할 수 있다.</strong> 보통 메서드 호출은 "그 자리에서 즉시" 일어나고 사라진다. 커맨드는 그 호출 행위 자체를 일급 객체(first-class object)로 만들어, 변수에 담고 나중에 실행하고 되돌릴 수 있는 "다룰 수 있는 것"으로 바꾼다.</p>
+
+      <p>왜 필요한가? 버튼이 직접 <code>light.on()</code>을 부르면, 그 버튼은 "조명을 켠다"는 일에 영원히 묶인다. 버튼을 선풍기에 재활용하려면 코드를 고쳐야 하고, 매크로(여러 동작을 한 번에)나 실행 취소를 붙이려면 버튼마다 그 로직을 욱여넣어야 한다. 호출하는 쪽(<strong>Invoker</strong>, 버튼)과 실제 일하는 쪽(<strong>Receiver</strong>, 조명)이 직접 손잡으면 강하게 결합되기 때문이다. 커맨드는 그 사이에 <strong>요청 객체(Command)</strong>를 끼운다. 버튼은 이제 "무엇을 누가 하는지" 모른 채 그저 <code>command.execute()</code>만 부른다. 호출 시점과 실행 내용이 분리되는 것이다.</p>
+
+      <div class="analogy">
+        <b>식당의 주문서.</b> 손님(클라이언트)이 "파스타 하나"라고 말하면 종업원은 그 요청을 <strong>주문서(Command)</strong>에 적는다. 종업원(Invoker)은 주문서를 주방에 걸 뿐, 파스타를 어떻게 만드는지 모른다. 요리사(Receiver)가 주문서를 보고 실제로 요리한다. 주문서는 객체이므로 줄을 세워 큐에 쌓을 수 있고("3번 테이블 먼저"), 보관해 두었다가 나중에 처리할 수 있고, 잘못된 주문은 취소표를 붙여 되돌릴 수 있다. 요청을 종이 한 장으로 객체화했기에 이 모든 게 가능하다 — 커맨드가 정확히 이 발상이다.
+      </div>
+
+      <h2>구조 — 네 역할과 화살표의 방향</h2>
+      <p>커맨드는 네 역할이 정확히 맞물려야 한다. <strong>Command</strong>는 <code>execute()</code>(와 <code>undo()</code>)를 선언한 인터페이스다. <strong>ConcreteCommand</strong>는 그 인터페이스를 구현하되, <strong>자기가 부려 먹을 Receiver를 필드로 들고</strong> 있다가 <code>execute()</code>에서 <code>receiver.action()</code>을 부른다. <strong>Invoker</strong>는 <code>Command</code> 참조만 보관하고 때가 되면 <code>command.execute()</code>를 호출한다 — 어떤 구체 명령인지, 누가 실제로 일하는지는 모른다. <strong>Receiver</strong>는 진짜 작업(<code>action()</code>)을 수행하는 객체다.</p>
+
+      <p>화살표 방향이 시험의 핵심이다. <code>Invoker → Command</code> (인보커는 커맨드 <em>인터페이스</em>에 의존, 합성으로 보유). <code>ConcreteCommand → Receiver</code> (구체 명령이 리시버를 알고 위임). <code>ConcreteCommand ..|> Command</code> (구체 명령이 인터페이스를 구현). 즉 <strong>인보커는 인터페이스만 알고, 리시버를 아는 것은 오직 ConcreteCommand뿐</strong>이다. 이 방향이 뒤집히면 결합이 깨지므로, 도식을 외울 때 "인보커는 커맨드로, 구체커맨드는 리시버로"를 입에 붙여 두자.</p>
+    </div>
+
+    <div class="widget">
+      <div class="widget-frame">
+        <div class="widget-label"><span class="lab-no">UML 01</span><span>커맨드 클래스 다이어그램 · 네 역할의 화살표 방향</span></div>
+        <pre class="mermaid">
+classDiagram
+    class Command {
+        +execute()
+        +undo()
+    }
+    class ConcreteCommand {
+        -receiver : Receiver
+        +execute()
+        +undo()
+    }
+    class Invoker {
+        -command : Command
+        +setCommand(Command)
+        +invoke()
+    }
+    class Receiver {
+        +action()
+    }
+    Command &lt;|.. ConcreteCommand
+    Invoker o--> Command
+    ConcreteCommand --> Receiver : 위임
+        </pre>
+      </div>
+      <p class="widget-cap">Invoker o--> Command: 인보커는 커맨드 인터페이스만 보유한다. ConcreteCommand --> Receiver: 리시버를 아는 건 구체 명령뿐이고, execute()에서 receiver.action()을 부른다. ConcreteCommand ..|> Command: 구체 명령이 인터페이스를 실현한다. 인보커가 리시버를 직접 가리키지 않는다는 점이 결합을 끊는 열쇠다.</p>
+    </div>
+
+    <div class="prose">
+      <h2>코드 — 실행, 그리고 되돌리기</h2>
+      <p>리모컨(Invoker)이 조명(Receiver)을 켜는 예다. <code>LightOnCommand</code>가 조명을 들고 있고, <code>execute()</code>는 켜기, <code>undo()</code>는 그 역연산인 끄기를 한다. 실행한 명령을 스택에 쌓아 두면 마지막 동작을 되돌릴 수 있다.</p>
+    </div>
+
+    <div class="widget">
+      <div class="widget-frame">
+        <div class="widget-label"><span class="lab-no">CODE 01</span><span>리모컨 커맨드 (execute / undo)</span></div>
+        <pre class="code"><code>interface Command {
+    void execute();
+    void undo();
+}
+
+class Light {                       // Receiver — 실제 일하는 객체
+    void on()  { System.out.println("조명 ON"); }
+    void off() { System.out.println("조명 OFF"); }
+}
+
+class LightOnCommand implements Command {  // ConcreteCommand
+    private final Light light;       // Receiver를 들고 있다
+    LightOnCommand(Light light) { this.light = light; }
+    public void execute() { light.on(); }   // 위임
+    public void undo()    { light.off(); }  // 역연산
+}
+
+class RemoteButton {                 // Invoker — Command만 안다
+    private final Deque&lt;Command&gt; history = new ArrayDeque&lt;&gt;();
+    private Command command;
+    void setCommand(Command c) { this.command = c; }
+    void press()    { command.execute(); history.push(command); }
+    void pressUndo(){ if (!history.isEmpty()) history.pop().undo(); }
+}
+
+// 조립 — 클라이언트가 Receiver를 Command에 묶고 Invoker에 꽂는다
+Light light = new Light();
+RemoteButton btn = new RemoteButton();
+btn.setCommand(new LightOnCommand(light));
+btn.press();      // 조명 ON
+btn.pressUndo();  // 조명 OFF (되돌리기)</code></pre>
+      </div>
+      <p class="widget-cap">RemoteButton(Invoker)은 Light(Receiver)의 존재를 전혀 모른다 — Command만 안다. 매크로는 여러 Command를 리스트로 묶어 execute()에서 차례로 부르는 한 개의 MacroCommand로, 작업 큐는 Command 객체를 큐에 쌓아 두었다 꺼내 실행하는 방식으로 자연스럽게 확장된다.</p>
+    </div>
+
+    <div class="prose">
+      <h2>참여자와 결과</h2>
+      <div class="pattern-card">
+        <div class="pc"><h5>참여자</h5><p>Command(execute/undo 인터페이스), ConcreteCommand(Receiver 보유 + 위임), Invoker(Command 보유 + 호출), Receiver(실제 작업)</p></div>
+        <div class="pc"><h5>장점</h5><p>호출-실행 분리로 결합 완화, undo/redo, 매크로, 작업 큐·로그, 요청을 일급 객체로 전달</p></div>
+        <div class="pc"><h5>단점</h5><p>명령마다 클래스가 늘어 구조가 무거워질 수 있음, undo 구현 시 상태 보존 부담</p></div>
+      </div>
+
+      <div class="trap">
+        <b>시험 함정.</b> ① <strong>네 역할(Command / ConcreteCommand / Invoker / Receiver)을 정확히 구분</strong>해야 한다 — 특히 "Receiver를 아는 것은 ConcreteCommand뿐, Invoker는 Command만 안다". ② 화살표 방향: <code>Invoker → Command</code>, <code>ConcreteCommand → Receiver</code>. 인보커가 리시버를 직접 가리키면 오답. ③ 핵심 키워드는 "<em>요청을 객체로 만든다</em>". ④ 대표 활용은 undo/redo, 매크로(여러 Command 묶음), 작업 큐, 실행 로그.
+      </div>
+
+      <h2>다음으로 — 옵서버 패턴</h2>
+      <p>커맨드가 "하나의 요청"을 객체로 포장해 호출자와 수행자를 떼어 놓았다면, 다음 sub-chapter의 <strong>옵서버 패턴(Observer Pattern)</strong>은 "상태 변화의 통보"를 구조화한다. 한 주제(Subject)가 바뀌면 그것을 구독하는 여러 관찰자(Observer)에게 자동으로 알림이 가는 일대다 관계다. 커맨드가 호출의 결합을 끊었듯, 옵서버는 통보의 결합을 끊는다 — 주제는 누가 듣는지 구체적으로 알지 못한 채 그저 "바뀌었다"고 외칠 뿐이다.</p>
+    </div>
+
+    <nav class="ch-foot"></nav>
+  </main>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', themeVariables: { fontFamily: 'inherit' } });
+</script>
+<script>
+const SUBS = [
+  { no:'01', t:'스트래티지 (Strategy)' },
+  { no:'02', t:'스테이트 (State)' },
+  { no:'03', t:'커맨드 (Command)' },
+  { no:'04', t:'옵서버 (Observer)' },
+  { no:'05', t:'템플릿 메서드 (Template Method)' },
+  { no:'06', t:'이터레이터 (Iterator)' },
+];
+function buildNav(cur) {
+  const ol = document.querySelector('.ch-nav ol');
+  ol.innerHTML = SUBS.map(s => `<li><a href="${s.no}.html"${s.no===cur?' class="current"':''}>${s.t}</a></li>`).join('');
+  const tb = document.querySelector('.topbar');
+  tb.innerHTML = `<a class="home" href="index.html">← Ch.04 표지</a><span class="ch-mini">SUB ${cur} / ${String(SUBS.length).padStart(2,'0')}</span>`;
+  const i = SUBS.findIndex(s => s.no === cur);
+  const prev = i > 0 ? SUBS[i-1] : { no:'', t:'챕터 표지로' };
+  const next = i < SUBS.length-1 ? SUBS[i+1] : { no:'', t:'챕터 표지로' };
+  const prevHref = prev.no ? prev.no+'.html' : 'index.html';
+  const nextHref = next.no ? next.no+'.html' : 'index.html';
+  document.querySelector('.ch-foot').innerHTML =
+    `<a href="${prevHref}"><div class="dir">← 이전</div><div class="ti">${prev.t}</div></a>` +
+    `<a href="${nextHref}" class="next"><div class="dir">다음 →</div><div class="ti">${next.t}</div></a>`;
+}
+function progressBar() {
+  const bar = document.querySelector('.scroll-progress');
+  document.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max>0 ? (h.scrollTop/max)*100 : 0) + '%';
+  }, { passive: true });
+}
+window.addEventListener('load', () => { buildNav('03'); progressBar(); });
+</script>
+</body>
+</html>

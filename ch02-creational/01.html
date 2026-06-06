@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>01 · 싱글톤 패턴 — Chapter 2</title>
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+  .pattern-card { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: .8rem; margin: 1.4rem 0; }
+  .pc { background: var(--paper-2); border: 1px solid var(--line-soft); border-radius: 10px; padding: .9rem 1rem; }
+  .pc h5 { margin: 0 0 .35rem; font-family: var(--mono); font-size: .68rem; letter-spacing: .1em; color: var(--ink-faint); text-transform: uppercase; }
+  .pc p { margin: 0; font-size: .9rem; color: var(--ink); line-height: 1.5; }
+  .mermaid { display: flex; justify-content: center; padding: 1.2rem .8rem; background: #fff; }
+  .trap { border-left: 3px solid var(--style); background: var(--style-bg); border-radius: 0 10px 10px 0; padding: 1rem 1.2rem; margin: 1.4rem 0; }
+  .trap b { color: var(--style); }
+</style>
+</head>
+<body>
+<div class="scroll-progress"></div>
+<div class="topbar"></div>
+
+<div class="ch-layout">
+  <aside class="ch-nav"><nav><ol></ol></nav></aside>
+  <main class="ch-main">
+
+    <header class="ch-head">
+      <span class="kicker">Sub-Chapter 01 · 생성 패턴</span>
+      <h1>싱글톤 패턴,<br><span class="t-style">오직 하나만 존재하게</span></h1>
+      <p class="lede">시스템 전체가 공유해야 하고 둘 이상 존재하면 충돌이 나는 자원이 있다. 설정 관리자, 로그 기록기, 프린터 스풀러, 커넥션 풀. 싱글톤은 이 "유일성"을 클래스 스스로가 보장하게 만든다.</p>
+    </header>
+
+    <div class="prose">
+      <p>싱글톤 패턴(Singleton Pattern)의 의도는 한 문장이다. <strong>어떤 클래스의 인스턴스가 오직 하나만 존재하도록 보장하고, 그 하나에 대한 전역 접근점(global access point)을 제공한다.</strong> 핵심은 두 부분으로 나뉜다. "하나만"이라는 <em>유일성 보장</em>과, "어디서나 가져다 쓸 수 있는" <em>전역 접근</em>이다. 이 둘을 모두 클래스 자신이 책임진다는 점이 싱글톤의 정체성이다.</p>
+
+      <p>왜 필요한가? 시스템에는 본질적으로 하나여야 하는 것들이 있다. 애플리케이션 설정(AppConfig)이 두 개라면 한쪽을 바꿔도 다른 쪽은 옛 값을 들고 있어 충돌한다. 로그 파일에 두 객체가 동시에 쓰면 줄이 엉킨다. 이런 자원을 전역 변수(global variable)로 두면 누구나 마음대로 덮어쓸 수 있고, 언제 생성되는지 통제할 수 없다. 싱글톤은 <strong>생성 자체를 클래스가 통제</strong>하게 만들어 이 문제를 푼다.</p>
+
+      <div class="analogy">
+        <b>한 나라의 대통령.</b> 어느 시점에 대통령은 정확히 한 명이어야 한다. 두 명이 동시에 명령을 내리면 국가가 혼란에 빠진다. 그리고 누구든 "대통령"을 부르면 같은 사람을 가리킨다(전역 접근점). 새 대통령을 아무나 마음대로 임명할 수 없고, 정해진 절차(헌법 = private 생성자 + getInstance)로만 결정된다. 싱글톤이 정확히 이 구조다.
+      </div>
+
+      <h2>구조 — 어떻게 유일성을 강제하는가</h2>
+      <p>메커니즘은 세 가지 장치의 조합이다. 첫째, <strong>생성자를 private으로</strong> 막아 외부에서 <code>new</code>로 또 만들 수 없게 한다. 둘째, 유일 인스턴스를 <strong>static 필드</strong>에 보관한다(클래스당 하나만 존재하는 자리). 셋째, 그 인스턴스를 돌려주는 <strong>static getInstance()</strong> 메서드로만 접근하게 한다. 외부는 생성 통로가 막혀 있고, 오직 이 한 문으로만 들어온다.</p>
+    </div>
+
+    <div class="widget">
+      <div class="widget-frame">
+        <div class="widget-label"><span class="lab-no">UML 01</span><span>싱글톤 클래스 다이어그램 · 자기 자신을 하나 보관</span></div>
+        <pre class="mermaid">
+classDiagram
+    class Singleton {
+        -static instance : Singleton
+        -Singleton()
+        +static getInstance() Singleton
+        +businessMethod()
+    }
+    Singleton --> Singleton : 유일 인스턴스 보관
+        </pre>
+      </div>
+      <p class="widget-cap">화살표가 자기 자신을 향하는 것이 싱글톤의 시각적 표식이다. 생성자(−Singleton())는 private이고, 외부는 +getInstance()로만 그 하나에 접근한다.</p>
+    </div>
+
+    <div class="prose">
+      <h2>코드 — 지연 초기화와 멀티스레드 함정</h2>
+      <p>가장 단순한 형태는 처음 요청될 때 만들고(지연 초기화, lazy initialization) 이후 재사용하는 것이다. 그런데 이 단순한 형태가 멀티스레드(multi-thread) 환경에서 깨진다. 두 스레드가 동시에 <code>if(instance==null)</code>를 통과하면 인스턴스가 두 번 만들어진다. 그래서 <strong>이중 검사 잠금(Double-Checked Locking)</strong>과 <code>volatile</code>을 함께 쓴다.</p>
+    </div>
+
+    <div class="widget">
+      <div class="widget-frame">
+        <div class="widget-label"><span class="lab-no">CODE 01</span><span>이중 검사 잠금 싱글톤 (스레드 안전)</span></div>
+        <pre class="code"><code>public class AppConfig {
+    private static volatile AppConfig instance;   // volatile: 가시성 보장
+    private AppConfig() {}                          // 외부 생성 차단
+
+    public static AppConfig getInstance() {
+        if (instance == null) {                     // 1차 검사 (락 없이, 빠름)
+            synchronized (AppConfig.class) {
+                if (instance == null) {             // 2차 검사 (락 안, 안전)
+                    instance = new AppConfig();
+                }
+            }
+        }
+        return instance;
+    }
+}</code></pre>
+      </div>
+      <p class="widget-cap">1차 검사는 락 비용을 피하려는 빠른 경로, 2차 검사는 경쟁 상황에서 중복 생성을 막는 안전장치다. volatile이 없으면 부분 초기화된 객체가 다른 스레드에 보일 수 있다. 더 간단한 대안으로 정적 초기화(eager) 나 enum 싱글톤도 자주 쓴다.</p>
+    </div>
+
+    <div class="prose">
+      <h2>참여자와 결과</h2>
+      <div class="pattern-card">
+        <div class="pc"><h5>참여자</h5><p>Singleton (private 생성자, static instance, getInstance)</p></div>
+        <div class="pc"><h5>장점</h5><p>유일성 보장, 전역 접근, 지연 초기화 가능, 자원 절약</p></div>
+        <div class="pc"><h5>단점</h5><p>전역 상태로 결합도 증가, 의존성이 숨겨져 테스트 곤란</p></div>
+      </div>
+
+      <div class="trap">
+        <b>시험 함정.</b> ① 단순 <code>if(instance==null)</code>는 멀티스레드에서 인스턴스를 둘 만들 수 있다 — 이중 검사 잠금 + volatile, 또는 eager/enum으로 푼다. ② "전역 접근점" 때문에 의존성이 코드에 드러나지 않아 테스트와 결합도 면에서 <em>안티패턴</em>이라는 비판도 단골 출제 포인트다. ③ 싱글톤의 시각적 표식은 "자기 자신을 가리키는 연관"이다.
+      </div>
+
+      <p>싱글톤은 생성 횟수를 통제하는 가장 단순한 생성 패턴이다. 다음 sub-chapter의 팩토리 메서드는 한 걸음 더 나아가 "무엇을 만들지"의 결정 자체를 서브클래스로 넘긴다. 두 패턴 모두 <code>new</code>를 사용하는 코드로부터 생성 책임을 떼어 낸다는 같은 목표를 공유한다.</p>
+    </div>
+
+    <nav class="ch-foot"></nav>
+  </main>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', themeVariables: { fontFamily: 'inherit' } });
+</script>
+<script>
+const SUBS = [
+  { no:'01', t:'싱글톤 (Singleton)' },
+  { no:'02', t:'팩토리 메서드 (Factory Method)' },
+  { no:'03', t:'추상 팩토리 (Abstract Factory)' },
+];
+function buildNav(cur) {
+  const ol = document.querySelector('.ch-nav ol');
+  ol.innerHTML = SUBS.map(s => `<li><a href="${s.no}.html"${s.no===cur?' class="current"':''}>${s.t}</a></li>`).join('');
+  const tb = document.querySelector('.topbar');
+  tb.innerHTML = `<a class="home" href="index.html">← Ch.02 표지</a><span class="ch-mini">SUB ${cur} / ${String(SUBS.length).padStart(2,'0')}</span>`;
+  const i = SUBS.findIndex(s => s.no === cur);
+  const prev = i > 0 ? SUBS[i-1] : { no:'', t:'챕터 표지로' };
+  const next = i < SUBS.length-1 ? SUBS[i+1] : { no:'', t:'챕터 표지로' };
+  const prevHref = prev.no ? prev.no+'.html' : 'index.html';
+  const nextHref = next.no ? next.no+'.html' : 'index.html';
+  document.querySelector('.ch-foot').innerHTML =
+    `<a href="${prevHref}"><div class="dir">← 이전</div><div class="ti">${prev.t}</div></a>` +
+    `<a href="${nextHref}" class="next"><div class="dir">다음 →</div><div class="ti">${next.t}</div></a>`;
+}
+function progressBar() {
+  const bar = document.querySelector('.scroll-progress');
+  document.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max>0 ? (h.scrollTop/max)*100 : 0) + '%';
+  }, { passive: true });
+}
+window.addEventListener('load', () => { buildNav('01'); progressBar(); });
+</script>
+</body>
+</html>

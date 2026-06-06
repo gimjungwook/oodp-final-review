@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Problem Set · 백지 테스트 — 회상 연습</title>
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+  .masthead { position: relative; max-width: var(--wide); margin: 0 auto; padding: 1.5rem 1.4rem 0; }
+  .hero-wrap { position: relative; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); background: linear-gradient(135deg, var(--style-bg), #fff 55%, var(--structure-bg)); box-shadow: var(--shadow-plate); min-height: 240px; display: flex; align-items: center; padding: 2rem 2.2rem; }
+  .hero-chips { display: flex; flex-wrap: wrap; gap: .7rem; }
+  .hero-chip { font-family: var(--mono); font-size: .8rem; letter-spacing: .04em; padding: .55rem 1rem; border-radius: 999px; background: #fff; border: 1px solid var(--style-lo); color: var(--style); box-shadow: var(--shadow-soft); }
+  .hero-cap { position: absolute; left: 2.2rem; bottom: 1rem; font-family: var(--mono); font-size: .68rem; letter-spacing: .12em; color: var(--ink-faint); }
+  .title-block { max-width: var(--wide); margin: 2.4rem auto 0; padding-inline: 1.4rem; }
+  .title-block .kicker { display: block; margin-bottom: 1rem; }
+  .title-block h1 { font-size: clamp(2.4rem, 6vw, 4.4rem); margin: 0; line-height: 1.05; }
+  .title-block h1 em { color: var(--style); font-style: normal; }
+  .paper-meta { display: flex; flex-wrap: wrap; gap: .5rem 1.6rem; margin-top: 1.4rem; font-family: var(--mono); font-size: .76rem; color: var(--ink-soft); }
+  .paper-meta span b { color: var(--ink); font-weight: 500; }
+  .intro-block { max-width: var(--measure); margin: 2.4rem auto 0; padding-inline: 1.4rem; }
+  .intro-block p { font-size: 1.02rem; }
+  .plates { max-width: var(--wide); margin: 1rem auto; padding: 1.6rem 1.4rem 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 1rem; }
+  .plate { position: relative; display: flex; flex-direction: column; text-decoration: none; color: inherit; background: #fff; border: 1px solid var(--line); border-radius: 13px; padding: 1.3rem 1.3rem 1.4rem; transition: transform .2s var(--ease), border-color .2s, box-shadow .2s; overflow: hidden; }
+  .plate:hover { transform: translateY(-4px); border-color: var(--style-lo); box-shadow: var(--shadow-plate); }
+  .plate .pno { font-family: var(--mono); font-size: .72rem; letter-spacing: .14em; color: var(--ink-faint); }
+  .plate h3 { font-family: var(--serif); font-size: 1.22rem; margin: .5rem 0 .5rem; line-height: 1.22; }
+  .plate p { font-size: .88rem; color: var(--ink-soft); line-height: 1.5; margin: 0; }
+  .plate .spectrum { display: flex; height: 4px; border-radius: 2px; overflow: hidden; margin-bottom: 1rem; }
+  .plate .spectrum i { display: block; height: 100%; }
+  .plate .go { margin-top: 1rem; font-family: var(--mono); font-size: .7rem; letter-spacing: .1em; color: var(--style); opacity: 0; transform: translateX(-4px); transition: .2s var(--ease); }
+  .plate:hover .go { opacity: 1; transform: translateX(0); }
+  .group-label { display: inline-block; margin: 2.4rem 1.4rem 0; padding: .3rem .9rem; font-family: var(--mono); font-size: .68rem; letter-spacing: .18em; color: var(--ink-faint); border: 1px solid var(--line); border-radius: 999px; }
+  .how { max-width: var(--measure); margin: 2rem auto; padding: 1.2rem 1.4rem; border: 1px solid var(--line); border-radius: 12px; background: var(--paper-2); }
+  .how h4 { margin: 0 0 .6rem; font-family: var(--serif); font-size: 1.1rem; color: var(--style); }
+  .how ol { margin: 0; padding-left: 1.2rem; }
+  .how li { margin: .3rem 0; font-size: .92rem; color: var(--ink-soft); }
+  .how li b { color: var(--ink); }
+  footer.colophon { max-width: var(--measure); margin: 3rem auto 4rem; padding: 2rem 1.4rem 0; border-top: 1px solid var(--line); font-size: .85rem; color: var(--ink-soft); }
+  .back-link { display: inline-block; margin: 1rem 1.4rem 0; font-family: var(--mono); font-size: .76rem; color: var(--ink-soft); text-decoration: none; }
+  .back-link:hover { color: var(--ink); }
+</style>
+</head>
+<body>
+
+<a href="../index.html" class="back-link">← 표지로 (6장 전체)</a>
+
+<header class="masthead">
+  <div class="hero-wrap">
+    <div class="hero-chips">
+      <span class="hero-chip">패턴 백지작성</span>
+      <span class="hero-chip">시나리오→패턴</span>
+      <span class="hero-chip">UML</span>
+      <span class="hero-chip">비교 빈칸</span>
+    </div>
+    <div class="hero-cap">백지 테스트 — 보지 말고 먼저 꺼내 써 보는 회상 연습</div>
+  </div>
+</header>
+
+<div class="title-block">
+  <span class="kicker">Problem Set · 백지 테스트</span>
+  <h1>보지 말고<br><em>먼저 써 보기</em></h1>
+  <div class="paper-meta">
+    <span><b>읽기가 아니라 인출(retrieval)</b></span>
+    <span>구성 <b>4 코스</b></span>
+    <span>범위 <b>12개 패턴 전체</b></span>
+  </div>
+</div>
+
+<section class="intro-block">
+  <h2>왜 백지 테스트인가</h2>
+  <p>보면서 "아 이해했다"고 느끼는 것과, 시험지 위 백지에서 구조를 직접 꺼내 그리는 것은 전혀 다른 능력이다. 전자는 <strong>재인(recognition)</strong>이고 후자는 <strong>인출(retrieval)</strong>이다. 시험장에서 필요한 건 후자다. 이 코스는 정답을 <code>&lt;details&gt;</code> 접기 뒤에 숨겨 두었다. 먼저 백지에 직접 쓴 다음, "정답 보기"를 눌러 채점하라. 이 순서를 지켜야 인출 연습(retrieval practice)의 효과가 살아난다.</p>
+  <p>채점 기준은 맞고 틀림이 아니라 <strong>"왜 그 답인가"를 말로 설명할 수 있는지</strong>다. 패턴 이름을 떠올리는 데서 그치지 말고, 그 패턴이어야 하는 근거 — 어떤 변화 축을 흡수하는지, 어떤 결합을 끊는지 — 까지 함께 떠올려라. 막히면 각 챕터의 sub-chapter 본문으로 돌아가라.</p>
+</section>
+
+<div class="how">
+  <h4>🧠 푸는 순서</h4>
+  <ol>
+    <li><b>A → B → C → D</b> 순으로, 한 코스를 다 풀 때까지 정답을 펼치지 않는다.</li>
+    <li>각 문항을 백지(혹은 종이)에 <b>직접 손으로</b> 써 본 뒤에만 "정답 보기"를 펼친다.</li>
+    <li>틀린 문항만 표시해 두고 <b>다음 날 다시</b> 푼다 — 같은 과목을 몰아 풀지 말고 사이에 간격을 둔다.</li>
+  </ol>
+</div>
+
+<span class="group-label">PART · 백지 테스트 4코스</span>
+<section class="plates" id="subs"></section>
+
+<footer class="colophon">
+  <p>이 코스는 「Java 객체지향 디자인 패턴」(HanbitDP)과 GoF 디자인 패턴의 12개 패턴을 회상 연습용으로 재구성한 것이다. 모든 정답은 본문 sub-chapter와 동일한 기준으로, "왜 그 패턴인가"의 근거까지 함께 제시한다.</p>
+</footer>
+
+<script>
+const SUBS = [
+  { no:'recall',    t:'A. 패턴 백지작성', d:'12개 패턴 각각 이름만 보고 의도, 구조, 참여자, 장단점을 백지에서 인출한다. 모든 회상 연습의 기본기.', sp:['style-lo','style'] },
+  { no:'scenarios', t:'B. 시나리오→패턴', d:'설계 상황 10개를 읽고 적합한 패턴을 고른다. 정답마다 "왜 그 패턴인지"의 근거까지.', sp:['style','synth'] },
+  { no:'uml',       t:'C. UML 손그림', d:'Strategy vs State, Decorator, Command를 직접 그린다. 화살표 방향과 관계 종류가 채점 포인트.', sp:['synth','structure'] },
+  { no:'compare',   t:'D. 비교 빈칸', d:'헷갈리는 6쌍을 빈칸으로 구분한다. 두 패턴이 갈리는 결정적 한 줄을 떠올리는 훈련.', sp:['structure','style'] },
+];
+const colMap = { structure:'var(--structure)', 'structure-lo':'var(--structure-lo)', style:'var(--style)', 'style-lo':'var(--style-lo)', synth:'var(--synth)', ink:'var(--ink)', 'ink-soft':'var(--ink-soft)', 'ink-faint':'var(--ink-faint)' };
+const host = document.getElementById('subs');
+SUBS.forEach(s => {
+  const sp = s.sp.length === 1 ? [s.sp[0], s.sp[0]] : s.sp;
+  const a = document.createElement('a');
+  a.className = 'plate';
+  a.href = s.no + '.html';
+  a.innerHTML = `
+    <div class="spectrum">${sp.map(c=>`<i style="flex:1;background:${colMap[c]}"></i>`).join('')}</div>
+    <span class="pno">COURSE · ${s.no.toUpperCase()}</span>
+    <h3>${s.t}</h3>
+    <p>${s.d}</p>
+    <span class="go">풀러 가기 →</span>`;
+  host.appendChild(a);
+});
+</script>
+</body>
+</html>

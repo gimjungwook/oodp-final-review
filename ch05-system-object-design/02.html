@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>02 · 객체 설계 — Chapter 5</title>
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+  .pattern-card { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: .8rem; margin: 1.4rem 0; }
+  .pc { background: var(--paper-2); border: 1px solid var(--line-soft); border-radius: 10px; padding: .9rem 1rem; }
+  .pc h5 { margin: 0 0 .35rem; font-family: var(--mono); font-size: .68rem; letter-spacing: .1em; color: var(--ink-faint); text-transform: uppercase; }
+  .pc p { margin: 0; font-size: .9rem; color: var(--ink); line-height: 1.5; }
+  .mermaid { display: flex; justify-content: center; padding: 1.2rem .8rem; background: #fff; }
+  .trap { border-left: 3px solid var(--style); background: var(--style-bg); border-radius: 0 10px 10px 0; padding: 1rem 1.2rem; margin: 1.4rem 0; }
+  .trap b { color: var(--style); }
+</style>
+</head>
+<body>
+<div class="scroll-progress"></div>
+<div class="topbar"></div>
+
+<div class="ch-layout">
+  <aside class="ch-nav"><nav><ol></ol></nav></aside>
+  <main class="ch-main">
+
+    <header class="ch-head">
+      <span class="kicker">Sub-Chapter 02 · 객체 설계</span>
+      <h1>객체 설계,<br><span class="t-style">모델을 코드로 옮기는 일</span></h1>
+      <p class="lede">분석 모델은 "이런 개념과 관계가 있다"는 그림이다. 코드는 그 그림이 실제로 돌아가게 만든 기계다. 객체 설계(Object Design)는 그림을 기계로 번역하는 단계이고, 바로 여기서 디자인 패턴이 투입된다.</p>
+    </header>
+
+    <div class="prose">
+      <p>객체 설계(Object Design)의 자리를 한 문장으로 말하면 이렇다. <strong>분석 객체 모델을 실제로 동작하는 코드로 옮기는 단계</strong>다. 앞 sub-chapter의 시스템 설계가 시스템을 큰 서브시스템으로 나누고 골격을 세웠다면, 객체 설계는 그 서브시스템 안으로 들어가 클래스 하나하나의 세부를 확정한다. 분석 단계의 클래스 다이어그램은 "Order는 Customer를 가진다", "결제는 잔액이 충분해야 한다" 같은 <em>개념적 선언</em>이다. 객체 설계는 이 선언을 참조 필드, 컬렉션, 검증 코드, 메서드 시그니처라는 <em>구체적 코드 결정</em>으로 번역한다.</p>
+
+      <p>왜 이 번역이 별도 단계로 필요한가? 분석 모델은 의도적으로 구현 세부를 비워둔다. "Order가 여러 Item을 가진다"는 1-다 연관은, 코드에서는 배열일 수도, 리스트일 수도, 맵일 수도 있다. 어느 쪽을 고를지는 접근 패턴, 성능, 변경 가능성에 달렸다. 이 결정들을 분석 단계에 섞으면 모델이 구현에 오염되어 본질이 흐려진다. 그래서 객체 설계는 "무엇을"을 흐트러뜨리지 않은 채 "어떻게"를 채우는, 모델과 코드 사이의 정밀한 번역 작업이다.</p>
+
+      <div class="analogy">
+        <b>건축 도면을 시공으로.</b> 분석 모델은 건축가의 평면도다. "여기에 거실, 저기에 부엌, 둘은 통로로 연결"이라고 적혀 있다. 객체 설계는 이 도면을 <em>실제 시공 명세</em>로 바꾸는 단계다. 통로는 벽돌인가 유리인가(연관 구현), 기둥은 몇 톤을 견뎌야 하는가(계약), 콘센트는 어디에 몇 개인가(인터페이스 명세), 배관은 최단 경로로 다시 그릴까(최적화). 평면도는 그대로 두되 지을 수 있는 명세로 채운다.
+      </div>
+
+      <h2>분석 모델을 코드로 매핑하는 네 작업</h2>
+      <p>객체 설계의 핵심은 <strong>모델 변환(model transformation)의 네 가지 작업</strong>이다. 시험의 단골이므로 각 작업의 "무엇을, 왜"를 정확히 익혀야 한다. 아래 다이어그램이 네 작업의 전체 흐름이다.</p>
+    </div>
+
+    <div class="widget">
+      <div class="widget-frame">
+        <div class="widget-label"><span class="lab-no">DIAGRAM 01</span><span>분석 객체 모델에서 구현 코드로 — 네 작업</span></div>
+        <pre class="mermaid">
+flowchart LR
+    AM["분석 객체 모델"]
+    AM --> T1["① 연관 구현"]
+    AM --> T2["② 계약 구현"]
+    AM --> T3["③ 인터페이스 명세"]
+    AM --> T4["④ 객체 모델 최적화"]
+    T1 --> CODE["동작하는 구현 코드"]
+    T2 --> CODE
+    T3 --> CODE
+    T4 --> CODE
+        </pre>
+      </div>
+      <p class="widget-cap">네 작업은 순서가 절대적이지 않고 서로 맞물려 반복된다. 다만 최적화(④)는 나머지가 정확히 자리잡은 뒤에 적용해야 한다. 검증되지 않은 구조를 미리 최적화하면 잘못된 구조를 더 단단히 굳히게 된다.</p>
+    </div>
+
+    <div class="prose">
+      <h2>① 연관(Association)의 구현</h2>
+      <p>분석 모델의 연관은 객체 사이의 "관계"를 추상적으로 표현한다. 객체 설계는 이 연관을 <strong>참조(reference)나 컬렉션(collection)</strong>으로 번역한다. 다중도(multiplicity)에 따라 번역이 갈린다. <strong>1-1 연관</strong>은 양쪽이 서로를 가리키는 단일 참조 필드가 된다. <strong>1-다 연관</strong>은 "다" 쪽을 담는 리스트나 집합 같은 컬렉션이 된다. <strong>다-다 연관</strong>은 양쪽에 컬렉션을 두면 일관성 유지가 어려워, 보통 <em>별도의 연관 클래스(association class)</em>를 만들어 두 객체를 잇는 한 줄을 객체화한다. 예를 들어 학생과 강의의 다-다 관계는 "수강(Enrollment)"이라는 연관 클래스로 풀고, 거기에 성적 같은 관계 고유 속성을 둔다.</p>
+
+      <h2>② 계약(Contract)의 구현</h2>
+      <p>분석 모델은 "결제는 잔액이 충분할 때만 성공한다" 같은 규칙을 말로 적어둔다. 객체 설계는 이 규칙을 <strong>계약(Contract)</strong>으로 코드에 심는다. 계약은 세 가지로 구성된다. <strong>불변식(invariant)</strong>은 객체가 언제나 만족해야 하는 조건이다(예: 계좌 잔액은 음수가 될 수 없다). <strong>사전조건(precondition)</strong>은 메서드를 호출하기 전에 호출자가 보장해야 하는 조건이다(예: 출금액은 0보다 커야 한다). <strong>사후조건(postcondition)</strong>은 메서드가 정상 종료한 뒤 보장하는 결과다(예: 출금 후 잔액 = 이전 잔액 − 출금액). 이 조건들을 방어적 프로그래밍이나 단언(assertion)으로 코드에 박아, 모델의 규칙이 실행 중에 실제로 지켜지게 만든다.</p>
+    </div>
+
+    <div class="widget">
+      <div class="widget-frame">
+        <div class="widget-label"><span class="lab-no">CODE 01</span><span>계약을 코드로 — 불변식 / 사전조건 / 사후조건</span></div>
+        <pre class="code"><code>public class Account {
+    private long balance;                       // 불변식: balance &gt;= 0
+
+    public void withdraw(long amount) {
+        // 사전조건: 출금액은 양수, 잔액 이내
+        if (amount &lt;= 0) throw new IllegalArgumentException("amount &gt; 0");
+        if (amount &gt; balance) throw new IllegalStateException("잔액 부족");
+
+        long before = balance;
+        balance -= amount;
+
+        // 사후조건: 잔액 = 이전 잔액 - 출금액
+        assert balance == before - amount;
+        // 불변식 유지 확인
+        assert balance &gt;= 0;
+    }
+}</code></pre>
+      </div>
+      <p class="widget-cap">사전조건 검사는 잘못된 호출을 입구에서 막고(방어적 프로그래밍), 사후조건과 불변식 단언은 메서드가 약속한 결과를 실제로 지켰는지 검증한다. 분석 모델의 "말로 된 규칙"이 이렇게 실행되는 코드로 옮겨진다.</p>
+    </div>
+
+    <div class="prose">
+      <h2>③ 클래스 인터페이스 명세</h2>
+      <p>분석 모델은 "Order는 총액을 계산한다" 정도까지만 적는다. 객체 설계는 이를 <strong>완전한 인터페이스 명세</strong>로 확정한다. 각 멤버의 <strong>가시성(visibility)</strong>을 public/protected/private로 정하고, 메서드의 <strong>시그니처(signature)</strong> — 이름, 매개변수, 반환 타입 — 와 각 속성의 <strong>타입</strong>을 확정한다. 이 단계의 목적은 클래스를 사용하는 쪽과 만드는 쪽 사이의 정확한 약속을 못 박는 것이다. 무엇을 외부에 공개하고(public) 무엇을 내부로 감출지(private)를 신중히 정해야 캡슐화가 지켜지고, 나중에 내부 구현을 바꿔도 사용자가 영향받지 않는다.</p>
+
+      <h2>④ 객체 모델 최적화</h2>
+      <p>앞 세 작업이 "정확한 구조"를 만들었다면, 최적화는 그 구조를 "효율적인 구조"로 다듬는다. 자주 쓰는 접근 경로가 객체 그래프를 여러 번 타고 들어가야 한다면 <strong>지름길 참조(direct reference)를 추가</strong>해 단축한다. 같은 값을 매번 다시 계산한다면 결과를 <strong>캐시(cache)</strong>한다. 비슷한 클래스들이 중복된다면 <strong>상속이나 위임으로 재구성</strong>한다. 다만 최적화는 <em>마지막에</em> 해야 한다. 정확성이 검증되기 전에 최적화하면 잘못된 구조를 더 단단히 굳히고, 가독성을 해쳐 디버깅을 어렵게 만든다. "성급한 최적화는 만악의 근원"이라는 격언이 정확히 이 단계를 가리킨다.</p>
+
+      <h2>바로 여기서 디자인 패턴이 투입된다</h2>
+      <p>객체 설계의 핵심 의의는 이것이다. <strong>1장에서 3장까지 익힌 디자인 패턴은 모두 객체 설계 단계에서 변경에 강한 구조를 만들기 위한 도구다.</strong> 연관을 구현하다 "생성 책임을 어디 둘까"가 문제면 팩토리 메서드가 들어온다. 인터페이스를 명세하다 "호환되지 않는 두 인터페이스를 잇자" 하면 어댑터가 들어온다. 계약을 구현하다 "행동이 상태마다 다르다" 하면 상태 패턴이 들어온다. 즉 패턴은 허공에 떠 있는 지식이 아니라, <em>객체 설계라는 구체적 작업 안에서 반복해 마주치는 문제에 대한 검증된 해법</em>이다. 이것이 앞 장들과 이 장을 잇는 다리다.</p>
+
+      <div class="pattern-card">
+        <div class="pc"><h5>위치</h5><p>시스템 설계 이후, 분석 모델을 실제 코드로 매핑</p></div>
+        <div class="pc"><h5>네 작업</h5><p>연관 구현 / 계약 구현 / 인터페이스 명세 / 모델 최적화</p></div>
+        <div class="pc"><h5>패턴의 자리</h5><p>이 단계에서 디자인 패턴이 변경 대응 도구로 투입</p></div>
+      </div>
+
+      <div class="trap">
+        <b>시험 함정.</b> ① 네 작업의 이름과 내용을 짝짓는 문제 — <strong>연관=참조/컬렉션, 계약=불변식·사전·사후조건, 인터페이스 명세=가시성·시그니처·타입, 최적화=지름길·캐시·재구성</strong>. ② <strong>사전조건과 사후조건</strong>을 바꿔 출제 — 사전은 호출 <em>전</em> 호출자가 보장, 사후는 메서드가 정상 종료 <em>후</em> 보장. ③ <strong>다-다 연관</strong>은 양쪽 컬렉션이 아니라 <em>연관 클래스</em>로 푼다. ④ <strong>최적화는 마지막</strong> — 정확성보다 먼저 하면 안 된다. ⑤ "디자인 패턴이 투입되는 단계"는 시스템 설계가 아니라 <em>객체 설계</em>다.</p>
+      </div>
+
+      <p>이로써 설계의 두 층위가 완성된다. 시스템 설계가 큰 덩어리와 골격을, 객체 설계가 그 안의 클래스와 코드를 책임진다. 다음 챕터에서는 지금까지 익힌 모든 패턴을 놓고 "어떤 상황에 무엇을 쓸 것인가"를 한눈에 판단하는 의사결정 흐름과, 시험에서 자주 헷갈리는 패턴 쌍을 정리한다.</p>
+    </div>
+
+    <nav class="ch-foot"></nav>
+  </main>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', themeVariables: { fontFamily: 'inherit' } });
+</script>
+<script>
+const SUBS = [
+  { no:'01', t:'시스템 설계 (System Design)' },
+  { no:'02', t:'객체 설계 (Object Design)' },
+];
+function buildNav(cur) {
+  const ol = document.querySelector('.ch-nav ol');
+  ol.innerHTML = SUBS.map(s => `<li><a href="${s.no}.html"${s.no===cur?' class="current"':''}>${s.t}</a></li>`).join('');
+  const tb = document.querySelector('.topbar');
+  tb.innerHTML = `<a class="home" href="index.html">← Ch.05 표지</a><span class="ch-mini">SUB ${cur} / ${String(SUBS.length).padStart(2,'0')}</span>`;
+  const i = SUBS.findIndex(s => s.no === cur);
+  const prev = i > 0 ? SUBS[i-1] : { no:'', t:'챕터 표지로' };
+  const next = i < SUBS.length-1 ? SUBS[i+1] : { no:'', t:'챕터 표지로' };
+  const prevHref = prev.no ? prev.no+'.html' : 'index.html';
+  const nextHref = next.no ? next.no+'.html' : 'index.html';
+  document.querySelector('.ch-foot').innerHTML =
+    `<a href="${prevHref}"><div class="dir">← 이전</div><div class="ti">${prev.t}</div></a>` +
+    `<a href="${nextHref}" class="next"><div class="dir">다음 →</div><div class="ti">${next.t}</div></a>`;
+}
+function progressBar() {
+  const bar = document.querySelector('.scroll-progress');
+  document.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max>0 ? (h.scrollTop/max)*100 : 0) + '%';
+  }, { passive: true });
+}
+window.addEventListener('load', () => { buildNav('02'); progressBar(); });
+</script>
+</body>
+</html>

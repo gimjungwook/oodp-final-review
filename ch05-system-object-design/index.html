@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chapter 05 · 시스템 · 객체 설계</title>
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+  .masthead { position: relative; max-width: var(--wide); margin: 0 auto; padding: 1.5rem 1.4rem 0; }
+  .hero-wrap { position: relative; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); background: linear-gradient(135deg, var(--structure-bg), #fff 60%, var(--paper-2)); box-shadow: var(--shadow-plate); min-height: 240px; display: flex; align-items: center; padding: 2rem 2.2rem; }
+  .hero-chips { display: flex; flex-wrap: wrap; gap: .7rem; }
+  .hero-chip { font-family: var(--mono); font-size: .8rem; letter-spacing: .04em; padding: .55rem 1rem; border-radius: 999px; background: #fff; border: 1px solid var(--structure-lo); color: var(--structure); box-shadow: var(--shadow-soft); }
+  .hero-cap { position: absolute; left: 2.2rem; bottom: 1rem; font-family: var(--mono); font-size: .68rem; letter-spacing: .12em; color: var(--ink-faint); }
+  .title-block { max-width: var(--wide); margin: 2.4rem auto 0; padding-inline: 1.4rem; }
+  .title-block .kicker { display: block; margin-bottom: 1rem; }
+  .title-block h1 { font-size: clamp(2.4rem, 6vw, 4.4rem); margin: 0; line-height: 1.05; }
+  .title-block h1 em { color: var(--style); font-style: normal; }
+  .paper-meta { display: flex; flex-wrap: wrap; gap: .5rem 1.6rem; margin-top: 1.4rem; font-family: var(--mono); font-size: .76rem; color: var(--ink-soft); }
+  .paper-meta span b { color: var(--ink); font-weight: 500; }
+  .intro-block { max-width: var(--measure); margin: 2.4rem auto 0; padding-inline: 1.4rem; }
+  .intro-block p { font-size: 1.02rem; }
+  .plates { max-width: var(--wide); margin: 1rem auto; padding: 1.6rem 1.4rem 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 1rem; }
+  .plate { position: relative; display: flex; flex-direction: column; text-decoration: none; color: inherit; background: #fff; border: 1px solid var(--line); border-radius: 13px; padding: 1.3rem 1.3rem 1.4rem; transition: transform .2s var(--ease), border-color .2s, box-shadow .2s; overflow: hidden; }
+  .plate:hover { transform: translateY(-4px); border-color: var(--structure-lo); box-shadow: var(--shadow-plate); }
+  .plate .pno { font-family: var(--mono); font-size: .72rem; letter-spacing: .14em; color: var(--ink-faint); }
+  .plate h3 { font-family: var(--serif); font-size: 1.22rem; margin: .5rem 0 .5rem; line-height: 1.22; }
+  .plate p { font-size: .88rem; color: var(--ink-soft); line-height: 1.5; margin: 0; }
+  .plate .spectrum { display: flex; height: 4px; border-radius: 2px; overflow: hidden; margin-bottom: 1rem; }
+  .plate .spectrum i { display: block; height: 100%; }
+  .plate .go { margin-top: 1rem; font-family: var(--mono); font-size: .7rem; letter-spacing: .1em; color: var(--structure); opacity: 0; transform: translateX(-4px); transition: .2s var(--ease); }
+  .plate:hover .go { opacity: 1; transform: translateX(0); }
+  .group-label { display: inline-block; margin: 2.4rem 1.4rem 0; padding: .3rem .9rem; font-family: var(--mono); font-size: .68rem; letter-spacing: .18em; color: var(--ink-faint); border: 1px solid var(--line); border-radius: 999px; }
+  footer.colophon { max-width: var(--measure); margin: 3rem auto 4rem; padding: 2rem 1.4rem 0; border-top: 1px solid var(--line); font-size: .85rem; color: var(--ink-soft); }
+  .back-link { display: inline-block; margin: 1rem 1.4rem 0; font-family: var(--mono); font-size: .76rem; color: var(--ink-soft); text-decoration: none; }
+  .back-link:hover { color: var(--ink); }
+</style>
+</head>
+<body>
+
+<a href="../index.html" class="back-link">← 표지로 (6장 전체)</a>
+
+<header class="masthead">
+  <div class="hero-wrap">
+    <div class="hero-chips">
+      <span class="hero-chip">서브시스템 분해</span>
+      <span class="hero-chip">응집 · 결합</span>
+      <span class="hero-chip">모델 → 코드</span>
+    </div>
+    <div class="hero-cap">시스템 · 객체 설계 — 큰 덩어리로 나누고 모델을 코드로 옮긴다</div>
+  </div>
+</header>
+
+<div class="title-block">
+  <span class="kicker">Chapter 05 · 시스템 · 객체 설계</span>
+  <h1>큰 덩어리로 나누고<br><em>모델을 코드로</em></h1>
+  <div class="paper-meta">
+    <span><b>분석에서 구현으로 넘어가는 다리</b></span>
+    <span>구성 <b>2 sub-chapter</b></span>
+    <span>범위 <b>System Design · Object Design</b></span>
+  </div>
+</div>
+
+<section class="intro-block">
+  <h2>이 장을 왜 읽는가</h2>
+  <p>패턴이 작은 구조의 재사용이라면, 이 장은 <strong>전체 시스템 분해와 모델에서 코드로의 매핑</strong>을 다룬다. 앞 장들의 디자인 패턴은 "이미 클래스 단위로 쪼개진 작은 구조를 어떻게 변경에 강하게 짤 것인가"에 집중했다. 그러나 그 작은 구조들이 자리잡으려면, 먼저 시스템 전체가 응집도 높고 결합도 낮은 서브시스템으로 나뉘어 있어야 하고, 분석 단계의 추상 모델이 실제로 컴파일되고 실행되는 코드로 옮겨져야 한다.</p>
+  <p>두 단계는 책임의 크기로 갈린다. <strong>시스템 설계(System Design)</strong>는 분석(무엇을)에서 구현(어떻게)으로 넘어가는 다리로, 시스템을 큰 덩어리(서브시스템)로 나누고 아키텍처 스타일과 설계 목표를 결정한다. <strong>객체 설계(Object Design)</strong>는 그 안에서 분석 객체 모델을 연관, 계약, 인터페이스, 최적화의 네 작업으로 실제 코드에 매핑한다. 바로 이 객체 설계 단계에서 앞 장의 디자인 패턴이 투입된다.</p>
+</section>
+
+<span class="group-label">PART · 설계의 두 층위</span>
+<section class="plates" id="subs"></section>
+
+<footer class="colophon">
+  <p>이 챕터는 시스템 설계(ch6)와 객체 설계(ch8) 강의를 바탕으로, 패턴이 어느 단계에 어떻게 투입되는지를 연결한다. 두 sub-chapter는 <em>"정의보다 왜"</em>를 먼저 다룬다.</p>
+</footer>
+
+<script>
+const SUBS = [
+  { no:'01', t:'시스템 설계 (System Design)', d:'분석에서 구현으로 넘어가는 다리. 서브시스템을 응집도 높고 결합도 낮게 분해하고, 계층 대 분할, 아키텍처 스타일, 설계 목표의 트레이드오프를 결정한다.', sp:['structure-lo','structure'] },
+  { no:'02', t:'객체 설계 (Object Design)', d:'분석 객체 모델을 코드로 매핑하는 네 작업: 연관 구현, 계약 구현, 인터페이스 명세, 객체 모델 최적화. 이 단계에서 디자인 패턴이 투입된다.', sp:['structure','synth'] },
+];
+const colMap = { structure:'var(--structure)', 'structure-lo':'var(--structure-lo)', style:'var(--style)', 'style-lo':'var(--style-lo)', synth:'var(--synth)', ink:'var(--ink)', 'ink-soft':'var(--ink-soft)', 'ink-faint':'var(--ink-faint)' };
+const host = document.getElementById('subs');
+SUBS.forEach(s => {
+  const sp = s.sp.length === 1 ? [s.sp[0], s.sp[0]] : s.sp;
+  const a = document.createElement('a');
+  a.className = 'plate';
+  a.href = s.no + '.html';
+  a.innerHTML = `
+    <div class="spectrum">${sp.map(c=>`<i style="flex:1;background:${colMap[c]}"></i>`).join('')}</div>
+    <span class="pno">SUB-CHAPTER ${s.no}</span>
+    <h3>${s.t}</h3>
+    <p>${s.d}</p>
+    <span class="go">읽기 →</span>`;
+  host.appendChild(a);
+});
+</script>
+</body>
+</html>

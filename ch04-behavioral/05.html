@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>05 · 템플릿 메서드 패턴 — Chapter 4</title>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<div class="scroll-progress"></div>
+<div class="topbar"></div>
+
+<div class="ch-layout">
+  <aside class="ch-nav"><nav><ol></ol></nav></aside>
+  <main class="ch-main">
+
+    <header class="ch-head">
+      <span class="kicker">Sub-Chapter 05 · 행위 패턴</span>
+      <h1>템플릿 메서드 패턴,<br><span class="t-style">골격은 두고 단계만 바꾼다</span></h1>
+      <p class="lede">큰 흐름은 똑같은데 중간의 몇 단계만 다른 절차가 있다. 음료 끓이기, 데이터 처리 파이프라인, 게임 루프. 템플릿 메서드는 변하지 않는 골격을 상위 클래스에 한 번 적고, 변하는 단계만 하위 클래스가 채우게 한다.</p>
+    </header>
+
+    <div class="prose">
+      <p>템플릿 메서드 패턴(Template Method Pattern)의 의도는 이렇다. <strong>알고리즘의 뼈대(골격)를 상위 클래스의 한 메서드에 정의하고, 그 알고리즘의 일부 단계 구현은 서브클래스로 미룬다. 알고리즘의 구조는 그대로 유지한 채, 특정 단계만 서브클래스가 재정의하게 한다.</strong> 핵심은 "변하지 않는 전체 흐름"과 "흐름 안에서 달라지는 개별 단계"를 분리하되, <em>흐름의 통제권은 상위 클래스가 끝까지 쥐고</em> 있다는 점이다. 하위 클래스는 흐름 자체를 바꿀 수 없고, 흐름이 호출하는 빈칸만 채운다.</p>
+
+      <p>왜 필요한가? 여러 절차가 큰 줄기는 같고 세부 단계만 다른 경우가 자주 있다. 커피와 홍차를 끓이는 절차를 보자. 둘 다 "물을 끓이고 → 우려내고 → 잔에 붓고 → 첨가물을 넣는다"는 흐름은 같다. 다른 것은 우려내는 방식(커피는 필터로 내림, 홍차는 티백을 담금)과 첨가물(커피는 설탕/우유, 홍차는 레몬)뿐이다. 만약 커피 클래스와 홍차 클래스에 전체 절차를 각각 통째로 적으면, "물 끓이고 붓는" 공통 부분이 두 곳에 중복된다. 흐름을 바꿀 일이 생기면 양쪽을 똑같이 고쳐야 하고, 한쪽을 빠뜨리면 절차가 어긋난다. 템플릿 메서드는 공통 흐름을 상위에 한 번만 적어 <strong>중복을 제거</strong>하고, <strong>흐름을 한 곳에서 통제</strong>한다.</p>
+
+      <div class="analogy">
+        <b>입사지원서 양식.</b> 회사가 정한 지원서 양식에는 "이름 → 학력 → 경력 → 자기소개 → 서명" 순서가 고정되어 있다. 지원자(서브클래스)는 이 순서나 항목 구성을 마음대로 바꿀 수 없다 — 정해진 칸을 자기 내용으로 채울 뿐이다. 양식(상위 클래스의 템플릿 메서드)이 전체 구조를 통제하고, 각 칸의 내용(가변 단계)만 지원자가 다르게 적는다. 어떤 칸은 선택사항이라 비워 둘 수도 있는데(훅 메서드), 그래도 양식의 흐름 자체는 변하지 않는다. 템플릿 메서드가 정확히 이 구조다.
+      </div>
+
+      <h2>구조 — 상위가 흐름을, 하위가 단계를</h2>
+      <p>구조는 상속 한 축으로 이뤄진다. <code>AbstractClass</code>가 핵심이다. 여기에 알고리즘의 골격을 담은 <code>templateMethod()</code>가 있는데, 이 메서드는 보통 <strong><code>final</code>로 선언</strong>해 하위가 흐름을 바꾸지 못하게 막는다. <code>templateMethod()</code> 내부는 여러 단계를 정해진 순서로 호출하는데, 그 단계 중 변하는 것들은 추상 메서드(<code>primitiveOp1()</code>, <code>primitiveOp2()</code>)로 선언만 해 둔다. <code>ConcreteClass</code>는 그 추상 단계들을 오버라이드해 자기만의 구현을 채운다.</p>
+
+      <p>여기에 한 가지 장치가 더 있다. <strong>훅(hook) 메서드</strong>다. 훅은 상위 클래스에 기본 구현(보통 아무 일도 안 하거나 단순 기본값)을 가진 메서드로, 하위가 <em>필요하면</em> 재정의할 수 있는 선택적 단계다. 예컨대 "고객이 첨가물을 원하는가?"를 묻는 <code>customerWantsCondiments()</code> 훅을 두면, 흐름은 이 훅의 반환값에 따라 첨가 단계를 건너뛸 수 있다. 추상 메서드는 "반드시 채워야 하는 빈칸"이고, 훅은 "원하면 끼어들 수 있는 선택지"라는 점에서 갈린다.</p>
+    </div>
+
+    <div class="widget">
+      <div class="widget-frame">
+        <div class="widget-label"><span class="lab-no">UML 05</span><span>템플릿 메서드 클래스 다이어그램 · 상위가 흐름, 하위가 단계</span></div>
+        <pre class="mermaid">
+classDiagram
+    class AbstractClass {
+        +templateMethod() final
+        #primitiveOp1()
+        #primitiveOp2()
+        +hook()
+    }
+    class ConcreteClassA {
+        #primitiveOp1()
+        #primitiveOp2()
+    }
+    class ConcreteClassB {
+        #primitiveOp1()
+        #primitiveOp2()
+        +hook()
+    }
+    AbstractClass &lt;|-- ConcreteClassA
+    AbstractClass &lt;|-- ConcreteClassB
+        </pre>
+      </div>
+      <p class="widget-cap">templateMethod()는 AbstractClass에 한 번만 정의되고(final로 흐름 고정), 그 안에서 추상 단계 primitiveOp들을 정해진 순서로 호출한다. 실선 삼각 화살표(일반화, &lt;|--)는 상속이다 — 합성이 아니라 상속이 이 패턴의 뼈대라는 점이 옵서버/스트래티지와 결정적으로 다르다. ConcreteClassB는 선택적 단계인 hook()까지 재정의한 경우다.</p>
+    </div>
+
+    <div class="prose">
+      <h2>참여자와 협력</h2>
+      <p><strong>AbstractClass</strong>는 알고리즘의 골격인 <code>templateMethod()</code>와, 그 골격이 호출하는 추상 기본 단계(<code>primitiveOp</code>) 및 훅을 선언한다. <strong>ConcreteClass</strong>는 추상 단계를 자기 방식으로 구현해 알고리즘의 가변 부분을 채운다. 협력은 단순하면서도 방향이 독특하다 — 클라이언트가 <code>ConcreteClass</code>의 <code>templateMethod()</code>를 호출하면, 그 메서드는 <strong>상위 클래스에 정의된 흐름</strong>을 따라 진행하다가, 가변 단계에 이르면 <strong>하위 클래스가 오버라이드한 구현</strong>을 호출한다. 즉 제어의 주체는 어디까지나 상위의 흐름이고, 하위는 그 흐름이 부를 때만 등장한다.</p>
+
+      <h3>할리우드 원칙 — "Don't call us, we'll call you"</h3>
+      <p>이 제어 방향을 압축한 격언이 <strong>할리우드 원칙(Hollywood Principle)</strong>이다. "우리에게 전화하지 마라, 우리가 너에게 전화하겠다." 오디션을 본 배우가 제작사에 자꾸 전화를 거는 게 아니라, 제작사가 필요할 때 배우를 부르는 것이다. 템플릿 메서드에서 하위 클래스는 상위의 흐름을 호출하지 않는다 — 거꾸로 상위의 <code>templateMethod()</code>가 필요한 시점에 하위의 단계를 호출한다. 저수준 구성요소(하위 단계)가 고수준 흐름(상위)에 끼어드는 게 아니라, 고수준이 저수준을 부르는 이 방향이 의존성을 한쪽으로 정리해 결합을 낮춘다.</p>
+
+      <h2>코드 — 공통 흐름을 한 번만 적기</h2>
+      <p>음료 끓이기를 코드로 보자. 공통 흐름은 상위 <code>Beverage</code>에 한 번 적고, 우려내기와 첨가물만 하위가 채운다. 첨가물 단계는 훅으로 건너뛸 수 있게 한다.</p>
+    </div>
+
+    <div class="widget">
+      <div class="widget-frame">
+        <div class="widget-label"><span class="lab-no">CODE 05</span><span>음료 끓이기 템플릿 메서드 (골격 고정 + 훅)</span></div>
+        <pre class="code"><code>abstract class Beverage {
+    // 알고리즘 골격 — final로 흐름을 못 바꾸게 고정
+    public final void prepare() {
+        boilWater();                       // 공통 단계
+        brew();                            // 가변 단계 (추상)
+        pourInCup();                       // 공통 단계
+        if (customerWantsCondiments()) {   // 훅으로 분기
+            addCondiments();               // 가변 단계 (추상)
+        }
+    }
+
+    private void boilWater() { System.out.println("물을 끓인다"); }
+    private void pourInCup() { System.out.println("잔에 붓는다"); }
+
+    protected abstract void brew();          // 반드시 채워야 하는 빈칸
+    protected abstract void addCondiments();
+
+    // 훅 — 기본은 true, 하위가 원하면 재정의
+    protected boolean customerWantsCondiments() { return true; }
+}
+
+class Coffee extends Beverage {
+    protected void brew() { System.out.println("필터로 커피를 내린다"); }
+    protected void addCondiments() { System.out.println("설탕과 우유를 넣는다"); }
+}
+
+class Tea extends Beverage {
+    protected void brew() { System.out.println("티백을 우린다"); }
+    protected void addCondiments() { System.out.println("레몬을 넣는다"); }
+    // 훅 재정의 — 이 차는 첨가물을 넣지 않는다
+    protected boolean customerWantsCondiments() { return false; }
+}
+
+// 사용 — 흐름은 상위가, 단계는 하위가
+new Coffee().prepare();   // 물끓임 -> 내림 -> 부음 -> 설탕/우유
+new Tea().prepare();      // 물끓임 -> 우림 -> 부음 (첨가물 생략)</code></pre>
+      </div>
+      <p class="widget-cap">prepare()의 흐름은 Beverage에 단 한 번 적혀 있고, Coffee와 Tea는 brew()와 addCondiments()라는 빈칸만 다르게 채운다. 공통 단계(물 끓이기, 붓기)는 중복 없이 상위에 모여 있다. Tea는 훅을 false로 재정의해 첨가 단계를 통째로 건너뛴다 — 흐름 자체는 손대지 않은 채로.</p>
+    </div>
+
+    <div class="prose">
+      <h2>결과 — 무엇을 얻고 무엇을 치르는가</h2>
+      <div class="pattern-card">
+        <div class="pc"><h5>참여자</h5><p>AbstractClass(templateMethod 골격 + 추상 단계 + 훅), ConcreteClass(가변 단계 구현)</p></div>
+        <div class="pc"><h5>장점</h5><p>공통 흐름 중복 제거, 흐름을 한 곳에서 통제, 가변 단계만 확장, 할리우드 원칙으로 제어 역전</p></div>
+        <div class="pc"><h5>단점</h5><p>상속 기반이라 컴파일 시점에 고정, 단계가 많아지면 추적 어려움, 흐름 변경 시 상위 수정 필요</p></div>
+      </div>
+
+      <h2>Template Method vs Strategy — 같은 목표, 다른 수단</h2>
+      <p>둘 다 "변하는 부분만 분리한다"는 목표를 공유한다. 그래서 헷갈린다. 그러나 <em>분리하는 수단</em>이 정반대다. 템플릿 메서드는 <strong>상속</strong>으로 가변 단계를 하위 클래스에 미루고, 스트래티지는 <strong>합성</strong>으로 알고리즘 객체를 주입한다. 이 차이가 "언제 결정되는가"와 "얼마나 바꿀 수 있는가"를 가른다.</p>
+
+      <table class="cmp-table">
+        <thead>
+          <tr><th>비교 축</th><th>템플릿 메서드 (상속)</th><th>스트래티지 (합성)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>분리 수단</td><td><b>상속</b> — 가변 단계를 서브클래스가 오버라이드</td><td><b>합성</b> — 알고리즘을 객체로 주입(위임)</td></tr>
+          <tr><td>결정 시점</td><td>컴파일 시점 고정 (어떤 하위 클래스를 쓸지 정해짐)</td><td>런타임 교체 (전략 필드를 갈아끼움)</td></tr>
+          <tr><td>변하는 단위</td><td>알고리즘 안의 <b>일부 단계</b>만 다름</td><td><b>알고리즘 전체</b>를 통째로 교체</td></tr>
+          <tr><td>흐름 통제</td><td>상위 클래스가 전체 흐름을 끝까지 쥠</td><td>Context가 위임만, 흐름은 단순</td></tr>
+          <tr><td>제어 방향</td><td>할리우드 원칙(상위가 하위를 부름)</td><td>클라이언트가 전략을 골라 주입</td></tr>
+          <tr><td>한 줄</td><td>"흐름은 고정, 단계만 오버라이드"</td><td>"행위 전체를 갈아끼움"</td></tr>
+        </tbody>
+      </table>
+      <p>이 표는 빠른 회상용이고, 결정적 직관은 이렇다 — <strong>한 알고리즘의 골격은 그대로 두고 빈칸 몇 개만 바꾸고 싶으면 템플릿 메서드, 알고리즘 자체를 통째로 다른 것으로 런타임에 바꾸고 싶으면 스트래티지</strong>다. "상속보다 합성"이라는 원칙 때문에 유연성은 스트래티지가 높지만, 흐름의 중복을 한곳에 모으고 통제하는 힘은 템플릿 메서드가 강하다.</p>
+
+      <div class="trap">
+        <b>시험 함정.</b> ① <strong>할리우드 원칙</strong>("Don't call us, we'll call you")이 키워드다 — 하위가 상위를 부르는 게 아니라 상위 흐름이 하위 단계를 부른다(제어 역전). ② <code>templateMethod()</code>는 보통 <code>final</code>로 두어 흐름을 못 바꾸게 한다. ③ <strong>추상 단계 vs 훅</strong> 구분 — 추상 단계는 반드시 채워야 하고, 훅은 기본 구현이 있어 선택적으로 재정의한다. ④ 최빈출은 <strong>Template Method(상속·컴파일 고정) vs Strategy(합성·런타임 교체)</strong> 비교다.
+      </div>
+
+      <h2>다음으로 — 흐름의 분리에서 순회의 분리로</h2>
+      <p>템플릿 메서드는 알고리즘의 골격을 상속으로 고정하고 단계만 바꿨다. 분리한 것은 <em>알고리즘의 가변 단계</em>다. 마지막 sub-chapter의 <strong>이터레이터 패턴(Iterator Pattern)</strong>은 또 다른 책임을 떼어 낸다 — 컬렉션의 <em>순회 책임</em>이다. 데이터를 담는 일과 그것을 하나씩 훑는 일을 별도 객체로 나눠, 컬렉션의 내부 구조를 감춘 채 순차 접근하게 만든다. 변하는 부분을 분리한다는 행위 패턴의 큰 그림이 순회라는 마지막 책임에서 어떻게 마무리되는지 이어서 보자.</p>
+    </div>
+
+    <nav class="ch-foot"></nav>
+  </main>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', themeVariables: { fontFamily: 'inherit' } });
+</script>
+<script>
+const SUBS = [
+  { no:'01', t:'스트래티지 (Strategy)' },
+  { no:'02', t:'스테이트 (State)' },
+  { no:'03', t:'커맨드 (Command)' },
+  { no:'04', t:'옵서버 (Observer)' },
+  { no:'05', t:'템플릿 메서드 (Template Method)' },
+  { no:'06', t:'이터레이터 (Iterator)' },
+];
+function buildNav(cur) {
+  const ol = document.querySelector('.ch-nav ol');
+  ol.innerHTML = SUBS.map(s => `<li><a href="${s.no}.html"${s.no===cur?' class="current"':''}>${s.t}</a></li>`).join('');
+  const tb = document.querySelector('.topbar');
+  tb.innerHTML = `<a class="home" href="index.html">← Ch.04 표지</a><span class="ch-mini">SUB ${cur} / ${String(SUBS.length).padStart(2,'0')}</span>`;
+  const i = SUBS.findIndex(s => s.no === cur);
+  const prev = i > 0 ? SUBS[i-1] : { no:'', t:'챕터 표지로' };
+  const next = i < SUBS.length-1 ? SUBS[i+1] : { no:'', t:'챕터 표지로' };
+  const prevHref = prev.no ? prev.no+'.html' : 'index.html';
+  const nextHref = next.no ? next.no+'.html' : 'index.html';
+  document.querySelector('.ch-foot').innerHTML =
+    `<a href="${prevHref}"><div class="dir">← 이전</div><div class="ti">${prev.t}</div></a>` +
+    `<a href="${nextHref}" class="next"><div class="dir">다음 →</div><div class="ti">${next.t}</div></a>`;
+}
+function progressBar() {
+  const bar = document.querySelector('.scroll-progress');
+  document.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max>0 ? (h.scrollTop/max)*100 : 0) + '%';
+  }, { passive: true });
+}
+window.addEventListener('load', () => { buildNav('05'); progressBar(); });
+</script>
+</body>
+</html>

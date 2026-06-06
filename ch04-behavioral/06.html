@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>06 · 이터레이터 패턴 — Chapter 4</title>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<div class="scroll-progress"></div>
+<div class="topbar"></div>
+
+<div class="ch-layout">
+  <aside class="ch-nav"><nav><ol></ol></nav></aside>
+  <main class="ch-main">
+
+    <header class="ch-head">
+      <span class="kicker">Sub-Chapter 06 · 행위 패턴</span>
+      <h1>이터레이터 패턴,<br><span class="t-style">내부를 모른 채 하나씩 훑는다</span></h1>
+      <p class="lede">리스트든 배열이든 트리든, "처음부터 끝까지 하나씩" 훑는 일은 똑같이 하고 싶다. 그러나 내부 구조는 제각각이다. 이터레이터는 순회 책임을 별도 객체로 떼어 내, 컬렉션의 속을 드러내지 않고도 순차 접근하게 만든다.</p>
+    </header>
+
+    <div class="prose">
+      <p>이터레이터 패턴(Iterator Pattern)의 의도는 이렇다. <strong>집합 객체(컬렉션, aggregate)의 내부 표현을 노출하지 않고, 그 원소들에 순차적으로 접근하는 방법을 제공한다.</strong> 핵심은 "데이터를 어떻게 저장하는가"와 "데이터를 어떻게 훑는가"를 분리하는 것이다. 컬렉션은 원소를 보관하는 책임만 지고, 그것을 처음부터 끝까지 하나씩 방문하는 책임은 별도의 <em>반복자(iterator)</em> 객체가 진다. 그래서 클라이언트는 컬렉션이 배열인지 연결 리스트인지 해시 테이블인지 전혀 모른 채, 통일된 방식으로 순회할 수 있다.</p>
+
+      <p>왜 필요한가? 컬렉션마다 내부 구조가 다르면 순회 방법도 제각각이 된다. 배열이면 인덱스로 <code>arr[i]</code>를 훑고, 연결 리스트면 노드의 <code>next</code> 포인터를 따라가며, 트리면 깊이 우선이나 너비 우선으로 돌아야 한다. 만약 클라이언트가 이 차이를 직접 알아야 한다면, 컬렉션의 내부 구현이 코드에 새어 나오고(캡슐화 붕괴), 컬렉션 구조를 바꾸는 순간 그것을 순회하던 모든 코드가 깨진다. 게다가 컬렉션 클래스 자신이 순회 메서드까지 떠안으면, 한 클래스가 "저장"과 "순회"라는 두 책임을 동시에 지게 된다. 이터레이터는 순회 책임을 밖으로 빼내 <strong>단일 책임 원칙(SRP, Single Responsibility Principle)</strong>을 지키고, 내부 표현을 감춰 클라이언트를 구현 변화로부터 보호한다.</p>
+
+      <div class="analogy">
+        <b>박물관의 오디오 가이드.</b> 박물관(컬렉션)에는 전시품이 어떤 순서로, 어떤 동선으로 배치되어 있는지 복잡한 내부 사정이 있다. 관람객(클라이언트)은 그 배치 구조를 알 필요가 없다 — 오디오 가이드 기기(반복자)를 들고 "다음" 버튼만 누르면 된다. 기기는 지금 몇 번째 전시품 앞인지(현재 위치)를 스스로 기억하고, "다음 전시품이 있는가(hasNext)", "그 전시품 설명(next)"을 알려 준다. 관람객 두 명이 각자 기기를 들면 서로 다른 속도로 따로 돌 수 있다(다중 순회). 박물관은 전시만 책임지고, 동선 안내는 기기가 책임진다. 이터레이터가 정확히 이 구조다.
+      </div>
+
+      <h2>구조 — 컬렉션은 저장, 반복자는 순회</h2>
+      <p>구조는 두 역할로 나뉜다. <code>Aggregate</code>(집합 인터페이스)는 자신을 순회할 반복자를 만들어 주는 <code>createIterator()</code>를 선언한다. <code>Iterator</code>(반복자 인터페이스)는 순회의 두 동작인 <code>hasNext()</code>(다음 원소가 남았는가)와 <code>next()</code>(다음 원소를 돌려주고 위치를 한 칸 전진)를 선언한다. 구체 컬렉션(<code>ConcreteAggregate</code>)은 자기 내부 구조에 맞는 구체 반복자(<code>ConcreteIterator</code>)를 만들어 돌려준다.</p>
+
+      <p>결정적인 점은 <strong>순회 상태(현재 위치)를 컬렉션이 아니라 반복자가 들고 다닌다</strong>는 것이다. 컬렉션 자체에 "현재 위치" 필드를 두면, 같은 컬렉션을 동시에 두 번 순회할 수 없다 — 위치가 하나뿐이라 서로 덮어쓰기 때문이다. 반복자에 위치를 두면, 같은 컬렉션에 대해 반복자를 여러 개 만들어 각자 독립적으로 순회할 수 있다(다중 순회). 자바의 <code>Iterator</code> 인터페이스와 <code>for-each</code> 문이 바로 이 패턴의 구현이며, <code>for-each</code>는 내부적으로 <code>iterator()</code>를 호출해 <code>hasNext()</code>/<code>next()</code>로 도는 문법 설탕이다.</p>
+    </div>
+
+    <div class="widget">
+      <div class="widget-frame">
+        <div class="widget-label"><span class="lab-no">UML 06</span><span>이터레이터 클래스 다이어그램 · 순회 책임을 반복자로 분리</span></div>
+        <pre class="mermaid">
+classDiagram
+    class Aggregate {
+        +createIterator() Iterator
+    }
+    class Iterator {
+        +hasNext() boolean
+        +next() Object
+    }
+    class ConcreteAggregate {
+        +createIterator() Iterator
+    }
+    class ConcreteIterator {
+        -position
+        +hasNext() boolean
+        +next() Object
+    }
+    Aggregate &lt;|.. ConcreteAggregate
+    Iterator &lt;|.. ConcreteIterator
+    Aggregate ..&gt; Iterator : 생성
+    ConcreteIterator --&gt; ConcreteAggregate : 원소 접근
+        </pre>
+      </div>
+      <p class="widget-cap">컬렉션은 createIterator()로 자기에게 맞는 반복자를 만들고(..> 생성 의존), 반복자가 position 필드로 현재 위치를 들고 다니며 hasNext()/next()로 순회한다. 점선 화살표(실현)는 구체 클래스가 인터페이스를 구현함을 나타낸다. 위치가 반복자에 있으므로 같은 컬렉션에 반복자를 여러 개 만들어 동시에 순회할 수 있다.</p>
+    </div>
+
+    <div class="prose">
+      <h2>참여자와 협력</h2>
+      <p><strong>Iterator</strong>는 순회 인터페이스(<code>hasNext()</code>, <code>next()</code>)를 선언한다. <strong>ConcreteIterator</strong>는 그 인터페이스를 특정 컬렉션 구조에 맞게 구현하고, 순회 중 현재 위치를 추적한다. <strong>Aggregate</strong>는 반복자를 만드는 <code>createIterator()</code>를 선언하고, <strong>ConcreteAggregate</strong>는 자기 구조를 순회하는 구체 반복자를 만들어 돌려준다.</p>
+
+      <p>협력의 흐름은 이렇다. 클라이언트가 컬렉션에 <code>createIterator()</code>를 요청하면, 컬렉션은 자기 내부에 접근할 수 있는 구체 반복자를 만들어 건넨다. 이후 클라이언트는 컬렉션의 내부를 전혀 들여다보지 않고, 오직 반복자의 <code>hasNext()</code>로 남은 원소가 있는지 확인하고 <code>next()</code>로 하나씩 꺼낸다. 컬렉션의 내부 구조가 배열에서 연결 리스트로 바뀌어도, <code>createIterator()</code>가 그에 맞는 반복자를 돌려주는 한 클라이언트 코드는 한 글자도 바뀌지 않는다. 이것이 "내부 표현을 감춘다"의 실질적 이득이다.</p>
+
+      <h2>코드 — hasNext/next로 통일된 순회</h2>
+      <p>이름 컬렉션을 예로 보자. 내부가 배열이지만, 클라이언트는 그것을 모른 채 반복자로만 순회한다. 위치(<code>position</code>)는 반복자가 들고 있어, 반복자를 두 개 만들면 따로 돌 수 있다.</p>
+    </div>
+
+    <div class="widget">
+      <div class="widget-frame">
+        <div class="widget-label"><span class="lab-no">CODE 06</span><span>이름 컬렉션 이터레이터 (내부 표현 은닉)</span></div>
+        <pre class="code"><code>// 반복자 인터페이스 — 순회의 두 동작만
+interface Iterator&lt;T&gt; {
+    boolean hasNext();
+    T next();
+}
+
+// 집합 인터페이스 — 반복자를 만들어 준다
+interface Aggregate&lt;T&gt; {
+    Iterator&lt;T&gt; createIterator();
+}
+
+// 구체 컬렉션 — 내부는 배열이지만 밖으로 드러내지 않는다
+class NameRepository implements Aggregate&lt;String&gt; {
+    private final String[] names = { "정욱", "희원", "의성" };
+
+    public Iterator&lt;String&gt; createIterator() {
+        return new NameIterator();           // 자기에게 맞는 반복자 생성
+    }
+
+    // 내부 클래스 반복자 — 현재 위치를 스스로 들고 다닌다
+    private class NameIterator implements Iterator&lt;String&gt; {
+        private int position = 0;            // 순회 상태는 반복자에
+        public boolean hasNext() { return position &lt; names.length; }
+        public String next() { return names[position++]; }
+    }
+}
+
+// 사용 — 컬렉션 내부(배열)를 전혀 모른 채 순회
+NameRepository repo = new NameRepository();
+Iterator&lt;String&gt; it = repo.createIterator();
+while (it.hasNext()) {
+    System.out.println(it.next());           // 정욱, 희원, 의성
+
+// 다중 순회 — 반복자를 두 개 만들면 위치가 독립적이다
+Iterator&lt;String&gt; a = repo.createIterator();
+Iterator&lt;String&gt; b = repo.createIterator();
+a.next();          // a는 1칸 전진, b는 그대로 — 서로 간섭 없음
+}</code></pre>
+      </div>
+      <p class="widget-cap">클라이언트는 names가 배열인지 리스트인지 모른다 — hasNext()/next()만 안다. 내부 구조를 연결 리스트로 바꿔도 NameIterator만 그에 맞게 고치면 되고, 사용 코드는 그대로다. position이 반복자 안에 있으므로 반복자 a, b는 서로 다른 위치를 가지며 동시에 따로 순회한다(다중 순회).</p>
+    </div>
+
+    <div class="prose">
+      <h2>결과 — 무엇을 얻고 무엇을 치르는가</h2>
+      <div class="pattern-card">
+        <div class="pc"><h5>참여자</h5><p>Iterator(hasNext/next), ConcreteIterator(위치 추적), Aggregate(createIterator), ConcreteAggregate(반복자 생성)</p></div>
+        <div class="pc"><h5>장점</h5><p>내부 표현 은닉, 순회 알고리즘과 컬렉션의 분리(SRP), 통일된 순회 인터페이스, 다중 순회 동시 진행</p></div>
+        <div class="pc"><h5>단점</h5><p>단순 컬렉션엔 클래스가 늘어 과한 설계, 순회 중 컬렉션 변경 시 동시성/무결성 문제(fail-fast 필요)</p></div>
+      </div>
+
+      <div class="trap">
+        <b>시험 함정.</b> ① 핵심 키워드는 <em>내부 표현을 노출하지 않고 순차 접근</em>이다 — 클라이언트는 컬렉션이 배열인지 리스트인지 모른다. ② <strong>순회 책임의 분리(SRP)</strong> — 컬렉션은 저장, 반복자는 순회로 책임이 갈린다. ③ <strong>다중 순회</strong>가 가능한 이유는 위치(position)를 컬렉션이 아니라 <em>각 반복자가</em> 독립적으로 보유하기 때문이다. ④ 자바의 <code>Iterator</code> 인터페이스와 <code>for-each</code> 문이 이 패턴의 직접 구현이다.
+      </div>
+
+      <h2>행위 패턴을 닫으며</h2>
+      <p>이터레이터로 행위 패턴 여섯 가지를 모두 지났다. 돌아보면 이들은 한 가지 질문에 서로 다른 답을 내놓았다. <strong>"변하기 쉬운 책임을 어디에 두어야 변경에 강한가."</strong> 스트래티지는 교체 가능한 알고리즘을, 스테이트는 상태에 따라 달라지는 행동을, 커맨드는 요청 자체를, 옵서버는 변화의 통보 관계를, 템플릿 메서드는 알고리즘의 가변 단계를, 그리고 이터레이터는 순회 책임을 각각 떼어 냈다. 분리의 대상은 달랐지만 수단은 둘로 수렴한다 — <em>합성과 위임</em>(상속보다 합성)으로 결합을 끊거나, 추상 인터페이스에 의존(<code>OCP</code>, <code>DIP</code>)해 확장에 열고 수정에 닫는 것. 시험에서는 구조가 닮은 쌍(Strategy vs State, Template Method vs Strategy)의 <em>의도 차이</em>를 시나리오로 구분하는 문제가 1순위다. 각 패턴의 "의도 한 문장"을 자기 말로 말할 수 있고, 합성이 들어가는 위치를 손으로 그릴 수 있다면 응용 문제까지 버틸 수 있다.</p>
+    </div>
+
+    <nav class="ch-foot"></nav>
+  </main>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', themeVariables: { fontFamily: 'inherit' } });
+</script>
+<script>
+const SUBS = [
+  { no:'01', t:'스트래티지 (Strategy)' },
+  { no:'02', t:'스테이트 (State)' },
+  { no:'03', t:'커맨드 (Command)' },
+  { no:'04', t:'옵서버 (Observer)' },
+  { no:'05', t:'템플릿 메서드 (Template Method)' },
+  { no:'06', t:'이터레이터 (Iterator)' },
+];
+function buildNav(cur) {
+  const ol = document.querySelector('.ch-nav ol');
+  ol.innerHTML = SUBS.map(s => `<li><a href="${s.no}.html"${s.no===cur?' class="current"':''}>${s.t}</a></li>`).join('');
+  const tb = document.querySelector('.topbar');
+  tb.innerHTML = `<a class="home" href="index.html">← Ch.04 표지</a><span class="ch-mini">SUB ${cur} / ${String(SUBS.length).padStart(2,'0')}</span>`;
+  const i = SUBS.findIndex(s => s.no === cur);
+  const prev = i > 0 ? SUBS[i-1] : { no:'', t:'챕터 표지로' };
+  const next = i < SUBS.length-1 ? SUBS[i+1] : { no:'', t:'챕터 표지로' };
+  const prevHref = prev.no ? prev.no+'.html' : 'index.html';
+  const nextHref = next.no ? next.no+'.html' : 'index.html';
+  document.querySelector('.ch-foot').innerHTML =
+    `<a href="${prevHref}"><div class="dir">← 이전</div><div class="ti">${prev.t}</div></a>` +
+    `<a href="${nextHref}" class="next"><div class="dir">다음 →</div><div class="ti">${next.t}</div></a>`;
+}
+function progressBar() {
+  const bar = document.querySelector('.scroll-progress');
+  document.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max>0 ? (h.scrollTop/max)*100 : 0) + '%';
+  }, { passive: true });
+}
+window.addEventListener('load', () => { buildNav('06'); progressBar(); });
+</script>
+</body>
+</html>

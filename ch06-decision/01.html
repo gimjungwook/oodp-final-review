@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>01 · 패턴 선택 의사결정 — Chapter 6</title>
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+  .pattern-card { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: .8rem; margin: 1.4rem 0; }
+  .pc { background: var(--paper-2); border: 1px solid var(--line-soft); border-radius: 10px; padding: .9rem 1rem; }
+  .pc h5 { margin: 0 0 .35rem; font-family: var(--mono); font-size: .68rem; letter-spacing: .1em; color: var(--ink-faint); text-transform: uppercase; }
+  .pc p { margin: 0; font-size: .9rem; color: var(--ink); line-height: 1.5; }
+  .mermaid { display: flex; justify-content: center; padding: 1.2rem .8rem; background: #fff; }
+  .trap { border-left: 3px solid var(--style); background: var(--style-bg); border-radius: 0 10px 10px 0; padding: 1rem 1.2rem; margin: 1.4rem 0; }
+  .trap b { color: var(--style); }
+</style>
+</head>
+<body>
+<div class="scroll-progress"></div>
+<div class="topbar"></div>
+
+<div class="ch-layout">
+  <aside class="ch-nav"><nav><ol></ol></nav></aside>
+  <main class="ch-main">
+
+    <header class="ch-head">
+      <span class="kicker">Sub-Chapter 01 · 패턴 선택 의사결정</span>
+      <h1>패턴 선택,<br><span class="t-style">무엇이 문제인가부터</span></h1>
+      <p class="lede">패턴은 정의를 외운다고 고를 수 있는 게 아니다. 구조가 비슷한 패턴들 사이에서 길을 찾으려면 "무엇이 문제인가"라는 첫 질문에서 시작해 후보를 좁혀가야 한다.</p>
+    </header>
+
+    <div class="prose">
+      <p>시험에서 가장 까다로운 문제는 "다음 시나리오에 가장 적합한 패턴은?"이다. 정의를 줄줄 외워도 이런 문제 앞에서 흔들리는 이유는, 많은 패턴이 클래스 다이어그램상 거의 같은 모양을 하고 있기 때문이다. 전략(Strategy)과 상태(State)는 구조가 사실상 동일하고, 데커레이터(Decorator)와 컴포지트(Composite)는 둘 다 자기 자신을 재귀로 품는다. 겉모습으로는 구별되지 않는다. <strong>구별의 열쇠는 "이 패턴이 어떤 문제를 풀려고 태어났는가"라는 의도(intent)다.</strong></p>
+
+      <p>그래서 패턴 선택은 항상 한 가지 질문에서 출발한다. <strong>무엇이 문제인가.</strong> 객체를 <em>만드는</em> 일이 문제인가(생성), 객체들을 <em>조립하는</em> 일이 문제인가(구조), 객체들이 <em>협력하는</em> 방식이 문제인가(행위). 이 세 갈래가 GoF 분류의 뼈대이고, 동시에 후보를 1차로 좁히는 가장 큰 분기다. 아래 의사결정 흐름은 이 첫 질문에서 시작해 개별 패턴까지 내려간다.</p>
+
+      <div class="analogy">
+        <b>병원의 분류(트리아지).</b> 응급실에 환자가 오면 의사는 곧장 병명을 맞히지 않는다. 먼저 "어느 계통의 문제인가"(호흡기, 순환기, 소화기)를 가른 뒤, 그 안에서 증상을 좁혀 진단에 이른다. 패턴 선택도 같다. "생성, 구조, 행위 중 어디의 문제인가"로 먼저 크게 가르고, 그 갈래 안의 세부 질문으로 한 패턴까지 좁혀 내려간다. 첫 갈래를 틀리면 진단 전체가 어긋난다.
+      </div>
+
+      <h2>패턴 선택 의사결정 흐름</h2>
+      <p>아래 다이어그램이 전체 의사결정 흐름이다. 맨 위 "무엇이 문제인가"에서 세 갈래로 갈리고, 각 갈래 안에서 추가 질문에 따라 개별 패턴으로 내려간다. 다이어그램 아래의 산문이 각 분기의 "왜"를 설명한다.</p>
+    </div>
+
+    <div class="widget">
+      <div class="widget-frame">
+        <div class="widget-label"><span class="lab-no">DIAGRAM 01</span><span>시나리오에서 패턴까지 — 종합 의사결정 흐름</span></div>
+        <pre class="mermaid">
+flowchart TD
+    Q0{무엇이 문제인가}
+    Q0 --> G[객체 생성이 문제]
+    Q0 --> St[구조 조립이 문제]
+    Q0 --> Be[행위 협력이 문제]
+
+    G --> G1{인스턴스 하나만}
+    G1 -->|예| Singleton
+    G --> G2{생성을 서브클래스가 결정}
+    G2 -->|단일 제품| FactoryMethod
+    G2 -->|제품군 전체| AbstractFactory
+
+    St --> S1{인터페이스 불일치 변환}
+    S1 -->|예| Adapter
+    St --> S2{기능을 동적으로 덧붙임}
+    S2 -->|예| Decorator
+    St --> S3{전체-부분 트리를 동일하게}
+    S3 -->|예| Composite
+
+    Be --> B1{알고리즘을 갈아끼움}
+    B1 -->|외부가 선택| Strategy
+    Be --> B2{상태따라 행동변화 자가전이}
+    B2 -->|예| State
+    Be --> B3{요청을 객체로 undo 큐}
+    B3 -->|예| Command
+    Be --> B4{일대다 자동 통보}
+    B4 -->|예| Observer
+    Be --> B5{흐름은 고정 일부 단계만 다름}
+    B5 -->|상속| TemplateMethod
+    Be --> B6{내부 노출없이 순회}
+    B6 -->|예| Iterator
+        </pre>
+      </div>
+      <p class="widget-cap">맨 위 마름모가 첫 질문이다. 세 갈래(생성 / 구조 / 행위)로 1차 분기한 뒤, 각 갈래 안의 추가 질문(마름모)에 답하며 개별 패턴(직사각형)으로 내려간다. 시험 시나리오를 읽을 때도 이 순서 — 큰 갈래 먼저, 그다음 세부 질문 — 를 따르면 후보가 빠르게 좁혀진다.</p>
+    </div>
+
+    <div class="prose">
+      <h2>갈래 1 — 객체 생성이 문제일 때</h2>
+      <p>시나리오의 통증이 <code>new ConcreteClass()</code>에 묶여 있을 때, 즉 "무엇을 어떻게 만들지"가 문제일 때 생성 갈래로 간다. 여기서 첫 질문은 <strong>"인스턴스가 하나만 존재해야 하는가"</strong>다. 그렇다면 <strong>싱글톤(Singleton)</strong>이다. 생성 횟수 자체를 클래스가 통제해 유일성을 보장한다. 둘째 질문은 <strong>"생성할 구체 클래스의 결정을 서브클래스에 맡길 것인가"</strong>다. 그렇다면 만들 대상이 <em>단일 제품</em>이면 <strong>팩토리 메서드(Factory Method)</strong>, 서로 관련된 <em>제품군 전체</em>를 일관되게 만들어야 하면 <strong>추상 팩토리(Abstract Factory)</strong>다. 이 둘의 구분은 다음 sub-chapter에서 결정적 차이로 다시 다룬다.</p>
+
+      <h2>갈래 2 — 구조 조립이 문제일 때</h2>
+      <p>이미 존재하는 객체들을 어떻게 짜맞춰 더 큰 구조를 만들되 경직되지 않게 둘 것인가가 문제면 구조 갈래로 간다. 세 가지 세부 질문으로 갈린다. <strong>"인터페이스가 맞지 않아 변환이 필요한가"</strong>면 <strong>어댑터(Adapter)</strong> — 호환되지 않는 인터페이스를 클라이언트가 기대하는 형태로 바꿔 협력시킨다. <strong>"같은 인터페이스를 유지한 채 기능을 동적으로 덧붙이고 싶은가"</strong>면 <strong>데커레이터(Decorator)</strong> — 객체를 감싸 책임을 런타임에 더한다. <strong>"전체와 부분을 트리로 모아 동일하게 다루고 싶은가"</strong>면 <strong>컴포지트(Composite)</strong> — 개별 객체와 묶음을 같은 인터페이스로 재귀 순회한다.</p>
+
+      <h2>갈래 3 — 행위 협력이 문제일 때</h2>
+      <p>객체들이 책임을 어떻게 나누고 어떻게 소통하느냐가 문제면 행위 갈래로 간다. 가장 갈래가 넓다. <strong>"알고리즘을 갈아끼우고 싶고 그 선택을 외부가 하는가"</strong>면 <strong>전략(Strategy)</strong>. <strong>"상태에 따라 행동이 바뀌고 상태 전이를 스스로 하는가"</strong>면 <strong>상태(State)</strong> — 전략과 구조는 같지만 누가 전환을 통제하느냐가 다르다. <strong>"요청 자체를 객체로 만들어 실행 취소(undo)나 큐에 담고 싶은가"</strong>면 <strong>커맨드(Command)</strong>. <strong>"한 객체의 변화를 여러 객체에 자동으로 통보하고 싶은가"</strong>면 <strong>옵서버(Observer)</strong>. <strong>"전체 흐름은 고정하되 일부 단계만 다르게 두고 싶은가"</strong>면 상속으로 푸는 <strong>템플릿 메서드(Template Method)</strong>. <strong>"컬렉션의 내부 구현을 드러내지 않고 순회하고 싶은가"</strong>면 <strong>이터레이터(Iterator)</strong>다.</p>
+
+      <h2>흐름을 떠받치는 두 원칙</h2>
+      <p>이 의사결정 흐름의 모든 가지에는 같은 두 원칙이 흐른다. 첫째 <strong>개방-폐쇄 원칙(OCP, Open-Closed Principle)</strong> — 확장에는 열려 있고 수정에는 닫혀 있게. 패턴들은 변하는 부분을 인터페이스 뒤로 숨겨, 새 기능을 추가할 때 기존 코드를 고치지 않게 만든다. 둘째 <strong>"상속보다 합성(Composition over Inheritance)"</strong> — 관계를 컴파일 시점에 굳히는 상속 대신, 런타임에 갈아끼울 수 있는 합성과 위임을 선호한다. 시나리오 문제에서 정답 후보가 둘로 좁혀졌을 때, "어느 쪽이 이 두 원칙을 더 잘 지키는가"를 물으면 답이 갈리는 경우가 많다.</p>
+
+      <div class="pattern-card">
+        <div class="pc"><h5>첫 질문</h5><p>무엇이 문제인가 — 생성 / 구조 / 행위로 1차 분기</p></div>
+        <div class="pc"><h5>좁히는 법</h5><p>큰 갈래 먼저, 그다음 세부 질문(마름모)에 답하며 하강</p></div>
+        <div class="pc"><h5>바닥 원칙</h5><p>OCP + 상속보다 합성 — 후보 둘일 때 판별 기준</p></div>
+      </div>
+
+      <div class="trap">
+        <b>시험 함정.</b> ① 시나리오를 읽자마자 개별 패턴을 떠올리지 말고 <strong>먼저 생성/구조/행위 갈래부터</strong> 가른다 — 첫 갈래를 틀리면 후보 전체가 어긋난다. ② <strong>팩토리 메서드(단일 제품) 대 추상 팩토리(제품군 전체)</strong>, <strong>전략(외부가 선택) 대 상태(스스로 전이)</strong>는 같은 갈래 안에서 한 질문으로 갈리는 단골 함정이다. ③ "흐름은 고정, 일부 단계만 다름"은 상속 기반 <em>템플릿 메서드</em>지 합성 기반 전략이 아니다. ④ 정답 후보가 둘로 좁혀지면 OCP와 "상속보다 합성"으로 결정타를 찾는다.</p>
+      </div>
+
+      <p>이 흐름이 "어느 패턴을 후보로 올릴지"를 가려준다면, 다음 sub-chapter는 그 후보들이 둘로 좁혀졌을 때 마지막 결정을 짓는 법을 다룬다. 구조가 거의 같아 끝까지 헷갈리는 6쌍의 결정적 차이를, 표가 아니라 "왜"로 익힌다.</p>
+    </div>
+
+    <nav class="ch-foot"></nav>
+  </main>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', themeVariables: { fontFamily: 'inherit' } });
+</script>
+<script>
+const SUBS = [
+  { no:'01', t:'패턴 선택 의사결정' },
+  { no:'02', t:'헷갈리는 6쌍' },
+];
+function buildNav(cur) {
+  const ol = document.querySelector('.ch-nav ol');
+  ol.innerHTML = SUBS.map(s => `<li><a href="${s.no}.html"${s.no===cur?' class="current"':''}>${s.t}</a></li>`).join('');
+  const tb = document.querySelector('.topbar');
+  tb.innerHTML = `<a class="home" href="index.html">← Ch.06 표지</a><span class="ch-mini">SUB ${cur} / ${String(SUBS.length).padStart(2,'0')}</span>`;
+  const i = SUBS.findIndex(s => s.no === cur);
+  const prev = i > 0 ? SUBS[i-1] : { no:'', t:'챕터 표지로' };
+  const next = i < SUBS.length-1 ? SUBS[i+1] : { no:'', t:'챕터 표지로' };
+  const prevHref = prev.no ? prev.no+'.html' : 'index.html';
+  const nextHref = next.no ? next.no+'.html' : 'index.html';
+  document.querySelector('.ch-foot').innerHTML =
+    `<a href="${prevHref}"><div class="dir">← 이전</div><div class="ti">${prev.t}</div></a>` +
+    `<a href="${nextHref}" class="next"><div class="dir">다음 →</div><div class="ti">${next.t}</div></a>`;
+}
+function progressBar() {
+  const bar = document.querySelector('.scroll-progress');
+  document.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max>0 ? (h.scrollTop/max)*100 : 0) + '%';
+  }, { passive: true });
+}
+window.addEventListener('load', () => { buildNav('01'); progressBar(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>01 · 패턴이란 + GoF 3분류 — Chapter 1</title>
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+  .pattern-card { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: .8rem; margin: 1.4rem 0; }
+  .pc { background: var(--paper-2); border: 1px solid var(--line-soft); border-radius: 10px; padding: .9rem 1rem; }
+  .pc h5 { margin: 0 0 .35rem; font-family: var(--mono); font-size: .68rem; letter-spacing: .1em; color: var(--ink-faint); text-transform: uppercase; }
+  .pc p { margin: 0; font-size: .9rem; color: var(--ink); line-height: 1.5; }
+  .mermaid { display: flex; justify-content: center; padding: 1.2rem .8rem; background: #fff; }
+  .trap { border-left: 3px solid var(--style); background: var(--style-bg); border-radius: 0 10px 10px 0; padding: 1rem 1.2rem; margin: 1.4rem 0; }
+  .trap b { color: var(--style); }
+</style>
+</head>
+<body>
+<div class="scroll-progress"></div>
+<div class="topbar"></div>
+
+<div class="ch-layout">
+  <aside class="ch-nav"><nav><ol></ol></nav></aside>
+  <main class="ch-main">
+
+    <header class="ch-head">
+      <span class="kicker">Sub-Chapter 01 · 토대</span>
+      <h1>패턴이란 무엇인가,<br><span class="t-style">그리고 GoF 3분류</span></h1>
+      <p class="lede">디자인 패턴은 어떤 라이브러리도 아니고, 복사해 붙이는 코드 조각도 아니다. 자주 반복되는 설계 문제에 대한 검증된 "구조"에 이름을 붙인 것이다. 이 장에서 패턴을 보는 큰 그림과 GoF의 3분류를 잡는다.</p>
+    </header>
+
+    <div class="prose">
+      <p>디자인 패턴(Design Pattern)을 한 문장으로 정의하면 이렇다. <strong>자주 반복되는 설계 문제와 그 맥락, 그리고 검증된 해결 구조에 이름을 붙여 재사용하는 것이다.</strong> 여기서 가장 중요한 단어는 "구조"다. 패턴은 라이브러리처럼 가져다 호출하는 코드가 아니라, 클래스와 객체를 어떻게 배치하고 책임을 어떻게 나눌지에 대한 <em>설계의 청사진</em>이다.</p>
+
+      <p>왜 패턴을 따로 공부해야 하는가? 경험 많은 설계자들은 같은 종류의 문제를 만나면 비슷한 구조로 푼다는 사실이 발견됐기 때문이다. 매번 처음부터 고민하는 대신, 이미 수많은 프로젝트에서 검증된 해법에 이름을 붙여 두면, "아, 이건 옵서버로 풀면 되겠다"처럼 빠르게 소통하고 재사용할 수 있다. 패턴은 일종의 <strong>설계 어휘(design vocabulary)</strong>다.</p>
+
+      <h2>패턴은 코드 복사가 아니다</h2>
+      <p>가장 흔한 오해가 "패턴 = 복붙할 수 있는 코드 템플릿"이라는 생각이다. 이것이 시험에서도 함정으로 나온다. 패턴의 본질은 <strong>코드 조각의 복사가 아니라 구조의 재사용</strong>이다. 같은 옵서버 패턴이라도 어떤 프로젝트에서는 GUI 이벤트에, 어떤 곳에서는 주식 시세 알림에 쓰인다. 코드 한 줄 한 줄은 전혀 다르지만, "주제가 구독자 목록을 들고 변경 시 일괄 통보한다"는 <em>구조</em>는 동일하다. 그래서 시험도 "이 패턴의 클래스 다이어그램을 외워 그려라"보다 "이 상황에서 왜 이 패턴이 적합한가, 적용 전후로 무엇이 좋아지는가"를 묻는다.</p>
+
+      <div class="analogy">
+        <b>요리의 레시피 vs 완성된 음식.</b> 패턴은 완성된 음식(복사할 코드)이 아니라 레시피(구조)다. "재료를 볶다가 육수를 붓고 끓인다"는 절차는 김치찌개든 된장찌개든 똑같이 적용되지만, 들어가는 재료(실제 코드)는 다르다. 레시피를 안다는 건 음식 하나를 외운 게 아니라, 비슷한 요리 전체를 응용할 수 있게 된 것이다. 패턴을 익힌다는 것도 코드 한 벌을 외우는 게 아니라 그 구조를 응용할 줄 알게 되는 것이다.
+      </div>
+
+      <h2>GoF의 3분류 — 목적으로 가른다</h2>
+      <p>GoF(Gang of Four, 디자인 패턴을 정리한 네 저자)는 23개의 패턴을 <strong>목적(purpose)</strong>에 따라 세 갈래로 나눈다. 이 분류 자체가 시험 단골이므로, 각 갈래가 "무엇에 관한 문제를 푸는가"를 한 문장으로 말할 수 있어야 한다. 생성 패턴은 <em>객체를 어떻게 만들 것인가</em>, 구조 패턴은 <em>객체를 어떻게 조립할 것인가</em>, 행위 패턴은 <em>객체가 어떻게 협력하고 책임을 나눌 것인가</em>를 다룬다.</p>
+    </div>
+
+    <div class="widget">
+      <div class="widget-frame">
+        <div class="widget-label"><span class="lab-no">MAP 01</span><span>GoF 23종 · 목적에 따른 3분류</span></div>
+        <pre class="mermaid">
+flowchart TD
+    P[디자인 패턴 23종]
+    P --&gt; C["생성 Creational&lt;br/&gt;객체를 어떻게 만들 것인가"]
+    P --&gt; S["구조 Structural&lt;br/&gt;객체를 어떻게 조립할 것인가"]
+    P --&gt; B["행위 Behavioral&lt;br/&gt;객체가 어떻게 협력하고 책임을 나눌 것인가"]
+    C --&gt; C1[Singleton]
+    C --&gt; C2[Factory Method]
+    C --&gt; C3[Abstract Factory]
+    S --&gt; S1[Adapter]
+    S --&gt; S2[Decorator]
+    S --&gt; S3[Composite]
+    B --&gt; B1[Strategy]
+    B --&gt; B2[State]
+    B --&gt; B3[Command]
+    B --&gt; B4[Observer]
+    B --&gt; B5[Template Method]
+    B --&gt; B6[Iterator]
+        </pre>
+      </div>
+      <p class="widget-cap">세 갈래는 "무엇이 문제인가"로 갈린다. 생성=객체를 만드는 책임과 시점, 구조=이미 있는 객체를 조립하는 방식, 행위=객체 사이의 책임 분배와 통신. 시험에서 "다음 시나리오에 적합한 패턴은?"이 나오면 먼저 이 3분류 중 어디에 속하는지부터 판별한다.</p>
+    </div>
+
+    <div class="prose">
+      <h2>세 분류를 한눈에</h2>
+      <div class="pattern-card">
+        <div class="pc"><h5>생성 Creational</h5><p>객체를 만드는 책임과 시점을 분리한다. new를 인터페이스 뒤로 숨긴다. Singleton · Factory Method · Abstract Factory</p></div>
+        <div class="pc"><h5>구조 Structural</h5><p>이미 있는 객체들을 조립해 더 큰 구조를 만든다. 무기는 합성과 위임. Adapter · Decorator · Composite</p></div>
+        <div class="pc"><h5>행위 Behavioral</h5><p>객체 사이의 책임 분배와 통신을 다룬다. "변하는 행위"를 객체로 뽑는다. Strategy · State · Command · Observer · Template Method · Iterator</p></div>
+      </div>
+
+      <div class="trap">
+        <b>시험 함정.</b> ① 분류 기준은 <em>목적(purpose)</em>이다 — 생성(만들기) / 구조(조립) / 행위(협력)로 말로 구분할 수 있어야 한다. ② "패턴 = 복사할 코드"는 오답이다. 본질은 <em>구조의 재사용</em>. ③ 어떤 패턴이 어느 분류에 속하는지(예: Decorator는 구조, Strategy는 행위)를 묻는 단순 분류 문제도 자주 나온다. ④ GoF가 "Gang of Four(네 명의 저자)"를 가리킨다는 상식도 출제될 수 있다.
+      </div>
+
+      <p>이제 "패턴이 무엇이고 어떻게 분류되는가"라는 지도가 생겼다. 그런데 이 23개 패턴은 제각각 따로 노는 것이 아니라, 두 가지 공통 원칙 위에 서 있다. 다음 sub-chapter에서는 모든 패턴을 관통하는 두 설계 격언 — "구현이 아니라 인터페이스에 의존하라"와 "상속보다 합성을 선호하라" — 을 다룬다. 이 둘을 잡으면 이후 모든 패턴이 같은 원칙의 변주로 읽힌다.</p>
+    </div>
+
+    <nav class="ch-foot"></nav>
+  </main>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', themeVariables: { fontFamily: 'inherit' } });
+</script>
+<script>
+const SUBS = [
+  { no:'01', t:'패턴이란 + GoF 3분류' },
+  { no:'02', t:'두 설계 원칙' },
+];
+function buildNav(cur) {
+  const ol = document.querySelector('.ch-nav ol');
+  ol.innerHTML = SUBS.map(s => `<li><a href="${s.no}.html"${s.no===cur?' class="current"':''}>${s.t}</a></li>`).join('');
+  const tb = document.querySelector('.topbar');
+  tb.innerHTML = `<a class="home" href="index.html">← Ch.01 표지</a><span class="ch-mini">SUB ${cur} / ${String(SUBS.length).padStart(2,'0')}</span>`;
+  const i = SUBS.findIndex(s => s.no === cur);
+  const prev = i > 0 ? SUBS[i-1] : { no:'', t:'챕터 표지로' };
+  const next = i < SUBS.length-1 ? SUBS[i+1] : { no:'', t:'챕터 표지로' };
+  const prevHref = prev.no ? prev.no+'.html' : 'index.html';
+  const nextHref = next.no ? next.no+'.html' : 'index.html';
+  document.querySelector('.ch-foot').innerHTML =
+    `<a href="${prevHref}"><div class="dir">← 이전</div><div class="ti">${prev.t}</div></a>` +
+    `<a href="${nextHref}" class="next"><div class="dir">다음 →</div><div class="ti">${next.t}</div></a>`;
+}
+function progressBar() {
+  const bar = document.querySelector('.scroll-progress');
+  document.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max>0 ? (h.scrollTop/max)*100 : 0) + '%';
+  }, { passive: true });
+}
+window.addEventListener('load', () => { buildNav('01'); progressBar(); });
+</script>
+</body>
+</html>

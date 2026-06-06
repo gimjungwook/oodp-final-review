@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>03 · 추상 팩토리 패턴 — Chapter 2</title>
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+  .pattern-card { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: .8rem; margin: 1.4rem 0; }
+  .pc { background: var(--paper-2); border: 1px solid var(--line-soft); border-radius: 10px; padding: .9rem 1rem; }
+  .pc h5 { margin: 0 0 .35rem; font-family: var(--mono); font-size: .68rem; letter-spacing: .1em; color: var(--ink-faint); text-transform: uppercase; }
+  .pc p { margin: 0; font-size: .9rem; color: var(--ink); line-height: 1.5; }
+  .mermaid { display: flex; justify-content: center; padding: 1.2rem .8rem; background: #fff; }
+  .trap { border-left: 3px solid var(--style); background: var(--style-bg); border-radius: 0 10px 10px 0; padding: 1rem 1.2rem; margin: 1.4rem 0; }
+  .trap b { color: var(--style); }
+</style>
+</head>
+<body>
+<div class="scroll-progress"></div>
+<div class="topbar"></div>
+
+<div class="ch-layout">
+  <aside class="ch-nav"><nav><ol></ol></nav></aside>
+  <main class="ch-main">
+
+    <header class="ch-head">
+      <span class="kicker">Sub-Chapter 03 · 생성 패턴</span>
+      <h1>추상 팩토리 패턴,<br><span class="t-style">제품군 전체를 한 세트로</span></h1>
+      <p class="lede">버튼만 따로, 체크박스만 따로 만들면 맥 버튼에 윈도우 체크박스가 섞일 수 있다. 추상 팩토리는 서로 어울려야 하는 제품들을 한 팩토리가 통째로 책임지게 해, 일관성을 구조로 강제한다.</p>
+    </header>
+
+    <div class="prose">
+      <p>추상 팩토리 패턴(Abstract Factory Pattern)의 의도는 이렇다. <strong>서로 관련되거나 의존하는 제품군(family) 전체를, 구체 클래스를 지정하지 않고 생성하는 인터페이스를 제공한다.</strong> 앞 페이지의 팩토리 메서드가 "제품 하나"의 생성을 책임졌다면, 추상 팩토리는 "함께 어울려야 하는 여러 제품"을 한 묶음으로 만든다. 핵심 단어는 <em>제품군</em>과 <em>일관성</em>이다.</p>
+
+      <p>왜 제품군 단위로 묶어야 하는가? GUI 툴킷을 떠올려 보자. 같은 화면 안의 버튼, 체크박스, 스크롤바는 모두 같은 운영체제 스타일이어야 한다. 맥 스타일 버튼 옆에 윈도우 스타일 체크박스가 놓이면 어색할 뿐 아니라 동작 규칙도 어긋난다. 만약 각 위젯을 따로따로 생성하면, 코드 곳곳에서 실수로 스타일을 섞을 위험이 늘 존재한다. 추상 팩토리는 "한 팩토리가 한 제품군 전체를 만든다"는 규칙을 세워, <code>MacFactory</code>를 쓰는 한 모든 위젯이 자동으로 맥 스타일로 통일되게 한다. 일관성을 사람의 주의력이 아니라 <strong>구조</strong>로 보장하는 것이다.</p>
+
+      <div class="analogy">
+        <b>한 디자이너가 꾸민 거실 세트.</b> 가구를 하나씩 따로 사면 모던 소파에 클래식 테이블이 섞여 통일감이 깨지기 쉽다. 대신 "북유럽 스타일 세트", "인더스트리얼 스타일 세트"처럼 한 컨셉으로 묶인 패키지를 고르면, 소파, 테이블, 조명이 모두 같은 톤으로 일관되게 따라온다. 컨셉(팩토리)을 한 번 고르는 순간 제품군 전체가 결정된다. 다른 컨셉으로 바꾸고 싶으면 패키지만 통째로 교체하면 된다.
+      </div>
+
+      <h2>구조 — 한 팩토리가 제품군을 통째로 만든다</h2>
+      <p>추상 <strong>AbstractFactory</strong>는 제품군의 각 제품을 만드는 메서드(<code>createButton()</code>, <code>createCheckbox()</code>)를 선언한다. 이를 구현한 <strong>WinFactory</strong>와 <strong>MacFactory</strong>는 각자의 스타일에 맞는 구체 제품을 돌려준다. 클라이언트는 어떤 구체 팩토리를 쓰는지만 한 번 정하고, 그 뒤로는 추상 인터페이스에만 의존한다. 그래서 윈도우에서 맥으로 옮길 때 코드가 바꾸는 곳은 "어느 팩토리를 주입할지" 단 한 줄뿐이다.</p>
+    </div>
+
+    <div class="widget">
+      <div class="widget-frame">
+        <div class="widget-label"><span class="lab-no">UML 03</span><span>추상 팩토리 · 한 팩토리 = 한 제품군</span></div>
+        <pre class="mermaid">
+classDiagram
+    class AbstractFactory {
+        +createButton() Button
+        +createCheckbox() Checkbox
+    }
+    class WinFactory {
+        +createButton() Button
+        +createCheckbox() Checkbox
+    }
+    class MacFactory {
+        +createButton() Button
+        +createCheckbox() Checkbox
+    }
+    AbstractFactory &lt;|.. WinFactory
+    AbstractFactory &lt;|.. MacFactory
+        </pre>
+      </div>
+      <p class="widget-cap">한 구체 팩토리가 버튼과 체크박스를 모두 책임진다. MacFactory를 쓰는 한 둘 다 맥 스타일로 나온다 — 제품군의 일관성이 팩토리 선택 한 번으로 강제된다. 각 create 메서드 구현 자체가 사실상 팩토리 메서드라는 점에 주목하라.</p>
+    </div>
+
+    <div class="prose">
+      <h2>코드 — 팩토리를 주입하면 제품군이 따라온다</h2>
+      <p>클라이언트는 어떤 구체 팩토리를 받았는지 신경 쓰지 않고, 추상 팩토리의 메서드만 호출한다. 같은 코드가 주입된 팩토리에 따라 윈도우 세트 또는 맥 세트를 일관되게 만들어 낸다. 구체 클래스 이름은 클라이언트 코드 어디에도 등장하지 않는다.</p>
+    </div>
+
+    <div class="widget">
+      <div class="widget-frame">
+        <div class="widget-label"><span class="lab-no">CODE 03</span><span>GUI 툴킷 — 팩토리 합성으로 제품군 통일</span></div>
+        <pre class="code"><code>interface GUIFactory {
+    Button   createButton();
+    Checkbox createCheckbox();
+}
+
+class MacFactory implements GUIFactory {
+    public Button   createButton()   { return new MacButton(); }
+    public Checkbox createCheckbox() { return new MacCheckbox(); }
+}
+
+class WinFactory implements GUIFactory {
+    public Button   createButton()   { return new WinButton(); }
+    public Checkbox createCheckbox() { return new WinCheckbox(); }
+}
+
+// 클라이언트: 팩토리를 합성으로 주입받아 제품군 전체를 일관되게 생성
+class Dialog {
+    private final GUIFactory factory;      // 어떤 제품군인지 주입
+    Dialog(GUIFactory factory) { this.factory = factory; }
+
+    void render() {
+        Button   ok   = factory.createButton();    // 둘 다 같은 스타일로
+        Checkbox keep = factory.createCheckbox();  // 자동 통일된다
+        ok.paint();
+        keep.paint();
+    }
+}</code></pre>
+      </div>
+      <p class="widget-cap">Dialog는 구체 위젯 클래스를 전혀 모른다. 생성자에 MacFactory를 넣으면 맥 세트가, WinFactory를 넣으면 윈도우 세트가 나온다. 운영체제를 바꾸는 일이 "주입하는 팩토리 한 줄 교체"로 끝난다.</p>
+    </div>
+
+    <div class="prose">
+      <h2>참여자와 결과</h2>
+      <div class="pattern-card">
+        <div class="pc"><h5>참여자</h5><p>AbstractFactory / ConcreteFactory(Win, Mac) / AbstractProduct(Button, Checkbox) / ConcreteProduct / Client</p></div>
+        <div class="pc"><h5>장점</h5><p>제품군의 일관성 보장, 구체 클래스 격리, 제품군 교체가 팩토리 한 줄 교체로 끝남</p></div>
+        <div class="pc"><h5>단점</h5><p>제품 종류(메서드)를 추가하면 모든 팩토리를 고쳐야 함 — 제품군 확장은 쉽지만 제품 항목 확장은 어려움</p></div>
+      </div>
+
+      <h2>Factory Method vs Abstract Factory — 최빈출 비교</h2>
+      <p>이 두 패턴의 구분은 생성 패턴 시험에서 가장 단골이다. 둘 다 "생성을 캡슐화해 구체 클래스를 숨긴다"는 같은 목표를 공유하지만, <strong>무엇을 만드느냐(단일 제품 대 제품군)</strong>와 <strong>어떻게 위임하느냐(상속 대 합성)</strong>에서 갈린다. 표로 핵심을 잡되, 표만 외우면 시나리오 변형 문제에서 흔들리므로 아래 산문 설명까지 함께 이해해야 한다.</p>
+
+      <table class="cmp-table">
+        <thead>
+          <tr><th>기준</th><th>팩토리 메서드 (Factory Method)</th><th>추상 팩토리 (Abstract Factory)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>만드는 대상</td><td><b>제품 하나</b>를 만든다</td><td><b>제품군 전체</b>를 만든다</td></tr>
+          <tr><td>위임 수단</td><td><b>상속</b> — 서브클래스가 오버라이드로 결정</td><td><b>합성</b> — 팩토리 객체를 주입</td></tr>
+          <tr><td>단위</td><td>클래스(메서드) 단위</td><td>객체 단위</td></tr>
+          <tr><td>확장 방향</td><td>새 제품 = 새 서브클래스 추가</td><td>새 제품군 = 새 팩토리 추가</td></tr>
+          <tr><td>관계</td><td>그 자체로 완결</td><td>각 메서드 구현이 흔히 <b>팩토리 메서드</b>로 됨</td></tr>
+          <tr><td>한 줄 요약</td><td>메서드 하나로 한 제품</td><td>객체 하나로 제품군 전체</td></tr>
+        </tbody>
+      </table>
+
+      <p>표를 풀어 설명하면 이렇다. 팩토리 메서드는 "무엇을 만들지"의 결정권을 <strong>상속</strong>으로 아래에 내려보낸다. 결정의 단위는 메서드 하나이고, 대상은 보통 제품 하나다. 새 제품을 추가하려면 새 서브클래스를 만든다. 반면 추상 팩토리는 "어떤 제품군을 쓸지"를 <strong>합성</strong>으로 주입한다. 팩토리 객체 하나를 갈아끼우면 그 안의 여러 제품이 한꺼번에 일관되게 바뀐다.</p>
+
+      <p>둘은 경쟁 관계라기보다 층위가 다른 도구다. 실제로 추상 팩토리의 각 <code>createXxx()</code> 메서드 구현은 종종 그 자체가 팩토리 메서드 형태를 띤다. 즉 <strong>추상 팩토리는 팩토리 메서드들의 묶음으로 구현되곤 한다.</strong> 그래서 시험에서 "이 시나리오에서 더 적합한 것은?"을 물으면, 만들 대상이 <em>제품 하나</em>이고 서브클래스마다 다른 제품을 내면 팩토리 메서드, <em>여러 제품이 세트로 일관</em>되어야 하고 세트 통째로 교체해야 하면 추상 팩토리로 판단한다.</p>
+
+      <div class="trap">
+        <b>시험 함정.</b> ① "단일 제품 = Factory Method, 제품군 = Abstract Factory"가 1차 판별 기준이다. ② 위임 수단이 상속이냐(FM) 합성이냐(AF)도 결정적 차이다. ③ 추상 팩토리의 약점 — 새 <em>제품 항목</em>(예: 스크롤바)을 추가하면 모든 팩토리 인터페이스와 구현을 고쳐야 한다(제품군 추가는 쉽지만 제품 항목 추가는 OCP를 깬다). ④ 추상 팩토리가 내부적으로 팩토리 메서드로 구현된다는 관계도 출제 포인트다.
+      </div>
+
+      <p>여기까지가 생성 패턴 3종이다. 싱글톤은 생성 횟수를, 팩토리 메서드는 단일 제품의 종류를, 추상 팩토리는 제품군 전체를 통제했다. 셋 모두 <code>new</code>를 사용하는 코드로부터 생성 책임을 떼어 내 변경을 한곳에 가둔다는 같은 정신을 공유한다. 다음 장에서는 "이미 만들어진 객체들을 어떻게 조립할 것인가"를 다루는 구조 패턴으로 넘어간다.</p>
+    </div>
+
+    <nav class="ch-foot"></nav>
+  </main>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', themeVariables: { fontFamily: 'inherit' } });
+</script>
+<script>
+const SUBS = [
+  { no:'01', t:'싱글톤 (Singleton)' },
+  { no:'02', t:'팩토리 메서드 (Factory Method)' },
+  { no:'03', t:'추상 팩토리 (Abstract Factory)' },
+];
+function buildNav(cur) {
+  const ol = document.querySelector('.ch-nav ol');
+  ol.innerHTML = SUBS.map(s => `<li><a href="${s.no}.html"${s.no===cur?' class="current"':''}>${s.t}</a></li>`).join('');
+  const tb = document.querySelector('.topbar');
+  tb.innerHTML = `<a class="home" href="index.html">← Ch.02 표지</a><span class="ch-mini">SUB ${cur} / ${String(SUBS.length).padStart(2,'0')}</span>`;
+  const i = SUBS.findIndex(s => s.no === cur);
+  const prev = i > 0 ? SUBS[i-1] : { no:'', t:'챕터 표지로' };
+  const next = i < SUBS.length-1 ? SUBS[i+1] : { no:'', t:'챕터 표지로' };
+  const prevHref = prev.no ? prev.no+'.html' : 'index.html';
+  const nextHref = next.no ? next.no+'.html' : 'index.html';
+  document.querySelector('.ch-foot').innerHTML =
+    `<a href="${prevHref}"><div class="dir">← 이전</div><div class="ti">${prev.t}</div></a>` +
+    `<a href="${nextHref}" class="next"><div class="dir">다음 →</div><div class="ti">${next.t}</div></a>`;
+}
+function progressBar() {
+  const bar = document.querySelector('.scroll-progress');
+  document.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max>0 ? (h.scrollTop/max)*100 : 0) + '%';
+  }, { passive: true });
+}
+window.addEventListener('load', () => { buildNav('03'); progressBar(); });
+</script>
+</body>
+</html>

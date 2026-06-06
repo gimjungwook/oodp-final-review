@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B · 시나리오→패턴 — Problem Set</title>
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+  .q { max-width: var(--measure); margin: 1.4rem auto; padding: 1.2rem 1.4rem; background: #fff; border: 1px solid var(--line); border-radius: 14px; }
+  .q .qn { font-family: var(--mono); font-size: .72rem; letter-spacing: .1em; color: var(--style); font-weight: 700; }
+  .q .scn { margin: .45rem 0 0; font-size: .98rem; color: var(--ink); line-height: 1.7; }
+  details.ans { max-width: var(--measure); margin: -.4rem auto 0; }
+  details.ans > summary { list-style: none; display: inline-flex; align-items: center; gap: .4rem; cursor: pointer; font-family: var(--mono); font-size: .76rem; font-weight: 700; letter-spacing: .04em; padding: .5rem .95rem; border-radius: 999px; background: var(--ink); color: var(--paper); border: none; transition: transform .12s var(--ease), background .15s; }
+  details.ans > summary::-webkit-details-marker { display: none; }
+  details.ans > summary:hover { transform: translateY(-1px); background: #000; }
+  details.ans[open] > summary { background: var(--style); }
+  .ansbody { margin: .8rem 0 0; padding: 1.1rem 1.3rem; background: var(--structure-bg); border: 1px solid var(--structure-lo); border-radius: 14px; }
+  .ansbody .pick { font-family: var(--serif); font-size: 1.12rem; font-weight: 700; color: #1B64DA; margin: 0 0 .5rem; }
+  .ansbody .why { margin: 0; font-size: .94rem; color: var(--ink); line-height: 1.7; }
+  .ansbody .why b { color: #1B64DA; }
+</style>
+</head>
+<body>
+<div class="scroll-progress"></div>
+<div class="topbar"></div>
+
+<div class="ch-layout">
+  <aside class="ch-nav"><nav><ol></ol></nav></aside>
+  <main class="ch-main">
+
+    <header class="ch-head">
+      <span class="kicker">Course B · 시나리오→패턴</span>
+      <h1>상황을 읽고,<br><span class="t-style">패턴을 고르기</span></h1>
+      <p class="lede">설계 상황 10개다. 각 시나리오의 "무엇이 변하는가, 어떤 결합을 끊고 싶은가"를 짚어 적합한 패턴을 먼저 고른 뒤, 정답과 근거를 펼쳐 비교하라. 시험의 응용 문제가 정확히 이 형태다.</p>
+    </header>
+
+    <div class="prose">
+      <p>패턴을 고르는 요령은 "이 코드에서 <strong>무엇이 변하는 축</strong>인지"를 먼저 찾는 것이다. 알고리즘이 갈아끼워지는가, 객체의 상태가 바뀌며 행동이 달라지는가, 요청 자체를 저장/되돌려야 하는가, 한 변경이 여러 곳에 퍼져야 하는가. 변하는 축을 찾으면 그 축을 흡수하는 패턴이 자연스레 떠오른다. 각 문항을 먼저 결정한 다음 "정답 보기"를 눌러, <em>근거</em>가 일치하는지를 확인하라 — 정답만 맞고 이유가 다르면 다른 시나리오에서 틀린다.</p>
+    </div>
+
+    <section id="cards"></section>
+
+    <nav class="ch-foot"></nav>
+  </main>
+</div>
+
+<script>
+const SCN = [
+  { id:'B1', text:'결제 화면에서 카드/계좌이체/포인트를 런타임에 선택해 같은 <code>pay()</code>로 처리하고, 새 결제수단을 추가할 때 기존 코드를 고치지 않고 싶다.',
+    pick:'스트래티지 (Strategy)',
+    why:'갈아끼우는 대상이 <b>알고리즘(결제수단)</b>이고, 런타임에 교체된다. Context가 Strategy 인터페이스에만 의존하므로 새 수단을 ConcreteStrategy로 추가해도 기존 코드를 건드리지 않아 OCP를 만족한다. 상태 전이가 없다는 점이 State와의 갈림길.' },
+  { id:'B2', text:'온라인 주문 객체가 "결제대기 → 결제완료 → 배송중 → 취소"처럼 상태마다 같은 <code>cancel()</code> 요청에 다르게 반응하고, 각 상태가 다음 상태를 결정한다.',
+    pick:'스테이트 (State)',
+    why:'핵심은 <b>같은 요청이 상태에 따라 다르게 동작</b>하고, <b>상태가 스스로 다음 상태로 전이</b>한다는 두 가지다. 두 번째 조건(자가 전이)이 Strategy와 갈리는 결정적 차이 — Strategy의 전략들은 서로를 모르지만, State의 상태들은 전이로 연결된다.' },
+  { id:'B3', text:'텍스트 편집기에서 모든 사용자 동작(입력, 삭제, 서식)을 기록해 Ctrl+Z로 되돌리고 매크로로 묶고 싶다.',
+    pick:'커맨드 (Command)',
+    why:'요청 자체를 <b>객체로 캡슐화</b>해야 한다. 동작을 객체로 만들어야 스택에 쌓아 undo하고, 리스트로 묶어 매크로를 만들고, 로그로 남길 수 있다. "되돌리기/매크로/로그"라는 키워드가 보이면 Command다.' },
+  { id:'B4', text:'환율 데이터가 갱신되면 그 값을 쓰는 표, 그래프, 알림창이 자동으로 다시 그려져야 한다.',
+    pick:'옵서버 (Observer)',
+    why:'한 데이터(Subject)의 변경이 <b>여러 뷰에 일대다로 자동 통보</b>되는 구조다. Subject는 Observer 인터페이스만 알고 구체 뷰를 모르므로 느슨하게 결합된다. "하나가 바뀌면 여럿이 따라 갱신"이 신호.' },
+  { id:'B5', text:'기존 외부 결제 라이브러리는 <code>charge(amount, cardNo)</code>인데, 우리 시스템은 <code>Payment.process(order)</code> 인터페이스를 기대한다. 라이브러리는 수정 불가다.',
+    pick:'어댑터 (Adapter)',
+    why:'<b>인터페이스가 맞지 않는</b> 수정 불가 라이브러리(Adaptee)를 기대 형태(Target)로 <b>변환</b>해 끼우는 전형. Adapter가 Target을 구현하면서 Adaptee를 내부에서 호출한다. "수정 불가 + 인터페이스 불일치"가 Adapter의 표식.' },
+  { id:'B6', text:'기본 음료에 우유/휘핑/시럽을 임의 조합으로 얹어 가격을 계산하되, 조합마다 클래스를 새로 만들고 싶지 않다.',
+    pick:'데커레이터 (Decorator)',
+    why:'기능을 <b>동적으로 겹겹이 쌓아</b> 추가하면서 조합 폭발을 막는다. 각 토핑이 Component를 구현하면서 다른 Component를 감싸므로, "우유+휘핑+시럽"을 래퍼 중첩으로 표현한다. "임의 조합 + 클래스 폭발 회피"가 신호.' },
+  { id:'B7', text:'조직도에서 팀(하위 팀과 사원을 포함)과 개별 사원의 인건비 총합을 같은 방식으로 구하고 싶다.',
+    pick:'컴포지트 (Composite)',
+    why:'<b>전체-부분 트리</b>에서 복합(팀)과 개별(사원)을 <b>같은 인터페이스로 재귀 처리</b>한다. cost()를 호출하면 팀은 자식들의 cost() 합을, 사원은 자기 값을 반환한다. "트리 + 개별, 복합 동일 취급"이 표식.' },
+  { id:'B8', text:'게임에서 적 캐릭터 생성기가 "쉬움 세트(약한 적+느린 총알)"와 "어려움 세트(강한 적+빠른 총알)"를 일관되게 묶어 만들어야 한다.',
+    pick:'추상 팩토리 (Abstract Factory)',
+    why:'서로 어울리는 <b>제품군(적+총알) 전체를 일관되게 묶어</b> 생성한다. EasyFactory와 HardFactory가 각각 같은 난이도의 적과 총알을 짝지어 반환하므로, 쉬운 적에 빠른 총알이 섞이는 불일치를 막는다. 단일 제품만이면 Factory Method, "제품군 묶음"이면 Abstract Factory.' },
+  { id:'B9', text:'앱 전체가 공유하는 환경설정 객체가 정확히 하나만 존재하고 어디서나 접근 가능해야 한다.',
+    pick:'싱글톤 (Singleton)',
+    why:'<b>유일 인스턴스 + 전역 접근점</b>이 그대로 정의다. private 생성자로 외부 생성을 막고 static getInstance로만 그 하나를 돌려준다. "정확히 하나 + 어디서나 접근"이면 곧바로 Singleton.' },
+  { id:'B10', text:'라면과 파스타 조리 절차가 "물 끓이기 → 재료 넣기 → 익히기 → 담기"로 골격이 같고 "재료 넣기/익히기"만 다르다.',
+    pick:'템플릿 메서드 (Template Method)',
+    why:'<b>흐름(골격)은 고정</b>이고 <b>일부 단계만 하위가 재정의</b>한다. 상위 클래스의 templateMethod가 순서를 잠그고, 달라지는 단계만 추상 메서드로 둔다. 골격이 같고 빈칸만 채우는 형태면 Template Method(상속 기반) — 통째로 알고리즘을 갈아끼우면 Strategy(합성 기반).' },
+];
+const host = document.getElementById('cards');
+host.innerHTML = SCN.map(s => `
+  <div class="q">
+    <span class="qn">${s.id}</span>
+    <p class="scn">${s.text}</p>
+  </div>
+  <details class="ans">
+    <summary>정답 보기 ▸ ${s.id}</summary>
+    <div class="ansbody">
+      <p class="pick">→ ${s.pick}</p>
+      <p class="why">${s.why}</p>
+    </div>
+  </details>`).join('');
+</script>
+
+<script>
+const SUBS = [
+  { no:'recall',    t:'A. 패턴 백지작성' },
+  { no:'scenarios', t:'B. 시나리오→패턴' },
+  { no:'uml',       t:'C. UML 손그림' },
+  { no:'compare',   t:'D. 비교 빈칸' },
+];
+function buildNav(cur) {
+  const ol = document.querySelector('.ch-nav ol');
+  ol.innerHTML = SUBS.map(s => `<li><a href="${s.no}.html"${s.no===cur?' class="current"':''}>${s.t}</a></li>`).join('');
+  const tb = document.querySelector('.topbar');
+  const i = SUBS.findIndex(s => s.no === cur);
+  tb.innerHTML = `<a class="home" href="index.html">← Problem Set 표지</a><span class="ch-mini">SET · ${String(i+1).padStart(2,'0')} / ${String(SUBS.length).padStart(2,'0')}</span>`;
+  const prev = i > 0 ? SUBS[i-1] : { no:'', t:'표지로' };
+  const next = i < SUBS.length-1 ? SUBS[i+1] : { no:'', t:'표지로' };
+  const prevHref = prev.no ? prev.no+'.html' : 'index.html';
+  const nextHref = next.no ? next.no+'.html' : 'index.html';
+  document.querySelector('.ch-foot').innerHTML =
+    `<a href="${prevHref}"><div class="dir">← 이전</div><div class="ti">${prev.t}</div></a>` +
+    `<a href="${nextHref}" class="next"><div class="dir">다음 →</div><div class="ti">${next.t}</div></a>`;
+}
+function progressBar() {
+  const bar = document.querySelector('.scroll-progress');
+  document.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max>0 ? (h.scrollTop/max)*100 : 0) + '%';
+  }, { passive: true });
+}
+window.addEventListener('load', () => { buildNav('scenarios'); progressBar(); });
+</script>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', themeVariables: { fontFamily: 'inherit' } });
+</script>
+</body>
+</html>

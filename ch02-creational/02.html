@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>02 · 팩토리 메서드 패턴 — Chapter 2</title>
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+  .pattern-card { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: .8rem; margin: 1.4rem 0; }
+  .pc { background: var(--paper-2); border: 1px solid var(--line-soft); border-radius: 10px; padding: .9rem 1rem; }
+  .pc h5 { margin: 0 0 .35rem; font-family: var(--mono); font-size: .68rem; letter-spacing: .1em; color: var(--ink-faint); text-transform: uppercase; }
+  .pc p { margin: 0; font-size: .9rem; color: var(--ink); line-height: 1.5; }
+  .mermaid { display: flex; justify-content: center; padding: 1.2rem .8rem; background: #fff; }
+  .trap { border-left: 3px solid var(--style); background: var(--style-bg); border-radius: 0 10px 10px 0; padding: 1rem 1.2rem; margin: 1.4rem 0; }
+  .trap b { color: var(--style); }
+</style>
+</head>
+<body>
+<div class="scroll-progress"></div>
+<div class="topbar"></div>
+
+<div class="ch-layout">
+  <aside class="ch-nav"><nav><ol></ol></nav></aside>
+  <main class="ch-main">
+
+    <header class="ch-head">
+      <span class="kicker">Sub-Chapter 02 · 생성 패턴</span>
+      <h1>팩토리 메서드 패턴,<br><span class="t-style">무엇을 만들지 자식에게 맡긴다</span></h1>
+      <p class="lede">상위 로직은 그대로인데 만들어내는 제품만 달라야 할 때가 있다. 팩토리 메서드는 "객체를 만든다"는 책임을 상위 클래스에서 정의하되, 정작 어떤 구체 클래스를 만들지의 결정은 서브클래스로 넘긴다.</p>
+    </header>
+
+    <div class="prose">
+      <p>팩토리 메서드 패턴(Factory Method Pattern)의 의도는 한 문장으로 정리된다. <strong>객체 생성을 위한 인터페이스를 정의하되, 어떤 구체 클래스를 인스턴스화할지는 서브클래스가 결정하게 한다.</strong> 다른 말로 하면, 인스턴스화의 책임을 상위 클래스에서 하위 클래스로 미루는 것이다. 상위는 "제품이 필요하다"는 사실만 알고, "어떤 제품인지"는 모른다.</p>
+
+      <p>왜 이런 구조가 필요한가? 출발점은 앞 장에서 본 공통 통증이다. <code>new ConcreteClass()</code>가 상위 로직 한가운데에 박히면, 그 로직은 특정 구체 클래스에 묶여 버린다. 그런데 현실에는 큰 흐름은 똑같고 만들어내는 제품만 다른 경우가 흔하다. 예를 들어 문서를 다루는 프레임워크가 있고, 실제 문서는 응용마다 <code>TextDocument</code>일 수도 <code>SpreadsheetDocument</code>일 수도 있다. 이때 상위 <code>Application</code>이 <code>new TextDocument()</code>를 직접 부르면, 새 문서 종류를 추가할 때마다 상위 코드를 고쳐야 한다. 이는 <strong>개방-폐쇄 원칙(OCP, Open-Closed Principle)</strong> 위반이다. 팩토리 메서드는 "무엇을 만들지"의 결정을 추상 메서드 하나로 뽑아내고, 그 결정을 서브클래스의 오버라이딩(overriding)으로 넘겨 이 결합을 끊는다.</p>
+
+      <div class="analogy">
+        <b>프랜차이즈 본사와 가맹점.</b> 본사는 매장 운영 매뉴얼(주문 받기, 조리, 서빙)을 정해 둔다. 이 큰 흐름은 모든 매장이 똑같다. 하지만 "오늘의 메뉴를 무엇으로 만드는가"는 지역 가맹점이 정한다. 부산 지점은 밀면을, 서울 지점은 냉면을 만든다. 본사 매뉴얼(상위 클래스의 흐름)은 "메뉴를 하나 만들어라"라고만 적혀 있고, 실제 어떤 메뉴인지는 각 지점(서브클래스)이 결정한다. 본사는 신메뉴가 추가돼도 매뉴얼을 바꿀 필요가 없다.
+      </div>
+
+      <h2>구조 — 생성 결정을 상속으로 내려보낸다</h2>
+      <p>핵심 등장 인물은 둘로 나뉜다. 한쪽은 제품 계열이다. 추상 <strong>Product</strong>가 인터페이스를 정의하고, <strong>ConcreteProduct</strong>가 그 실제 구현이다. 다른 한쪽은 생성자 계열이다. <strong>Creator</strong>가 추상 <code>factoryMethod()</code>를 선언하고, 그 위에 <code>anOperation()</code> 같은 상위 비즈니스 로직을 둔다. <strong>ConcreteCreator</strong>가 <code>factoryMethod()</code>를 오버라이드해 어떤 ConcreteProduct를 돌려줄지 확정한다. 결정적으로, 상위의 <code>anOperation()</code>은 <code>factoryMethod()</code>가 돌려준 <em>추상 Product</em>만 다루기 때문에, 구체 제품이 무엇이든 상위 흐름 코드는 바뀌지 않는다.</p>
+    </div>
+
+    <div class="widget">
+      <div class="widget-frame">
+        <div class="widget-label"><span class="lab-no">UML 02</span><span>팩토리 메서드 · 생성 결정을 서브클래스로 위임</span></div>
+        <pre class="mermaid">
+classDiagram
+    class Creator {
+        +factoryMethod() Product
+        +anOperation()
+    }
+    class ConcreteCreator {
+        +factoryMethod() Product
+    }
+    class Product
+    class ConcreteProduct
+    Creator &lt;|-- ConcreteCreator
+    Product &lt;|.. ConcreteProduct
+    ConcreteCreator ..&gt; ConcreteProduct : 생성
+        </pre>
+      </div>
+      <p class="widget-cap">상속 화살표(Creator ◁ ConcreteCreator)가 핵심이다. 결정권이 상속을 타고 아래로 내려간다. 상위 anOperation()은 추상 Product에만 의존하므로, 새 제품을 추가해도 위쪽 코드는 닫혀 있다(수정 불필요).</p>
+    </div>
+
+    <div class="prose">
+      <h2>코드 — 추상 메서드 하나로 결정을 미룬다</h2>
+      <p>상위 <code>Creator</code>는 <code>factoryMethod()</code>를 추상으로 남겨 둔 채, 그것이 돌려줄 결과만 믿고 비즈니스 흐름을 작성한다. 무엇을 만들지는 각 <code>ConcreteCreator</code>가 자기 메서드를 오버라이드해 결정한다. 상위는 결코 <code>new</code>로 구체 제품을 직접 만들지 않는다 — 그 한 줄이 이 패턴의 전부라 해도 과언이 아니다.</p>
+    </div>
+
+    <div class="widget">
+      <div class="widget-frame">
+        <div class="widget-label"><span class="lab-no">CODE 02</span><span>문서 프레임워크 — 생성을 서브클래스로 위임</span></div>
+        <pre class="code"><code>abstract class Application {
+    // 무엇을 만들지는 모른 채, 큰 흐름만 정의한다
+    public void newDocument() {
+        Document doc = createDocument();   // 추상 Product를 받아 쓴다
+        doc.open();
+        doc.save();
+    }
+    // 팩토리 메서드: 어떤 구체 문서인지는 하위가 결정
+    protected abstract Document createDocument();
+}
+
+class TextApplication extends Application {
+    @Override
+    protected Document createDocument() {
+        return new TextDocument();         // 이 응용은 텍스트 문서
+    }
+}
+
+class SpreadsheetApplication extends Application {
+    @Override
+    protected Document createDocument() {
+        return new SpreadsheetDocument();  // 이 응용은 스프레드시트
+    }
+}</code></pre>
+      </div>
+      <p class="widget-cap">상위 newDocument()는 createDocument()가 무엇을 돌려줄지 모르지만 흐름은 완성돼 있다. 새 문서 종류(예: PDF 문서)를 추가하려면 새 서브클래스 하나만 만들면 된다. 기존 Application 흐름 코드는 한 줄도 손대지 않는다.</p>
+    </div>
+
+    <div class="prose">
+      <h2>단순 팩토리와는 다르다</h2>
+      <p>흔히 혼동하는 것이 <strong>단순 팩토리(Simple Factory)</strong>다. 단순 팩토리는 한 메서드 안에서 <code>if (type.equals("text")) return new TextDocument();</code>처럼 조건문으로 제품을 분기한다. 동작은 비슷해 보이지만, 새 제품을 추가할 때마다 그 분기문을 수정해야 하므로 OCP를 깬다. 반면 팩토리 메서드는 분기를 <strong>상속과 오버라이딩</strong>으로 대체한다. 새 제품은 새 서브클래스를 추가하는 것으로 끝나고, 기존 코드는 닫혀 있다. 단순 팩토리는 정식 GoF 패턴이 아니라 관용적 기법이라는 점도 기억해 두면 좋다.</p>
+
+      <h2>참여자와 결과</h2>
+      <div class="pattern-card">
+        <div class="pc"><h5>참여자</h5><p>Product / ConcreteProduct / Creator(추상 factoryMethod + 상위 흐름) / ConcreteCreator(오버라이드로 결정)</p></div>
+        <div class="pc"><h5>장점</h5><p>생성과 사용의 분리, 새 제품 추가 시 OCP 준수, 상위 로직 재사용</p></div>
+        <div class="pc"><h5>단점</h5><p>제품 종류마다 서브클래스가 늘어 클래스 수 증가, 구조가 다소 복잡</p></div>
+      </div>
+
+      <div class="trap">
+        <b>시험 함정.</b> ① 단순 팩토리(조건 분기)와 혼동 금지 — 팩토리 메서드는 <em>상속과 오버라이딩</em>으로 결정권을 넘긴다. ② "인스턴스화를 서브클래스로 미룬다"가 핵심 의도 문장이다. ③ 상위 흐름이 추상 Product에만 의존한다는 점이 OCP를 실현하는 메커니즘이다. ④ 추상 팩토리와의 구분이 최빈출 — 다음 페이지에서 정리한다.
+      </div>
+
+      <p>팩토리 메서드는 "단일 제품 하나"의 생성 결정을 상속으로 위임한다. 그런데 현실에서는 여러 제품이 <em>세트로</em> 일관되게 만들어져야 하는 경우가 있다. 맥 버튼에는 맥 체크박스가 따라와야 한다. 다음 sub-chapter의 추상 팩토리는 한 객체가 제품군 전체를 책임지게 해 이 일관성을 강제한다.</p>
+    </div>
+
+    <nav class="ch-foot"></nav>
+  </main>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', themeVariables: { fontFamily: 'inherit' } });
+</script>
+<script>
+const SUBS = [
+  { no:'01', t:'싱글톤 (Singleton)' },
+  { no:'02', t:'팩토리 메서드 (Factory Method)' },
+  { no:'03', t:'추상 팩토리 (Abstract Factory)' },
+];
+function buildNav(cur) {
+  const ol = document.querySelector('.ch-nav ol');
+  ol.innerHTML = SUBS.map(s => `<li><a href="${s.no}.html"${s.no===cur?' class="current"':''}>${s.t}</a></li>`).join('');
+  const tb = document.querySelector('.topbar');
+  tb.innerHTML = `<a class="home" href="index.html">← Ch.02 표지</a><span class="ch-mini">SUB ${cur} / ${String(SUBS.length).padStart(2,'0')}</span>`;
+  const i = SUBS.findIndex(s => s.no === cur);
+  const prev = i > 0 ? SUBS[i-1] : { no:'', t:'챕터 표지로' };
+  const next = i < SUBS.length-1 ? SUBS[i+1] : { no:'', t:'챕터 표지로' };
+  const prevHref = prev.no ? prev.no+'.html' : 'index.html';
+  const nextHref = next.no ? next.no+'.html' : 'index.html';
+  document.querySelector('.ch-foot').innerHTML =
+    `<a href="${prevHref}"><div class="dir">← 이전</div><div class="ti">${prev.t}</div></a>` +
+    `<a href="${nextHref}" class="next"><div class="dir">다음 →</div><div class="ti">${next.t}</div></a>`;
+}
+function progressBar() {
+  const bar = document.querySelector('.scroll-progress');
+  document.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max>0 ? (h.scrollTop/max)*100 : 0) + '%';
+  }, { passive: true });
+}
+window.addEventListener('load', () => { buildNav('02'); progressBar(); });
+</script>
+</body>
+</html>

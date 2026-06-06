@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chapter 03 · 구조 패턴</title>
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+  .masthead { position: relative; max-width: var(--wide); margin: 0 auto; padding: 1.5rem 1.4rem 0; }
+  .hero-wrap { position: relative; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); background: linear-gradient(135deg, var(--structure-bg), #fff 60%, var(--paper-2)); box-shadow: var(--shadow-plate); min-height: 240px; display: flex; align-items: center; padding: 2rem 2.2rem; }
+  .hero-chips { display: flex; flex-wrap: wrap; gap: .7rem; }
+  .hero-chip { font-family: var(--mono); font-size: .8rem; letter-spacing: .04em; padding: .55rem 1rem; border-radius: 999px; background: #fff; border: 1px solid var(--structure-lo); color: var(--structure); box-shadow: var(--shadow-soft); }
+  .hero-cap { position: absolute; left: 2.2rem; bottom: 1rem; font-family: var(--mono); font-size: .68rem; letter-spacing: .12em; color: var(--ink-faint); }
+  .title-block { max-width: var(--wide); margin: 2.4rem auto 0; padding-inline: 1.4rem; }
+  .title-block .kicker { display: block; margin-bottom: 1rem; }
+  .title-block h1 { font-size: clamp(2.4rem, 6vw, 4.4rem); margin: 0; line-height: 1.05; }
+  .title-block h1 em { color: var(--style); font-style: normal; }
+  .paper-meta { display: flex; flex-wrap: wrap; gap: .5rem 1.6rem; margin-top: 1.4rem; font-family: var(--mono); font-size: .76rem; color: var(--ink-soft); }
+  .paper-meta span b { color: var(--ink); font-weight: 500; }
+  .intro-block { max-width: var(--measure); margin: 2.4rem auto 0; padding-inline: 1.4rem; }
+  .intro-block p { font-size: 1.02rem; }
+  .plates { max-width: var(--wide); margin: 1rem auto; padding: 1.6rem 1.4rem 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 1rem; }
+  .plate { position: relative; display: flex; flex-direction: column; text-decoration: none; color: inherit; background: #fff; border: 1px solid var(--line); border-radius: 13px; padding: 1.3rem 1.3rem 1.4rem; transition: transform .2s var(--ease), border-color .2s, box-shadow .2s; overflow: hidden; }
+  .plate:hover { transform: translateY(-4px); border-color: var(--structure-lo); box-shadow: var(--shadow-plate); }
+  .plate .pno { font-family: var(--mono); font-size: .72rem; letter-spacing: .14em; color: var(--ink-faint); }
+  .plate h3 { font-family: var(--serif); font-size: 1.22rem; margin: .5rem 0 .5rem; line-height: 1.22; }
+  .plate p { font-size: .88rem; color: var(--ink-soft); line-height: 1.5; margin: 0; }
+  .plate .spectrum { display: flex; height: 4px; border-radius: 2px; overflow: hidden; margin-bottom: 1rem; }
+  .plate .spectrum i { display: block; height: 100%; }
+  .plate .go { margin-top: 1rem; font-family: var(--mono); font-size: .7rem; letter-spacing: .1em; color: var(--structure); opacity: 0; transform: translateX(-4px); transition: .2s var(--ease); }
+  .plate:hover .go { opacity: 1; transform: translateX(0); }
+  .group-label { display: inline-block; margin: 2.4rem 1.4rem 0; padding: .3rem .9rem; font-family: var(--mono); font-size: .68rem; letter-spacing: .18em; color: var(--ink-faint); border: 1px solid var(--line); border-radius: 999px; }
+  footer.colophon { max-width: var(--measure); margin: 3rem auto 4rem; padding: 2rem 1.4rem 0; border-top: 1px solid var(--line); font-size: .85rem; color: var(--ink-soft); }
+  .back-link { display: inline-block; margin: 1rem 1.4rem 0; font-family: var(--mono); font-size: .76rem; color: var(--ink-soft); text-decoration: none; }
+  .back-link:hover { color: var(--ink); }
+</style>
+</head>
+<body>
+
+<a href="../index.html" class="back-link">← 표지로 (6장 전체)</a>
+
+<header class="masthead">
+  <div class="hero-wrap">
+    <div class="hero-chips">
+      <span class="hero-chip">Adapter</span>
+      <span class="hero-chip">Decorator</span>
+      <span class="hero-chip">Composite</span>
+    </div>
+    <div class="hero-cap">구조 패턴 — 합성과 위임으로 객체를 조립한다</div>
+  </div>
+</header>
+
+<div class="title-block">
+  <span class="kicker">Chapter 03 · 구조 패턴 (Structural Patterns)</span>
+  <h1>객체를 <em>어떻게</em><br>조립할 것인가</h1>
+  <div class="paper-meta">
+    <span><b>합성과 위임으로 유연한 구조</b></span>
+    <span>구성 <b>3 sub-chapter</b></span>
+    <span>패턴 <b>Adapter · Decorator · Composite</b></span>
+  </div>
+</div>
+
+<section class="intro-block">
+  <h2>이 장을 왜 읽는가</h2>
+  <p>구조 패턴(Structural Pattern)은 모두 한 가지 질문에서 출발한다. <strong>이미 존재하는 객체들을 어떻게 짜맞춰 더 큰 구조를 만들되, 그 구조를 경직되지 않게 유지할 것인가.</strong> 흔한 본능은 상속(inheritance)이다. 그러나 상속은 컴파일 시점에 관계가 굳어지는 강한 결합이라, 조합이 늘어날수록 클래스가 폭발하고 변경에 약해진다. 구조 패턴의 공통 무기는 <strong>합성과 위임(composition &amp; delegation)</strong>이다. 객체를 다른 객체 안에 멤버로 품고(합성), 받은 요청을 품은 객체에게 넘겨(위임) 처리한다.</p>
+  <p>세 패턴은 "무엇을 위해 객체를 감싸느냐"로 갈린다. <strong>어댑터</strong>는 인터페이스를 변환해 호환되지 않던 것을 협력시키고, <strong>데커레이터</strong>는 같은 인터페이스를 유지한 채 기능을 동적으로 덧붙이며, <strong>컴포지트</strong>는 여럿을 트리로 모아 개별과 묶음을 동일하게 다룬다. 시험에서는 특히 어댑터 vs 데커레이터, 그리고 데커레이터 vs 컴포지트의 구분이 단골이다.</p>
+</section>
+
+<span class="group-label">PART · 구조 패턴 3종</span>
+<section class="plates" id="subs"></section>
+
+<footer class="colophon">
+  <p>이 챕터는 GoF 구조 패턴 중 어댑터·데커레이터·컴포지트를 다룬다. 세 패턴 모두 합성과 위임이라는 같은 무기로 다른 목적을 푼다. 모든 sub-chapter는 <em>“정의보다 왜”</em>를 먼저 다룬다.</p>
+</footer>
+
+<script>
+const SUBS = [
+  { no:'01', t:'어댑터 패턴 (Adapter)', d:'한 클래스의 인터페이스를 클라이언트가 기대하는 다른 인터페이스로 변환한다. 호환되지 않던 클래스들을 위임으로 협력시킨다. 전원 어댑터의 발상.', sp:['structure-lo','structure'] },
+  { no:'02', t:'데커레이터 패턴 (Decorator)', d:'같은 인터페이스를 유지한 채 객체에 동적으로 책임을 더한다. Component를 구현하면서 동시에 멤버로 감싸 양파처럼 겹친다. 상속의 클래스 폭발을 피한다.', sp:['structure','synth'] },
+  { no:'03', t:'컴포지트 패턴 (Composite)', d:'객체를 트리로 구성해 전체-부분 계층을 표현하고, 개별과 묶음을 동일하게 다룬다. operation()이 자식을 재귀로 순회한다.', sp:['synth','structure'] },
+];
+const colMap = { structure:'var(--structure)', 'structure-lo':'var(--structure-lo)', style:'var(--style)', 'style-lo':'var(--style-lo)', synth:'var(--synth)', ink:'var(--ink)', 'ink-soft':'var(--ink-soft)', 'ink-faint':'var(--ink-faint)' };
+const host = document.getElementById('subs');
+SUBS.forEach(s => {
+  const sp = s.sp.length === 1 ? [s.sp[0], s.sp[0]] : s.sp;
+  const a = document.createElement('a');
+  a.className = 'plate';
+  a.href = s.no + '.html';
+  a.innerHTML = `
+    <div class="spectrum">${sp.map(c=>`<i style="flex:1;background:${colMap[c]}"></i>`).join('')}</div>
+    <span class="pno">SUB-CHAPTER ${s.no}</span>
+    <h3>${s.t}</h3>
+    <p>${s.d}</p>
+    <span class="go">읽기 →</span>`;
+  host.appendChild(a);
+});
+</script>
+</body>
+</html>

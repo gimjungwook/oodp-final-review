@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>01 · 스트래티지 패턴 — Chapter 4</title>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<div class="scroll-progress"></div>
+<div class="topbar"></div>
+
+<div class="ch-layout">
+  <aside class="ch-nav"><nav><ol></ol></nav></aside>
+  <main class="ch-main">
+
+    <header class="ch-head">
+      <span class="kicker">Sub-Chapter 01 · 행위 패턴</span>
+      <h1>스트래티지 패턴,<br><span class="t-style">알고리즘을 갈아끼우다</span></h1>
+      <p class="lede">같은 일을 하는 방법이 여러 개고, 어떤 방법을 쓸지 런타임에 정해야 한다. 결제 수단, 정렬 방식, 할인 정책. 스트래티지는 이 "변하는 방법"을 객체로 뽑아내, 사용하는 코드를 건드리지 않고도 통째로 바꿔 끼우게 만든다.</p>
+    </header>
+
+    <div class="prose">
+      <p>스트래티지 패턴(Strategy Pattern)의 의도는 이렇다. <strong>알고리즘군(family of algorithms)을 각각 캡슐화해 서로 교체 가능하게 만들고, 알고리즘을 사용하는 클라이언트와 독립적으로 알고리즘을 바꿀 수 있게 한다.</strong> 핵심은 "같은 목적을 이루는 여러 방법"을 하나하나 별도 객체로 떼어 내고, 그 객체들이 같은 인터페이스를 공유하게 하는 것이다. 그러면 사용하는 쪽은 인터페이스만 알면 되고, 구체적인 방법은 언제든 다른 것으로 바꿔 끼울 수 있다.</p>
+
+      <p>왜 필요한가? 행위가 여러 갈래로 나뉘는 코드를 가장 손쉽게 짜는 방법은 조건 분기다. 결제 처리를 예로 들면 <code>if(카드) ... else if(계좌이체) ... else if(포인트) ...</code> 같은 식이다. 문제는 결제 수단이 하나 늘 때마다 이 분기문을 찾아 또 한 가지를 추가해야 한다는 점이다. 이는 <strong>개방-폐쇄 원칙(OCP, Open-Closed Principle)</strong> 위반이다 — 기능 확장을 위해 기존 코드를 자꾸 열어 고쳐야 하기 때문이다. 게다가 분기가 여러 메서드에 흩어져 있으면 한 곳을 빠뜨리는 실수도 잦다. 스트래티지는 각 방법을 독립된 객체로 만들어, 새 방법은 새 클래스를 더하는 것으로 끝나게 한다. 기존 코드는 닫힌 채로 둔 채 확장만 일어난다.</p>
+
+      <div class="analogy">
+        <b>여행 이동 수단 고르기.</b> 공항에서 시내로 갈 때 택시, 지하철, 공항버스라는 선택지가 있다. "시내로 간다"는 목적은 같지만 방법은 제각각이다. 당신(클라이언트)은 그날의 상황 — 짐의 양, 예산, 시간 — 을 보고 수단 하나를 고른다. 일단 고르면 그 수단의 세부(노선, 요금 계산)는 그 수단이 알아서 한다. 새 수단(공유 킥보드)이 생겨도 당신의 "이동한다"는 행동 자체는 바뀌지 않는다. 스트래티지가 정확히 이 구조다. <code>Context</code>는 "이동한다"는 목적, 각 교통수단이 <code>ConcreteStrategy</code>, 당신이 수단을 고르는 행위가 <code>setStrategy()</code>다.
+      </div>
+
+      <h2>구조 — 행위를 합성으로 주입한다</h2>
+      <p>구조는 세 부분으로 이뤄진다. 첫째, 모든 방법이 공유하는 공통 인터페이스 <code>Strategy</code>가 있다(예: <code>algorithm()</code>). 둘째, 그 인터페이스를 구현한 구체 전략들 <code>ConcreteStrategyA</code>, <code>ConcreteStrategyB</code>가 각자의 방법을 담는다. 셋째, 이 전략을 사용하는 <code>Context</code>는 <strong>구체 전략이 아니라 <code>Strategy</code> 인터페이스 타입의 필드만</strong> 가진다. 그리고 자기 일을 직접 하지 않고 그 전략 객체에 <strong>위임(delegation)</strong>한다. 즉 <code>Context</code>는 "무엇을 할지"는 알되 "어떻게 할지"는 전략에 떠넘긴다.</p>
+
+      <p>여기서 결정적인 점은 <code>Context</code>가 전략을 <strong>상속이 아니라 합성(composition)으로 보유</strong>한다는 것이다. 상속이라면 전략을 컴파일 시점에 못 박아야 하지만, 합성이면 필드를 바꿔 끼우는 것만으로 런타임에 행위를 교체할 수 있다. "상속보다 합성"이라는 객체지향 설계 원칙이 그대로 드러나는 자리다.</p>
+    </div>
+
+    <div class="widget">
+      <div class="widget-frame">
+        <div class="widget-label"><span class="lab-no">UML 01</span><span>스트래티지 클래스 다이어그램 · Context가 Strategy에 위임</span></div>
+        <pre class="mermaid">
+classDiagram
+    class Context {
+        -strategy : Strategy
+        +setStrategy(Strategy)
+        +execute()
+    }
+    class Strategy {
+        +algorithm()
+    }
+    class ConcreteStrategyA {
+        +algorithm()
+    }
+    class ConcreteStrategyB {
+        +algorithm()
+    }
+    Strategy &lt;|.. ConcreteStrategyA
+    Strategy &lt;|.. ConcreteStrategyB
+    Context o--> Strategy : 위임
+        </pre>
+      </div>
+      <p class="widget-cap">Context는 Strategy 인터페이스에만 의존(o--> 합성 연관)하고, 실제 일은 주입된 구체 전략의 algorithm()에 넘긴다. 새 전략은 점선 화살표(실현, ..|>)로 인터페이스를 구현하는 클래스를 하나 더 추가하기만 하면 된다 — 기존 코드는 손대지 않는다.</p>
+    </div>
+
+    <div class="prose">
+      <h2>참여자와 협력</h2>
+      <p><strong>Strategy</strong>는 모든 알고리즘에 공통인 인터페이스를 선언한다. <strong>ConcreteStrategy</strong>는 그 인터페이스로 실제 알고리즘을 구현한다. <strong>Context</strong>는 <code>Strategy</code> 참조를 들고 있다가, 클라이언트가 설정한 전략에 작업을 위임한다. 협력의 흐름은 단순하다 — 클라이언트가 원하는 <code>ConcreteStrategy</code>를 만들어 <code>Context</code>에 주입(<code>setStrategy</code>)하고, 이후 <code>Context.execute()</code>가 호출되면 <code>Context</code>는 내부적으로 보관한 전략의 <code>algorithm()</code>을 부른다. 전략을 고르는 주체는 어디까지나 <strong>외부의 클라이언트</strong>다. 이 "외부가 고른다"는 점이 뒤에서 볼 스테이트 패턴과의 결정적 차이가 된다.</p>
+
+      <h2>코드 — 분기를 객체로 대체하기</h2>
+      <p>할인 정책을 예로 보자. 분기문 버전은 정책이 늘 때마다 <code>calculate()</code>를 열어 고쳐야 한다. 스트래티지 버전은 정책마다 클래스를 두고, 가격 계산기는 어떤 정책이 꽂혔는지 모른 채 위임만 한다.</p>
+    </div>
+
+    <div class="widget">
+      <div class="widget-frame">
+        <div class="widget-label"><span class="lab-no">CODE 01</span><span>할인 정책 스트래티지 (런타임 교체)</span></div>
+        <pre class="code"><code>// 공통 인터페이스 — 모든 할인 정책이 공유
+interface DiscountStrategy {
+    int discount(int price);
+}
+
+// 구체 전략들 — 각자 한 가지 방법만 책임
+class NoDiscount implements DiscountStrategy {
+    public int discount(int price) { return price; }
+}
+class RateDiscount implements DiscountStrategy {
+    private final double rate;
+    RateDiscount(double rate) { this.rate = rate; }
+    public int discount(int price) { return (int)(price * (1 - rate)); }
+}
+
+// Context — 전략을 합성으로 보유하고 위임만 한다
+class Checkout {
+    private DiscountStrategy strategy = new NoDiscount();
+    public void setStrategy(DiscountStrategy s) { this.strategy = s; }  // 런타임 교체
+    public int finalPrice(int price) { return strategy.discount(price); } // 위임
+}
+
+// 사용 — 클라이언트가 전략을 골라 갈아끼운다
+Checkout c = new Checkout();
+c.setStrategy(new RateDiscount(0.2));   // 20% 할인으로 교체
+int paid = c.finalPrice(10000);          // 8000</code></pre>
+      </div>
+      <p class="widget-cap">새 할인 정책(예: 정액 할인)을 추가하려면 DiscountStrategy를 구현하는 클래스를 하나 더 만들면 끝이다. Checkout 코드는 전혀 바뀌지 않는다 — 확장에는 열려 있고 수정에는 닫혀 있다(OCP).</p>
+    </div>
+
+    <div class="prose">
+      <h2>결과 — 무엇을 얻고 무엇을 치르는가</h2>
+      <div class="pattern-card">
+        <div class="pc"><h5>참여자</h5><p>Strategy(공통 인터페이스), ConcreteStrategy(개별 알고리즘), Context(전략 보유 + 위임)</p></div>
+        <div class="pc"><h5>장점</h5><p>알고리즘을 런타임에 교체, 분기문 제거, OCP 준수(새 전략 = 새 클래스), 알고리즘 단위 테스트 용이</p></div>
+        <div class="pc"><h5>단점</h5><p>전략 수만큼 클래스 증가, 클라이언트가 전략들의 차이를 알아야 적절히 선택 가능</p></div>
+      </div>
+
+      <div class="trap">
+        <b>시험 함정.</b> ① 스트래티지는 행위를 <em>합성</em>으로 주입한다 — 상속(컴파일 시점 고정)이 아니라 위임(런타임 교체)이 핵심. ② 전략을 고르는 주체는 <em>외부 클라이언트</em>다. ③ 가장 단골은 <strong>Strategy vs State</strong> 비교다. 클래스 다이어그램이 거의 똑같아(Context가 인터페이스에 위임) 구조만으로는 구분이 안 된다. 차이는 <em>의도</em>에 있다 — 다음 sub-chapter에서 결판낸다.
+      </div>
+
+      <h2>다음으로 — Strategy vs State 예고</h2>
+      <p>스트래티지의 클래스 다이어그램을 머릿속에 새겨 두자. <code>Context</code>가 인터페이스 타입 필드를 들고 위임하는 모양. 다음 sub-chapter의 <strong>스테이트 패턴(State Pattern)</strong>은 이 그림과 거의 동일한 구조를 갖는다. 그런데도 둘은 전혀 다른 패턴이다. 핵심 차이를 미리 한 줄로 박아 두면 — 스트래티지는 "<strong>외부가 전략을 골라 갈아끼운다</strong>", 스테이트는 "<strong>상태 객체가 스스로 다음 상태로 전이한다</strong>". 같은 뼈대에 다른 의도. 그 차이가 어떻게 코드로 갈라지는지 다음 장에서 충실히 비교한다.</p>
+    </div>
+
+    <nav class="ch-foot"></nav>
+  </main>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', themeVariables: { fontFamily: 'inherit' } });
+</script>
+<script>
+const SUBS = [
+  { no:'01', t:'스트래티지 (Strategy)' },
+  { no:'02', t:'스테이트 (State)' },
+  { no:'03', t:'커맨드 (Command)' },
+  { no:'04', t:'옵서버 (Observer)' },
+  { no:'05', t:'템플릿 메서드 (Template Method)' },
+  { no:'06', t:'이터레이터 (Iterator)' },
+];
+function buildNav(cur) {
+  const ol = document.querySelector('.ch-nav ol');
+  ol.innerHTML = SUBS.map(s => `<li><a href="${s.no}.html"${s.no===cur?' class="current"':''}>${s.t}</a></li>`).join('');
+  const tb = document.querySelector('.topbar');
+  tb.innerHTML = `<a class="home" href="index.html">← Ch.04 표지</a><span class="ch-mini">SUB ${cur} / ${String(SUBS.length).padStart(2,'0')}</span>`;
+  const i = SUBS.findIndex(s => s.no === cur);
+  const prev = i > 0 ? SUBS[i-1] : { no:'', t:'챕터 표지로' };
+  const next = i < SUBS.length-1 ? SUBS[i+1] : { no:'', t:'챕터 표지로' };
+  const prevHref = prev.no ? prev.no+'.html' : 'index.html';
+  const nextHref = next.no ? next.no+'.html' : 'index.html';
+  document.querySelector('.ch-foot').innerHTML =
+    `<a href="${prevHref}"><div class="dir">← 이전</div><div class="ti">${prev.t}</div></a>` +
+    `<a href="${nextHref}" class="next"><div class="dir">다음 →</div><div class="ti">${next.t}</div></a>`;
+}
+function progressBar() {
+  const bar = document.querySelector('.scroll-progress');
+  document.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max>0 ? (h.scrollTop/max)*100 : 0) + '%';
+  }, { passive: true });
+}
+window.addEventListener('load', () => { buildNav('01'); progressBar(); });
+</script>
+</body>
+</html>

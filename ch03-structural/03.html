@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>03 · 컴포지트 패턴 — Chapter 3</title>
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+  .pattern-card { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: .8rem; margin: 1.4rem 0; }
+  .pc { background: var(--paper-2); border: 1px solid var(--line-soft); border-radius: 10px; padding: .9rem 1rem; }
+  .pc h5 { margin: 0 0 .35rem; font-family: var(--mono); font-size: .68rem; letter-spacing: .1em; color: var(--ink-faint); text-transform: uppercase; }
+  .pc p { margin: 0; font-size: .9rem; color: var(--ink); line-height: 1.5; }
+  .mermaid { display: flex; justify-content: center; padding: 1.2rem .8rem; background: #fff; }
+  .trap { border-left: 3px solid var(--style); background: var(--style-bg); border-radius: 0 10px 10px 0; padding: 1rem 1.2rem; margin: 1.4rem 0; }
+  .trap b { color: var(--style); }
+</style>
+</head>
+<body>
+<div class="scroll-progress"></div>
+<div class="topbar"></div>
+
+<div class="ch-layout">
+  <aside class="ch-nav"><nav><ol></ol></nav></aside>
+  <main class="ch-main">
+
+    <header class="ch-head">
+      <span class="kicker">Sub-Chapter 03 · 구조 패턴</span>
+      <h1>컴포지트 패턴,<br><span class="t-style">개별과 묶음을 한 가지로 다루다</span></h1>
+      <p class="lede">파일과 폴더, 위젯과 컨테이너처럼 "하나"와 "여럿의 묶음"이 섞인 구조가 있다. 컴포지트는 이 둘을 같은 인터페이스로 묶어, 트리 어디서든 분기 없이 똑같이 호출하게 만든다.</p>
+    </header>
+
+    <div class="prose">
+      <p>컴포지트 패턴(Composite Pattern)의 의도는 한 문장이다. <strong>객체들을 트리 구조로 구성해 부분-전체(part-whole) 계층을 표현하고, 클라이언트가 개별 객체와 복합 객체를 동일하게 다루도록 한다.</strong> 핵심은 "동일하게(uniformly)"다. 잎(개별)이든 가지(묶음)이든 같은 인터페이스로 호출되므로, 클라이언트 코드에는 "이게 하나야, 묶음이야?"를 묻는 분기가 사라진다.</p>
+
+      <p>왜 필요한가? 파일 시스템을 생각하자. 파일 하나의 크기를 구하는 것과 폴더 전체의 크기를 구하는 것은 다른 일처럼 보인다. 폴더는 안에 또 폴더와 파일을 품을 수 있기 때문이다. 분기로 풀면 코드 곳곳에 <code>if (폴더면) 자식을 순회하고 ... else (파일이면) ...</code>가 박힌다. 새 종류가 생기면 그 분기를 전부 찾아 고쳐야 한다. 컴포지트는 파일과 폴더가 모두 같은 <code>getSize()</code>를 갖게 하고, 폴더의 <code>getSize()</code>는 <strong>자식들의 <code>getSize()</code>를 재귀로 합산</strong>하게 만든다. 클라이언트는 그냥 <code>getSize()</code>만 부른다 — 대상이 파일인지 폴더인지 알 필요가 없다.</p>
+
+      <div class="analogy">
+        <b>회사 조직도.</b> 사원 한 명에게 "당신 팀의 인건비 합계는?"이라고 물으면 사원은 자기 급여만 답한다(잎). 같은 질문을 팀장에게 하면, 팀장은 자기 밑의 모든 팀원에게 똑같은 질문을 던지고(재귀) 그 답을 모아 합산한다(가지). 질문하는 사람(클라이언트)은 상대가 사원인지 팀장인지 구분하지 않고 같은 질문을 던질 뿐이다. 컴포지트의 재귀 순회가 정확히 이 위임 구조다.
+      </div>
+
+      <h2>구조 — Leaf와 Composite가 같은 Component를 구현한다</h2>
+      <p>역할은 셋이다. <strong>Component</strong>는 잎과 가지가 공유하는 공통 인터페이스(<code>operation()</code>, 그리고 보통 <code>add()</code>/<code>remove()</code>)다. <strong>Leaf</strong>는 자식이 없는 개별 객체로, 자기 일만 한다(파일). <strong>Composite</strong>는 자식 Component들을 리스트로 품고(합성), <code>operation()</code>에서 자식 전체를 순회하며 각자의 <code>operation()</code>을 재귀로 호출한 뒤 결과를 모은다(폴더). Leaf와 Composite가 <em>같은 Component를 구현</em>한다는 점이 "동일하게 다루기"를 가능하게 하는 핵심이다.</p>
+    </div>
+
+    <div class="widget">
+      <div class="widget-frame">
+        <div class="widget-label"><span class="lab-no">UML 03</span><span>컴포지트 클래스 다이어그램 · Composite가 자식 Component들을 품는다</span></div>
+        <pre class="mermaid">
+classDiagram
+    class Component {
+        +operation()
+        +add(Component)
+        +remove(Component)
+    }
+    class Leaf {
+        +operation()
+    }
+    class Composite {
+        -children : List~Component~
+        +operation()
+        +add(Component)
+    }
+    Component <|.. Leaf
+    Component <|.. Composite
+    Composite o--> Component : 자식들
+        </pre>
+      </div>
+      <p class="widget-cap">Leaf와 Composite가 모두 Component를 구현(점선 실현)하므로 클라이언트는 둘을 같은 타입으로 다룬다. 결정적 차이는 합성 화살표(o--&gt;, "자식들")가 <b>여럿</b>(List~Component~)을 향한다는 것 — 데커레이터가 하나를 감싼 것과 대비된다.</p>
+    </div>
+
+    <div class="prose">
+      <h2>코드 — operation()이 자식을 재귀로 순회한다</h2>
+      <p>Composite의 <code>getSize()</code>는 자식 리스트를 돌며 각 자식의 <code>getSize()</code>를 부르고 합산한다. 그 자식이 또 Composite면 자연히 더 깊이 재귀가 들어간다. Leaf의 <code>getSize()</code>는 자식이 없으니 자기 크기만 돌려준다(재귀 종료점). 클라이언트는 트리의 어느 노드든 똑같이 <code>getSize()</code>만 호출한다.</p>
+    </div>
+
+    <div class="widget">
+      <div class="widget-frame">
+        <div class="widget-label"><span class="lab-no">CODE 03</span><span>컴포지트 — 재귀 순회로 합산</span></div>
+        <pre class="code"><code>interface Node {                              // Component
+    int getSize();
+}
+
+class File implements Node {                  // Leaf (자식 없음)
+    private final int size;
+    File(int size) { this.size = size; }
+    public int getSize() { return size; }     // 재귀 종료점: 자기 일만
+}
+
+class Folder implements Node {                // Composite
+    private final List&lt;Node&gt; children = new ArrayList&lt;&gt;();   // 자식들을 품는다
+    public void add(Node n) { children.add(n); }
+    public int getSize() {                     // 자식 전체를 재귀로 순회 + 합산
+        int sum = 0;
+        for (Node c : children) sum += c.getSize();   // c가 Folder면 더 깊이 재귀
+        return sum;
+    }
+}
+
+// 트리 구성
+Folder root = new Folder();
+root.add(new File(100));
+Folder sub = new Folder();
+sub.add(new File(40));
+root.add(sub);
+
+root.getSize();   // 클라이언트는 분기 없이 호출 → 100 + (40) = 140</code></pre>
+      </div>
+      <p class="widget-cap">root.getSize()는 자식인 File(100)과 sub-folder의 getSize()를 부른다. sub은 다시 자기 자식 File(40)에게 재귀로 위임한다. 클라이언트 코드 어디에도 "파일이냐 폴더냐" 분기가 없다 — 트리 전체가 같은 Node 인터페이스로 동일하게 다뤄진다.</p>
+    </div>
+
+    <div class="prose">
+      <h2>참여자와 결과</h2>
+      <div class="pattern-card">
+        <div class="pc"><h5>참여자</h5><p>Component(공통 인터페이스), Leaf(개별 객체), Composite(자식 Component들을 합성)</p></div>
+        <div class="pc"><h5>장점</h5><p>개별과 묶음을 동일 취급, 분기 제거, 트리 확장 용이, 재귀로 깊이 무관 처리</p></div>
+        <div class="pc"><h5>단점</h5><p>인터페이스 통일을 위해 Leaf에 무의미한 메서드가 생길 수 있음(투명성-안전성 긴장)</p></div>
+      </div>
+
+      <h2>설계 트레이드오프 — add/remove를 어디에 둘까</h2>
+      <p>컴포지트에서 가장 자주 출제되는 설계 결정은 <code>add()</code>/<code>remove()</code>를 <strong>Component(공통 인터페이스)에 둘지, Composite에만 둘지</strong>다. 둘은 "투명성"과 "안전성"이라는 상반된 가치를 따라 갈린다.</p>
+
+      <table class="cmp-table">
+        <thead><tr><th>비교 축</th><th>투명성 우선 (Component에 둠)</th><th>안전성 우선 (Composite에만 둠)</th></tr></thead>
+        <tbody>
+          <tr><td>add/remove 위치</td><td>공통 Component 인터페이스</td><td>Composite 클래스에만</td></tr>
+          <tr><td>클라이언트 시점</td><td>Leaf와 Composite를 <b>완전히 동일</b>하게 취급</td><td>자식 조작 전 Composite로 형변환 필요</td></tr>
+          <tr><td>위험</td><td>Leaf에서 add() 호출 시 런타임 오류(무의미)</td><td>동일 취급이 깨짐(투명성 손실)</td></tr>
+        </tbody>
+      </table>
+      <p>투명성(transparency) 우선은 <code>add()</code>/<code>remove()</code>를 공통 Component에 선언해 클라이언트가 잎과 가지를 한 치의 구분 없이 다루게 한다. 대신 Leaf에도 그 메서드가 생기는데, 잎은 자식을 가질 수 없으니 호출하면 무의미하거나 예외를 던진다 — <strong>컴파일 시점에 막을 수 없는 위험</strong>이 남는다. 안전성(safety) 우선은 반대로 <code>add()</code>/<code>remove()</code>를 Composite에만 두어 Leaf에서 잘못 호출할 길을 원천 차단한다. 대신 클라이언트가 자식을 조작하려면 대상이 Composite임을 알고 형변환해야 하므로, "둘을 동일하게 다룬다"는 컴포지트의 본래 매력이 일부 희생된다. 정답은 없고 맥락에 따른 선택이라는 점이 핵심이다.</p>
+
+      <div class="trap">
+        <b>시험 함정.</b> ① <code>add</code>/<code>remove</code>를 <em>Component에 두면 투명성</em>(Leaf에선 무의미·위험), <em>Composite에만 두면 안전성</em>(형변환 필요)이라는 트레이드오프가 단골이다. ② <strong>Composite vs Decorator</strong> — 구조는 닮았지만 컴포지트는 <em>여럿</em>을 모아 전체-부분 트리를 만들고, 데커레이터는 <em>하나</em>를 감싸 기능을 더한다. ③ Composite의 핵심은 "operation()이 자식을 재귀 순회하며, 클라이언트는 Leaf와 Composite를 구분하지 않는다"는 것이다.
+      </div>
+
+      <p>어댑터(모양 변환), 데커레이터(기능 누적), 컴포지트(트리 묶음) — 세 패턴 모두 합성과 위임이라는 한 무기로 서로 다른 목적을 풀었다. "객체를 무엇을 위해, 몇 개나 감싸는가"를 따라가면 셋의 구분이 또렷해진다. 다음 장에서는 객체들이 <em>어떻게 협력하며 행동하는가</em>를 다루는 행위 패턴(Behavioral Pattern)으로 넘어간다.</p>
+    </div>
+
+    <nav class="ch-foot"></nav>
+  </main>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', themeVariables: { fontFamily: 'inherit' } });
+</script>
+<script>
+const SUBS = [
+  { no:'01', t:'어댑터 (Adapter)' },
+  { no:'02', t:'데커레이터 (Decorator)' },
+  { no:'03', t:'컴포지트 (Composite)' },
+];
+function buildNav(cur) {
+  const ol = document.querySelector('.ch-nav ol');
+  ol.innerHTML = SUBS.map(s => `<li><a href="${s.no}.html"${s.no===cur?' class="current"':''}>${s.t}</a></li>`).join('');
+  const tb = document.querySelector('.topbar');
+  tb.innerHTML = `<a class="home" href="index.html">← Ch.03 표지</a><span class="ch-mini">SUB ${cur} / ${String(SUBS.length).padStart(2,'0')}</span>`;
+  const i = SUBS.findIndex(s => s.no === cur);
+  const prev = i > 0 ? SUBS[i-1] : { no:'', t:'챕터 표지로' };
+  const next = i < SUBS.length-1 ? SUBS[i+1] : { no:'', t:'챕터 표지로' };
+  const prevHref = prev.no ? prev.no+'.html' : 'index.html';
+  const nextHref = next.no ? next.no+'.html' : 'index.html';
+  document.querySelector('.ch-foot').innerHTML =
+    `<a href="${prevHref}"><div class="dir">← 이전</div><div class="ti">${prev.t}</div></a>` +
+    `<a href="${nextHref}" class="next"><div class="dir">다음 →</div><div class="ti">${next.t}</div></a>`;
+}
+function progressBar() {
+  const bar = document.querySelector('.scroll-progress');
+  document.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max>0 ? (h.scrollTop/max)*100 : 0) + '%';
+  }, { passive: true });
+}
+window.addEventListener('load', () => { buildNav('03'); progressBar(); });
+</script>
+</body>
+</html>

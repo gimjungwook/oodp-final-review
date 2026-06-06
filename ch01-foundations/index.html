@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chapter 01 · 설계 패턴의 토대</title>
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+  .masthead { position: relative; max-width: var(--wide); margin: 0 auto; padding: 1.5rem 1.4rem 0; }
+  .hero-wrap { position: relative; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); background: linear-gradient(135deg, var(--structure-bg), #fff 60%, var(--paper-2)); box-shadow: var(--shadow-plate); min-height: 240px; display: flex; align-items: center; padding: 2rem 2.2rem; }
+  .hero-chips { display: flex; flex-wrap: wrap; gap: .7rem; }
+  .hero-chip { font-family: var(--mono); font-size: .8rem; letter-spacing: .04em; padding: .55rem 1rem; border-radius: 999px; background: #fff; border: 1px solid var(--structure-lo); color: var(--structure); box-shadow: var(--shadow-soft); }
+  .hero-cap { position: absolute; left: 2.2rem; bottom: 1rem; font-family: var(--mono); font-size: .68rem; letter-spacing: .12em; color: var(--ink-faint); }
+  .title-block { max-width: var(--wide); margin: 2.4rem auto 0; padding-inline: 1.4rem; }
+  .title-block .kicker { display: block; margin-bottom: 1rem; }
+  .title-block h1 { font-size: clamp(2.4rem, 6vw, 4.4rem); margin: 0; line-height: 1.05; }
+  .title-block h1 em { color: var(--style); font-style: normal; }
+  .paper-meta { display: flex; flex-wrap: wrap; gap: .5rem 1.6rem; margin-top: 1.4rem; font-family: var(--mono); font-size: .76rem; color: var(--ink-soft); }
+  .paper-meta span b { color: var(--ink); font-weight: 500; }
+  .intro-block { max-width: var(--measure); margin: 2.4rem auto 0; padding-inline: 1.4rem; }
+  .intro-block p { font-size: 1.02rem; }
+  .plates { max-width: var(--wide); margin: 1rem auto; padding: 1.6rem 1.4rem 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 1rem; }
+  .plate { position: relative; display: flex; flex-direction: column; text-decoration: none; color: inherit; background: #fff; border: 1px solid var(--line); border-radius: 13px; padding: 1.3rem 1.3rem 1.4rem; transition: transform .2s var(--ease), border-color .2s, box-shadow .2s; overflow: hidden; }
+  .plate:hover { transform: translateY(-4px); border-color: var(--structure-lo); box-shadow: var(--shadow-plate); }
+  .plate .pno { font-family: var(--mono); font-size: .72rem; letter-spacing: .14em; color: var(--ink-faint); }
+  .plate h3 { font-family: var(--serif); font-size: 1.22rem; margin: .5rem 0 .5rem; line-height: 1.22; }
+  .plate p { font-size: .88rem; color: var(--ink-soft); line-height: 1.5; margin: 0; }
+  .plate .spectrum { display: flex; height: 4px; border-radius: 2px; overflow: hidden; margin-bottom: 1rem; }
+  .plate .spectrum i { display: block; height: 100%; }
+  .plate .go { margin-top: 1rem; font-family: var(--mono); font-size: .7rem; letter-spacing: .1em; color: var(--structure); opacity: 0; transform: translateX(-4px); transition: .2s var(--ease); }
+  .plate:hover .go { opacity: 1; transform: translateX(0); }
+  .group-label { display: inline-block; margin: 2.4rem 1.4rem 0; padding: .3rem .9rem; font-family: var(--mono); font-size: .68rem; letter-spacing: .18em; color: var(--ink-faint); border: 1px solid var(--line); border-radius: 999px; }
+  footer.colophon { max-width: var(--measure); margin: 3rem auto 4rem; padding: 2rem 1.4rem 0; border-top: 1px solid var(--line); font-size: .85rem; color: var(--ink-soft); }
+  .back-link { display: inline-block; margin: 1rem 1.4rem 0; font-family: var(--mono); font-size: .76rem; color: var(--ink-soft); text-decoration: none; }
+  .back-link:hover { color: var(--ink); }
+</style>
+</head>
+<body>
+
+<a href="../index.html" class="back-link">← 표지로 (6장 전체)</a>
+
+<header class="masthead">
+  <div class="hero-wrap">
+    <div class="hero-chips">
+      <span class="hero-chip">GoF 3분류</span>
+      <span class="hero-chip">인터페이스 의존</span>
+      <span class="hero-chip">합성 &gt; 상속</span>
+    </div>
+    <div class="hero-cap">설계 패턴의 토대 — 패턴을 보는 큰 그림과 두 격언</div>
+  </div>
+</header>
+
+<div class="title-block">
+  <span class="kicker">Chapter 01 · 설계 패턴의 토대 (Foundations)</span>
+  <h1>왜 패턴인가<br><em>패턴을 받치는 원칙</em></h1>
+  <div class="paper-meta">
+    <span><b>코드 복사가 아니라 구조의 재사용</b></span>
+    <span>구성 <b>2 sub-chapter</b></span>
+    <span>주제 <b>GoF 3분류 · 인터페이스 의존 · 합성 > 상속</b></span>
+  </div>
+</div>
+
+<section class="intro-block">
+  <h2>이 장을 왜 읽는가</h2>
+  <p>개별 패턴을 외우기 전에, 먼저 "패턴이란 도대체 무엇이고 왜 쓰는가"를 잡아야 한다. 디자인 패턴은 자주 반복되는 설계 문제와 그 맥락, 그리고 검증된 해결 구조에 이름을 붙여 재사용하는 것이다. 핵심은 <strong>코드 조각의 복사가 아니라 구조의 재사용</strong>이다. 그래서 시험도 "다이어그램을 그려라"보다 "이 상황에서 왜 이 패턴이 적합한가, 적용 전후로 무엇이 좋아지는가"를 묻는다.</p>
+  <p>그리고 모든 패턴을 관통하는 두 가지 설계 격언이 있다. <strong>구현이 아니라 인터페이스에 의존하라</strong>, 그리고 <strong>상속보다 합성을 선호하라</strong>. 이 둘은 뒤에 나올 스트래티지, 데커레이터, 스테이트가 "상속으로도 되는데 왜 합성을 쓰나"라는 질문에 답하는 근거가 된다. 이 장에서 토대를 다져 두면 이후 모든 패턴이 같은 원칙의 변주로 읽힌다.</p>
+</section>
+
+<span class="group-label">PART · 토대 2종</span>
+<section class="plates" id="subs"></section>
+
+<footer class="colophon">
+  <p>이 챕터는 GoF 디자인 패턴의 분류 체계와 두 가지 설계 격언, 그리고 중간 범위에서 다룬 SOLID 원칙(특히 DIP·OCP)을 토대로 작성했다. 모든 sub-chapter는 <em>“정의보다 왜”</em>를 먼저 다룬다.</p>
+</footer>
+
+<script>
+const SUBS = [
+  { no:'01', t:'패턴이란 + GoF 3분류', d:'디자인 패턴은 구조의 재사용이다. GoF가 목적에 따라 생성·구조·행위로 나눈 3분류와 23종의 큰 그림을 잡는다.', sp:['structure-lo','structure'] },
+  { no:'02', t:'두 설계 원칙', d:'모든 패턴을 관통하는 두 격언: 구현이 아니라 인터페이스에 의존하라(DIP), 상속보다 합성을 선호하라. OCP와의 연결.', sp:['structure','synth'] },
+];
+const colMap = { structure:'var(--structure)', 'structure-lo':'var(--structure-lo)', style:'var(--style)', 'style-lo':'var(--style-lo)', synth:'var(--synth)', ink:'var(--ink)', 'ink-soft':'var(--ink-soft)', 'ink-faint':'var(--ink-faint)' };
+const host = document.getElementById('subs');
+SUBS.forEach(s => {
+  const sp = s.sp.length === 1 ? [s.sp[0], s.sp[0]] : s.sp;
+  const a = document.createElement('a');
+  a.className = 'plate';
+  a.href = s.no + '.html';
+  a.innerHTML = `
+    <div class="spectrum">${sp.map(c=>`<i style="flex:1;background:${colMap[c]}"></i>`).join('')}</div>
+    <span class="pno">SUB-CHAPTER ${s.no}</span>
+    <h3>${s.t}</h3>
+    <p>${s.d}</p>
+    <span class="go">읽기 →</span>`;
+  host.appendChild(a);
+});
+</script>
+</body>
+</html>

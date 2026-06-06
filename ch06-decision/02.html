@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>02 · 헷갈리는 6쌍 — Chapter 6</title>
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+  .pattern-card { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: .8rem; margin: 1.4rem 0; }
+  .pc { background: var(--paper-2); border: 1px solid var(--line-soft); border-radius: 10px; padding: .9rem 1rem; }
+  .pc h5 { margin: 0 0 .35rem; font-family: var(--mono); font-size: .68rem; letter-spacing: .1em; color: var(--ink-faint); text-transform: uppercase; }
+  .pc p { margin: 0; font-size: .9rem; color: var(--ink); line-height: 1.5; }
+  .mermaid { display: flex; justify-content: center; padding: 1.2rem .8rem; background: #fff; }
+  .trap { border-left: 3px solid var(--style); background: var(--style-bg); border-radius: 0 10px 10px 0; padding: 1rem 1.2rem; margin: 1.4rem 0; }
+  .trap b { color: var(--style); }
+  .oneliner { max-width: var(--measure); margin: 1.2rem auto; padding: 0; list-style: none; }
+  .oneliner li { padding: .7rem 1rem; margin-bottom: .5rem; background: var(--paper-2); border: 1px solid var(--line-soft); border-left: 3px solid var(--structure); border-radius: 0 10px 10px 0; font-size: .92rem; line-height: 1.5; color: var(--ink); }
+  .oneliner li b { color: var(--structure); }
+</style>
+</head>
+<body>
+<div class="scroll-progress"></div>
+<div class="topbar"></div>
+
+<div class="ch-layout">
+  <aside class="ch-nav"><nav><ol></ol></nav></aside>
+  <main class="ch-main">
+
+    <header class="ch-head">
+      <span class="kicker">Sub-Chapter 02 · 헷갈리는 6쌍</span>
+      <h1>헷갈리는 6쌍,<br><span class="t-style">구조는 같고 의도가 다르다</span></h1>
+      <p class="lede">시험에서 끝까지 흔들리는 건 정의가 아니라 "구별"이다. 구조가 거의 같은 여섯 쌍을, 공통점과 결정적 차이로 가른다. 표만 외우면 변형 문제에서 무너진다.</p>
+    </header>
+
+    <div class="prose">
+      <p>앞 sub-chapter의 의사결정 흐름이 후보를 둘로 좁혀줬다면, 마지막 한 걸음은 그 둘 중 어느 쪽이냐를 가리는 일이다. 그런데 시험에 단골로 나오는 쌍들은 하나같이 <strong>클래스 다이어그램이 거의 같다.</strong> 전략과 상태는 구조가 사실상 동일하고, 데커레이터와 컴포지트는 둘 다 자기 자신을 재귀로 품으며, 어댑터와 데커레이터는 둘 다 객체를 감싼다. 겉모습으로는 구별되지 않는다. 차이는 항상 <strong>"무엇을 풀려고 태어났는가"라는 의도(intent)</strong>에 있다. 아래 여섯 쌍을 공통점과 결정적 차이로 가르되, 각 차이의 "왜"를 함께 익힌다.</p>
+
+      <h2>쌍 1 — 전략(Strategy) 대 상태(State)</h2>
+      <p>이 둘은 클래스 다이어그램이 같다. 둘 다 Context가 어떤 인터페이스에 작업을 위임하고, 그 인터페이스의 구현체를 갈아끼운다. 차이는 <strong>"누가 그 교체를 통제하는가"</strong>다. 전략은 <em>외부(클라이언트)</em>가 어떤 알고리즘을 쓸지 선택해 Context에 주입한다(예: 정렬 방식을 사용자가 고름). 상태는 <em>상태 객체 스스로</em>가 다음 상태로 전이한다(예: 신호등이 초록에서 노랑으로 알아서 넘어감). 즉 전략은 "교체 가능한 알고리즘", 상태는 "스스로 전이하는 행동"이다.</p>
+      <table class="cmp-table">
+        <thead><tr><th>구분</th><th>전략 (Strategy)</th><th>상태 (State)</th></tr></thead>
+        <tbody>
+          <tr><td>공통점</td><td colspan="2">Context가 인터페이스에 위임하고 구현체를 갈아끼우는 동일 구조</td></tr>
+          <tr><td>결정적 차이</td><td><b>외부</b>가 알고리즘을 선택해 주입</td><td><b>상태가 스스로</b> 다음 상태로 전이</td></tr>
+          <tr><td>전형 예</td><td>정렬/할인/결제 방식 교체</td><td>신호등, 주문 상태 머신</td></tr>
+        </tbody>
+      </table>
+
+      <h2>쌍 2 — 템플릿 메서드(Template Method) 대 전략(Strategy)</h2>
+      <p>둘 다 "변하는 부분만 분리한다"는 목표를 공유한다. 전체 흐름은 두되 일부 단계만 달라지게 만든다. 차이는 <strong>그 분리를 상속으로 하느냐 합성으로 하느냐</strong>다. 템플릿 메서드는 상위 클래스가 흐름(템플릿)을 고정하고 달라지는 단계를 추상 메서드로 비워, <em>서브클래스가 상속으로</em> 채운다. 따라서 어떤 변형을 쓸지는 <em>컴파일 시점</em>에 굳는다. 전략은 변하는 알고리즘을 별도 객체로 빼 합성으로 주입하므로, <em>런타임에 교체</em>할 수 있다. "흐름은 고정, 단계만 다름 + 컴파일 고정"이면 템플릿 메서드, "알고리즘 통째 교체 + 런타임"이면 전략이다.</p>
+      <table class="cmp-table">
+        <thead><tr><th>구분</th><th>템플릿 메서드</th><th>전략 (Strategy)</th></tr></thead>
+        <tbody>
+          <tr><td>공통점</td><td colspan="2">변하는 부분만 분리해 재사용</td></tr>
+          <tr><td>결정적 차이</td><td><b>상속</b> 기반, 컴파일 시점 고정</td><td><b>합성</b> 기반, 런타임 교체</td></tr>
+          <tr><td>유연성</td><td>흐름 고정, 단계만 오버라이드</td><td>알고리즘 통째 갈아끼움</td></tr>
+        </tbody>
+      </table>
+
+      <h2>쌍 3 — 데커레이터(Decorator) 대 상속</h2>
+      <p>둘 다 기능을 확장하는 수단이다. 차이는 <strong>확장이 동적이냐 정적이냐</strong>다. 상속은 컴파일 시점에 부모-자식 관계가 굳는 정적 확장이다. 그래서 기능 조합이 늘어나면 "커피+우유", "커피+우유+시럽", "커피+시럽" 같은 모든 경우의 수만큼 서브클래스가 폭발한다(클래스 폭발). 데커레이터는 같은 인터페이스를 유지한 채 객체를 런타임에 겹겹이 감싸므로, 필요한 기능만 그때그때 조합한다. 조합 폭발 없이 동적으로 책임을 더한다는 점이 핵심이다.</p>
+      <table class="cmp-table">
+        <thead><tr><th>구분</th><th>데커레이터</th><th>상속</th></tr></thead>
+        <tbody>
+          <tr><td>공통점</td><td colspan="2">기존 객체에 기능을 추가/확장</td></tr>
+          <tr><td>결정적 차이</td><td><b>동적 조합</b>(런타임에 감쌈)</td><td><b>정적 고정</b>(컴파일 시점)</td></tr>
+          <tr><td>약점</td><td>감싸는 층이 깊어지면 추적 어려움</td><td>조합 수만큼 서브클래스 폭발</td></tr>
+        </tbody>
+      </table>
+
+      <h2>쌍 4 — 데커레이터(Decorator) 대 컴포지트(Composite)</h2>
+      <p>둘 다 자기 자신을 재귀로 품는 합성 구조라 다이어그램이 닮았다. 차이는 <strong>"무엇을 위해 감싸느냐"와 "몇 개를 품느냐"</strong>다. 데커레이터는 <em>하나의</em> 컴포넌트를 감싸 <em>기능을 더한다</em>(책임 추가가 목적). 컴포지트는 <em>여럿의</em> 자식을 모아 <em>트리를 만든다</em>(전체-부분 표현이 목적). 즉 데커레이터의 재귀는 "기능을 쌓는 한 줄 사슬"이고, 컴포지트의 재귀는 "여러 갈래로 뻗는 나무"다.</p>
+      <table class="cmp-table">
+        <thead><tr><th>구분</th><th>데커레이터</th><th>컴포지트</th></tr></thead>
+        <tbody>
+          <tr><td>공통점</td><td colspan="2">자기 자신을 재귀로 품는 합성 구조</td></tr>
+          <tr><td>결정적 차이</td><td><b>하나를 감싸</b> 기능 추가</td><td><b>여럿을 모아</b> 트리 구성</td></tr>
+          <tr><td>목적</td><td>책임의 동적 추가</td><td>전체-부분 계층 표현</td></tr>
+        </tbody>
+      </table>
+
+      <h2>쌍 5 — 어댑터(Adapter) 대 데커레이터(Decorator)</h2>
+      <p>둘 다 객체를 감싼다. 차이는 <strong>감싼 뒤 인터페이스를 바꾸느냐 유지하느냐</strong>다. 어댑터는 호환되지 않는 인터페이스를 <em>다른 인터페이스로 변환</em>한다. 목적은 "협력 가능하게 만들기"이지 기능 추가가 아니다. 데커레이터는 <em>같은 인터페이스를 유지</em>한 채 기능만 더한다. 한 문장으로, 어댑터는 "모양을 바꿔 끼우는 변환기", 데커레이터는 "모양은 그대로 두고 기능을 입히는 옷"이다.</p>
+      <table class="cmp-table">
+        <thead><tr><th>구분</th><th>어댑터</th><th>데커레이터</th></tr></thead>
+        <tbody>
+          <tr><td>공통점</td><td colspan="2">대상 객체를 감싸 위임</td></tr>
+          <tr><td>결정적 차이</td><td><b>인터페이스 변환</b>(호환시킴)</td><td><b>인터페이스 유지</b> + 기능 추가</td></tr>
+          <tr><td>목적</td><td>맞지 않는 것을 협력시키기</td><td>같은 계약으로 책임 더하기</td></tr>
+        </tbody>
+      </table>
+
+      <h2>쌍 6 — 팩토리 메서드(Factory Method) 대 추상 팩토리(Abstract Factory)</h2>
+      <p>둘 다 객체 생성을 캡슐화해 <code>new</code>를 사용처에서 떼어낸다. 차이는 <strong>상속으로 단일 제품을 만드느냐, 합성으로 제품군을 만드느냐</strong>다. 팩토리 메서드는 <em>하나의 메서드</em>를 서브클래스가 오버라이드해 <em>단일 제품</em>의 종류를 결정한다(상속 기반). 추상 팩토리는 <em>한 팩토리 객체</em>가 서로 관련된 <em>제품군 전체</em>를 일관되게 생성한다(합성 기반). 예를 들어 버튼 하나를 만드는 결정이면 팩토리 메서드, 버튼+체크박스+창틀을 한 테마로 일관되게 만들어야 하면 추상 팩토리다.</p>
+      <table class="cmp-table">
+        <thead><tr><th>구분</th><th>팩토리 메서드</th><th>추상 팩토리</th></tr></thead>
+        <tbody>
+          <tr><td>공통점</td><td colspan="2">객체 생성을 캡슐화(OCP 지원)</td></tr>
+          <tr><td>결정적 차이</td><td><b>메서드 상속</b>으로 단일 제품</td><td><b>객체 합성</b>으로 제품군 전체</td></tr>
+          <tr><td>규모</td><td>제품 하나의 종류 결정</td><td>관련 제품들을 일관되게 묶음</td></tr>
+        </tbody>
+      </table>
+
+      <h2>한눈에 보는 종합 비교</h2>
+      <p>여섯 쌍을 한 표로 모은다. 빠른 회상용이며, 각 차이의 근거는 위 본문에서 "왜"와 함께 익혀야 한다.</p>
+    </div>
+
+    <table class="cmp-table">
+      <thead><tr><th>비교</th><th>공통점</th><th>결정적 차이</th></tr></thead>
+      <tbody>
+        <tr><td>전략 vs 상태</td><td>Context가 위임하는 동일 구조</td><td>전략=<b>외부</b>가 알고리즘 선택 / 상태=<b>스스로</b> 전이</td></tr>
+        <tr><td>템플릿 메서드 vs 전략</td><td>변하는 부분만 분리</td><td>템플릿=<b>상속</b>(컴파일 고정) / 전략=<b>합성</b>(런타임 교체)</td></tr>
+        <tr><td>데커레이터 vs 상속</td><td>기능 확장</td><td>데커레이터=<b>동적 조합</b> / 상속=<b>정적 고정</b>, 조합 폭발</td></tr>
+        <tr><td>데커레이터 vs 컴포지트</td><td>재귀 합성 구조</td><td>데커레이터=<b>하나 감싸</b> 기능추가 / 컴포지트=<b>여럿 모아</b> 트리</td></tr>
+        <tr><td>어댑터 vs 데커레이터</td><td>객체를 감쌈</td><td>어댑터=<b>인터페이스 변환</b> / 데커레이터=<b>유지</b>+기능추가</td></tr>
+        <tr><td>팩토리 메서드 vs 추상 팩토리</td><td>생성 캡슐화</td><td>FM=<b>상속</b>으로 단일 제품 / AF=<b>합성</b>으로 제품군</td></tr>
+      </tbody>
+    </table>
+
+    <div class="prose">
+      <h2>"한 줄 요약" 모음</h2>
+      <p>시험장 직전 속독용 한 줄 요약이다. 각 줄을 보고 본문의 "왜"가 떠오르면 준비가 된 것이다.</p>
+      <ul class="oneliner">
+        <li><b>전략 vs 상태</b> — 교체를 <b>외부가</b> 하면 전략, <b>스스로</b> 전이하면 상태.</li>
+        <li><b>템플릿 vs 전략</b> — <b>상속</b>으로 단계만 채우면 템플릿, <b>합성</b>으로 통째 갈면 전략.</li>
+        <li><b>데커레이터 vs 상속</b> — <b>런타임 조합</b>이면 데커레이터, <b>컴파일 고정</b>이면 상속(조합 폭발).</li>
+        <li><b>데커레이터 vs 컴포지트</b> — <b>하나 감싸</b> 기능 추가면 데커레이터, <b>여럿 모아</b> 트리면 컴포지트.</li>
+        <li><b>어댑터 vs 데커레이터</b> — 인터페이스를 <b>바꾸면</b> 어댑터, <b>유지하며</b> 기능 더하면 데커레이터.</li>
+        <li><b>팩토리 메서드 vs 추상 팩토리</b> — <b>단일 제품</b>이면 FM, <b>제품군 전체</b>면 AF.</li>
+      </ul>
+
+      <div class="pattern-card">
+        <div class="pc"><h5>구별의 열쇠</h5><p>구조가 같으면 의도(intent)로 가른다 — 정의가 아니라 목적</p></div>
+        <div class="pc"><h5>반복 축</h5><p>상속 대 합성 / 컴파일 고정 대 런타임 교체가 거듭 등장</p></div>
+        <div class="pc"><h5>마무리 원칙</h5><p>둘로 좁혀지면 OCP와 "상속보다 합성"으로 결정</p></div>
+      </div>
+
+      <div class="trap">
+        <b>시험 함정.</b> 표만 외우지 말고 <strong>"왜"를 이해하라.</strong> 표는 빠른 회상용일 뿐, 시나리오를 변형하면(예: "정렬 방식을 사용자가 고른다" 대 "주문이 결제완료로 넘어간다") 표만 외운 머리는 흔들린다. 각 쌍의 결정적 차이가 <em>왜</em> 그렇게 갈리는지 — 누가 교체를 통제하나, 상속이냐 합성이냐, 인터페이스를 바꾸나 유지하나 — 를 근거째 익혀야 응용 문제에 답할 수 있다. 또한 여섯 쌍을 관통하는 두 축, <strong>상속 대 합성</strong>과 <strong>컴파일 고정 대 런타임 교체</strong>를 알면 새 쌍을 만나도 같은 방식으로 가를 수 있다.</p>
+      </div>
+
+      <p>이로써 여섯 챕터를 관통한 복습이 마무리된다. 기초(설계 원칙)에서 출발해 생성, 구조, 행위 패턴을 거쳐, 시스템과 객체 설계로 패턴이 투입되는 자리를 짚고, 마지막으로 "어떤 상황에 무엇을 쓸 것인가"의 선택과 구별에 이르렀다. 모든 패턴이 결국 OCP와 "상속보다 합성"이라는 두 원칙을 어떻게 실현하는지로 수렴한다는 사실을, 시험장에서 떠올릴 수 있으면 된다.</p>
+    </div>
+
+    <nav class="ch-foot"></nav>
+  </main>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', themeVariables: { fontFamily: 'inherit' } });
+</script>
+<script>
+const SUBS = [
+  { no:'01', t:'패턴 선택 의사결정' },
+  { no:'02', t:'헷갈리는 6쌍' },
+];
+function buildNav(cur) {
+  const ol = document.querySelector('.ch-nav ol');
+  ol.innerHTML = SUBS.map(s => `<li><a href="${s.no}.html"${s.no===cur?' class="current"':''}>${s.t}</a></li>`).join('');
+  const tb = document.querySelector('.topbar');
+  tb.innerHTML = `<a class="home" href="index.html">← Ch.06 표지</a><span class="ch-mini">SUB ${cur} / ${String(SUBS.length).padStart(2,'0')}</span>`;
+  const i = SUBS.findIndex(s => s.no === cur);
+  const prev = i > 0 ? SUBS[i-1] : { no:'', t:'챕터 표지로' };
+  const next = i < SUBS.length-1 ? SUBS[i+1] : { no:'', t:'챕터 표지로' };
+  const prevHref = prev.no ? prev.no+'.html' : 'index.html';
+  const nextHref = next.no ? next.no+'.html' : 'index.html';
+  document.querySelector('.ch-foot').innerHTML =
+    `<a href="${prevHref}"><div class="dir">← 이전</div><div class="ti">${prev.t}</div></a>` +
+    `<a href="${nextHref}" class="next"><div class="dir">다음 →</div><div class="ti">${next.t}</div></a>`;
+}
+function progressBar() {
+  const bar = document.querySelector('.scroll-progress');
+  document.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max>0 ? (h.scrollTop/max)*100 : 0) + '%';
+  }, { passive: true });
+}
+window.addEventListener('load', () => { buildNav('02'); progressBar(); });
+</script>
+</body>
+</html>

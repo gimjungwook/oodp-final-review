@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chapter 04 · 행위 패턴</title>
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+  .masthead { position: relative; max-width: var(--wide); margin: 0 auto; padding: 1.5rem 1.4rem 0; }
+  .hero-wrap { position: relative; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); background: linear-gradient(135deg, var(--style-bg), #fff 60%, var(--paper-2)); box-shadow: var(--shadow-plate); min-height: 240px; display: flex; align-items: center; padding: 2rem 2.2rem; }
+  .hero-chips { display: flex; flex-wrap: wrap; gap: .7rem; }
+  .hero-chip { font-family: var(--mono); font-size: .8rem; letter-spacing: .04em; padding: .55rem 1rem; border-radius: 999px; background: #fff; border: 1px solid var(--style-lo); color: var(--style); box-shadow: var(--shadow-soft); }
+  .hero-cap { position: absolute; left: 2.2rem; bottom: 1rem; font-family: var(--mono); font-size: .68rem; letter-spacing: .12em; color: var(--ink-faint); }
+  .title-block { max-width: var(--wide); margin: 2.4rem auto 0; padding-inline: 1.4rem; }
+  .title-block .kicker { display: block; margin-bottom: 1rem; }
+  .title-block h1 { font-size: clamp(2.4rem, 6vw, 4.4rem); margin: 0; line-height: 1.05; }
+  .title-block h1 em { color: var(--style); font-style: normal; }
+  .paper-meta { display: flex; flex-wrap: wrap; gap: .5rem 1.6rem; margin-top: 1.4rem; font-family: var(--mono); font-size: .76rem; color: var(--ink-soft); }
+  .paper-meta span b { color: var(--ink); font-weight: 500; }
+  .intro-block { max-width: var(--measure); margin: 2.4rem auto 0; padding-inline: 1.4rem; }
+  .intro-block p { font-size: 1.02rem; }
+  .plates { max-width: var(--wide); margin: 1rem auto; padding: 1.6rem 1.4rem 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 1rem; }
+  .plate { position: relative; display: flex; flex-direction: column; text-decoration: none; color: inherit; background: #fff; border: 1px solid var(--line); border-radius: 13px; padding: 1.3rem 1.3rem 1.4rem; transition: transform .2s var(--ease), border-color .2s, box-shadow .2s; overflow: hidden; }
+  .plate:hover { transform: translateY(-4px); border-color: var(--style-lo); box-shadow: var(--shadow-plate); }
+  .plate .pno { font-family: var(--mono); font-size: .72rem; letter-spacing: .14em; color: var(--ink-faint); }
+  .plate h3 { font-family: var(--serif); font-size: 1.22rem; margin: .5rem 0 .5rem; line-height: 1.22; }
+  .plate p { font-size: .88rem; color: var(--ink-soft); line-height: 1.5; margin: 0; }
+  .plate .spectrum { display: flex; height: 4px; border-radius: 2px; overflow: hidden; margin-bottom: 1rem; }
+  .plate .spectrum i { display: block; height: 100%; }
+  .plate .go { margin-top: 1rem; font-family: var(--mono); font-size: .7rem; letter-spacing: .1em; color: var(--style); opacity: 0; transform: translateX(-4px); transition: .2s var(--ease); }
+  .plate:hover .go { opacity: 1; transform: translateX(0); }
+  .group-label { display: inline-block; margin: 2.4rem 1.4rem 0; padding: .3rem .9rem; font-family: var(--mono); font-size: .68rem; letter-spacing: .18em; color: var(--ink-faint); border: 1px solid var(--line); border-radius: 999px; }
+  footer.colophon { max-width: var(--measure); margin: 3rem auto 4rem; padding: 2rem 1.4rem 0; border-top: 1px solid var(--line); font-size: .85rem; color: var(--ink-soft); }
+  .back-link { display: inline-block; margin: 1rem 1.4rem 0; font-family: var(--mono); font-size: .76rem; color: var(--ink-soft); text-decoration: none; }
+  .back-link:hover { color: var(--ink); }
+</style>
+</head>
+<body>
+
+<a href="../index.html" class="back-link">← 표지로 (6장 전체)</a>
+
+<header class="masthead">
+  <div class="hero-wrap">
+    <div class="hero-chips">
+      <span class="hero-chip">Strategy</span>
+      <span class="hero-chip">State</span>
+      <span class="hero-chip">Command</span>
+      <span class="hero-chip">Observer</span>
+      <span class="hero-chip">Template Method</span>
+      <span class="hero-chip">Iterator</span>
+    </div>
+    <div class="hero-cap">행위 패턴 — 객체 사이의 책임 분배와 통신 방식을 다룬다</div>
+  </div>
+</header>
+
+<div class="title-block">
+  <span class="kicker">Chapter 04 · 행위 패턴 (Behavioral Patterns)</span>
+  <h1>객체가 <em>어떻게</em><br>협력할 것인가</h1>
+  <div class="paper-meta">
+    <span><b>변하는 행위를 객체로 뽑아내기</b></span>
+    <span>구성 <b>6 sub-chapter</b></span>
+    <span>패턴 <b>Strategy · State · Command · Observer · Template Method · Iterator</b></span>
+  </div>
+</div>
+
+<section class="intro-block">
+  <h2>이 장을 왜 읽는가</h2>
+  <p>행위 패턴은 모두 한 가지 질문에 답한다. <strong>객체들이 일을 나눠 맡고 서로 소통할 때, 그 책임을 어디에 두어야 변경에 강한가?</strong> 생성 패턴이 "객체를 만드는 책임"을, 구조 패턴이 "객체를 조립하는 방법"을 다뤘다면, 행위 패턴은 객체들이 런타임에 주고받는 메시지의 흐름과 책임의 분배 자체를 설계 대상으로 삼는다. 변하기 쉬운 행위를 별도 객체로 뽑아내(캡슐화) <code>if-else</code>나 거대한 <code>switch</code>로 엉킨 분기를 객체 협력으로 바꾸는 것이 공통 아이디어다.</p>
+  <p>여섯 패턴은 "어떤 변화를 분리하느냐"로 갈린다. <strong>스트래티지</strong>는 교체 가능한 알고리즘을, <strong>스테이트</strong>는 상태에 따라 달라지는 행동을, <strong>커맨드</strong>는 요청 자체를, <strong>옵서버</strong>는 변화의 통보 관계를, <strong>템플릿 메서드</strong>는 알고리즘의 골격과 가변 단계를, <strong>이터레이터</strong>는 컬렉션 순회 책임을 분리한다. 시험에서는 특히 Strategy vs State, Template Method vs Strategy처럼 구조가 닮은 쌍의 구분이 단골로 출제된다 — 행위 패턴이 기말 비중 1순위인 이유다.</p>
+</section>
+
+<span class="group-label">PART · 행위 패턴 6종</span>
+<section class="plates" id="subs"></section>
+
+<footer class="colophon">
+  <p>이 챕터는 HanbitDP의 행위 패턴 단원과 GoF 행위 패턴(Strategy, State, Command, Observer, Template Method, Iterator)을 바탕으로 작성했다. 모든 sub-chapter는 <em>“정의보다 왜”</em>를 먼저 다루고, 헷갈리는 패턴 쌍은 끝까지 비교한다.</p>
+</footer>
+
+<script>
+const SUBS = [
+  { no:'01', t:'스트래티지 패턴 (Strategy)', d:'알고리즘군을 각각 캡슐화해 교체 가능하게 만든다. 외부(클라이언트)가 전략을 골라 갈아끼운다. if-else 분기 제거의 정석.', sp:['style-lo','style'] },
+  { no:'02', t:'스테이트 패턴 (State)', d:'내부 상태가 바뀌면 행동도 바뀐다. 각 상태를 클래스로 만들고, 상태가 스스로 다음 상태로 전이한다. Strategy와의 구분이 핵심.', sp:['style','synth'] },
+  { no:'03', t:'커맨드 패턴 (Command)', d:'요청을 객체로 캡슐화해 매개변수로 넘기고, 큐에 쌓고, undo/매크로를 가능케 한다. 호출 시점과 실행 시점을 분리.', sp:['synth','style'] },
+  { no:'04', t:'옵서버 패턴 (Observer)', d:'한 주제(Subject)의 상태가 변하면 의존하는 모든 관찰자에게 자동 통보되는 일대다 의존 관계. 느슨한 결합의 대표.', sp:['style','structure'] },
+  { no:'05', t:'템플릿 메서드 패턴 (Template Method)', d:'알고리즘 골격을 상위 클래스에 정의하고 가변 단계만 서브클래스로 미룬다. 상속 기반 변화 분리, 할리우드 원칙.', sp:['structure','style'] },
+  { no:'06', t:'이터레이터 패턴 (Iterator)', d:'컬렉션 내부 표현을 노출하지 않고 원소에 순차 접근한다. 순회 책임을 별도 반복자 객체로 분리(SRP).', sp:['structure-lo','structure'] },
+];
+const colMap = { structure:'var(--structure)', 'structure-lo':'var(--structure-lo)', style:'var(--style)', 'style-lo':'var(--style-lo)', synth:'var(--synth)', ink:'var(--ink)', 'ink-soft':'var(--ink-soft)', 'ink-faint':'var(--ink-faint)' };
+const host = document.getElementById('subs');
+SUBS.forEach(s => {
+  const sp = s.sp.length === 1 ? [s.sp[0], s.sp[0]] : s.sp;
+  const a = document.createElement('a');
+  a.className = 'plate';
+  a.href = s.no + '.html';
+  a.innerHTML = `
+    <div class="spectrum">${sp.map(c=>`<i style="flex:1;background:${colMap[c]}"></i>`).join('')}</div>
+    <span class="pno">SUB-CHAPTER ${s.no}</span>
+    <h3>${s.t}</h3>
+    <p>${s.d}</p>
+    <span class="go">읽기 →</span>`;
+  host.appendChild(a);
+});
+</script>
+</body>
+</html>

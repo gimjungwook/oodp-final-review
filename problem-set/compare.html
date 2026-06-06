@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D · 비교 빈칸 — Problem Set</title>
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+  .q { max-width: var(--measure); margin: 1.4rem auto; padding: 1.2rem 1.4rem; background: #fff; border: 1px solid var(--line); border-radius: 14px; }
+  .q .qn { font-family: var(--mono); font-size: .72rem; letter-spacing: .1em; color: var(--style); font-weight: 700; }
+  .q .blank { margin: .45rem 0 0; font-size: .98rem; color: var(--ink); line-height: 1.8; }
+  .q .blank .mk { font-family: var(--mono); font-weight: 700; color: var(--structure); }
+  details.ans { max-width: var(--measure); margin: -.4rem auto 0; }
+  details.ans > summary { list-style: none; display: inline-flex; align-items: center; gap: .4rem; cursor: pointer; font-family: var(--mono); font-size: .76rem; font-weight: 700; letter-spacing: .04em; padding: .5rem .95rem; border-radius: 999px; background: var(--ink); color: var(--paper); border: none; transition: transform .12s var(--ease), background .15s; }
+  details.ans > summary::-webkit-details-marker { display: none; }
+  details.ans > summary:hover { transform: translateY(-1px); background: #000; }
+  details.ans[open] > summary { background: var(--style); }
+  .ansbody { margin: .8rem 0 0; padding: 1.1rem 1.3rem; background: var(--structure-bg); border: 1px solid var(--structure-lo); border-radius: 14px; }
+  .ansbody .fills { margin: 0 0 .7rem; display: grid; gap: .3rem; }
+  .ansbody .fills span { font-size: .95rem; color: var(--ink); }
+  .ansbody .fills .mk { font-family: var(--mono); font-weight: 700; color: var(--structure); }
+  .ansbody .fills b { color: #1B64DA; }
+  .ansbody .why { margin: 0; padding-top: .6rem; border-top: 1px dashed var(--structure-lo); font-size: .92rem; color: var(--ink); line-height: 1.7; }
+  .ansbody .why b { color: #1B64DA; }
+</style>
+</head>
+<body>
+<div class="scroll-progress"></div>
+<div class="topbar"></div>
+
+<div class="ch-layout">
+  <aside class="ch-nav"><nav><ol></ol></nav></aside>
+  <main class="ch-main">
+
+    <header class="ch-head">
+      <span class="kicker">Course D · 비교 빈칸</span>
+      <h1>헷갈리는 쌍,<br><span class="t-style">한 줄로 가르기</span></h1>
+      <p class="lede">두 패턴이 갈리는 결정적 차이를 빈칸 하나로 떠올리는 훈련이다. 빈칸을 먼저 채운 뒤 정답과 근거를 펼쳐, 단어가 아니라 "왜 그 단어인지"가 맞는지 확인하라.</p>
+    </header>
+
+    <div class="prose">
+      <p>시험의 함정은 대부분 "비슷한 두 패턴" 사이에서 나온다. Strategy와 State, Template Method와 Strategy, Decorator와 Adapter, Decorator와 Composite, Factory Method와 Abstract Factory. 이들은 구조나 의도가 한 끗 차이라 외워서는 흔들린다. 각 빈칸은 그 한 끗을 콕 집은 것이다. 빈칸을 채우며 "이 단어가 왜 저 단어와 대비되는가"를 함께 떠올려라.</p>
+    </div>
+
+    <section id="cards"></section>
+
+    <nav class="ch-foot"></nav>
+  </main>
+</div>
+
+<script>
+const PAIRS = [
+  { id:'D1',
+    blank:'Strategy는 <span class="mk">( ㉠ )</span>가 알고리즘을 골라 갈아끼우고, State는 <span class="mk">( ㉡ )</span>가 스스로 다음 상태로 전이한다.',
+    fills:[['㉠','클라이언트(외부)'],['㉡','상태 객체(자기 자신)']],
+    why:'둘 다 Context가 인터페이스를 합성하는 같은 구조다. 갈림길은 <b>누가 다음 것을 결정하는가</b> — Strategy는 외부가 전략을 주입하고, State는 현재 상태가 ctx.setState로 스스로 전이한다.' },
+  { id:'D2',
+    blank:'Template Method는 변하는 부분을 <span class="mk">( ㉢ )</span>(으)로 분리하고, Strategy는 <span class="mk">( ㉣ )</span>(으)로 분리한다.',
+    fills:[['㉢','상속(컴파일 시점)'],['㉣','합성(런타임 위임)']],
+    why:'같은 "변하는 부분 분리"라도 메커니즘이 다르다. Template Method는 하위 클래스가 단계를 <b>오버라이드(상속)</b>하므로 런타임 교체 불가, Strategy는 전략 객체를 <b>주입(합성)</b>하므로 런타임에 갈아끼울 수 있다.' },
+  { id:'D3',
+    blank:'Decorator는 인터페이스를 <span class="mk">( ㉤ )</span>한 채 기능을 더하고, Adapter는 인터페이스를 <span class="mk">( ㉥ )</span>한다.',
+    fills:[['㉤','유지'],['㉥','변환(변경)']],
+    why:'목적이 정반대다. Decorator는 <b>같은 인터페이스를 유지</b>하며 책임만 덧붙이고(투명한 래핑), Adapter는 <b>인터페이스 자체를 다른 형태로 변환</b>해 호환성을 만든다.' },
+  { id:'D4',
+    blank:'Decorator는 보통 <span class="mk">( ㉦ )</span>개를 감싸 기능을 추가하고, Composite는 <span class="mk">( ㉧ )</span>개를 모아 트리를 만든다.',
+    fills:[['㉦','하나(1)'],['㉧','여럿(N)']],
+    why:'둘 다 Component를 재귀적으로 보유하지만 갯수가 다르다. Decorator는 <b>한 개</b>를 감싸 기능을 누적하고, Composite는 <b>여러 자식</b>을 담아 전체-부분 트리를 만든다.' },
+  { id:'D5',
+    blank:'Factory Method는 <span class="mk">( ㉨ )</span>(으)로 단일 제품을, Abstract Factory는 <span class="mk">( ㉩ )</span>(으)로 제품군 전체를 만든다.',
+    fills:[['㉨','상속(메서드 오버라이드)'],['㉩','합성(팩토리 객체 주입)']],
+    why:'Factory Method는 하위 클래스가 팩토리 메서드를 <b>오버라이드(상속)</b>해 제품 하나를 결정하고, Abstract Factory는 제품군을 묶은 <b>팩토리 객체를 합성</b>해 서로 어울리는 제품들을 일관되게 생성한다.' },
+  { id:'D6',
+    blank:'모든 패턴이 공통으로 실현하는 원칙은 "<span class="mk">( ㉪ )</span>보다 <span class="mk">( ㉫ )</span>을 선호하라"와 "구현이 아니라 <span class="mk">( ㉬ )</span>에 의존하라"이다.',
+    fills:[['㉪','상속'],['㉫','합성'],['㉬','인터페이스']],
+    why:'GoF의 두 대원칙이다. <b>상속보다 합성</b>은 런타임 유연성과 결합도 완화를, <b>인터페이스에 의존</b>은 구체 구현 교체 자유를 준다. 이 두 줄이 거의 모든 패턴의 뿌리.' },
+];
+const host = document.getElementById('cards');
+host.innerHTML = PAIRS.map(p => `
+  <div class="q">
+    <span class="qn">${p.id}</span>
+    <p class="blank">${p.blank}</p>
+  </div>
+  <details class="ans">
+    <summary>정답 보기 ▸ ${p.id}</summary>
+    <div class="ansbody">
+      <div class="fills">${p.fills.map(f=>`<span><span class="mk">${f[0]}</span> &nbsp;<b>${f[1]}</b></span>`).join('')}</div>
+      <p class="why">${p.why}</p>
+    </div>
+  </details>`).join('');
+</script>
+
+<script>
+const SUBS = [
+  { no:'recall',    t:'A. 패턴 백지작성' },
+  { no:'scenarios', t:'B. 시나리오→패턴' },
+  { no:'uml',       t:'C. UML 손그림' },
+  { no:'compare',   t:'D. 비교 빈칸' },
+];
+function buildNav(cur) {
+  const ol = document.querySelector('.ch-nav ol');
+  ol.innerHTML = SUBS.map(s => `<li><a href="${s.no}.html"${s.no===cur?' class="current"':''}>${s.t}</a></li>`).join('');
+  const tb = document.querySelector('.topbar');
+  const i = SUBS.findIndex(s => s.no === cur);
+  tb.innerHTML = `<a class="home" href="index.html">← Problem Set 표지</a><span class="ch-mini">SET · ${String(i+1).padStart(2,'0')} / ${String(SUBS.length).padStart(2,'0')}</span>`;
+  const prev = i > 0 ? SUBS[i-1] : { no:'', t:'표지로' };
+  const next = i < SUBS.length-1 ? SUBS[i+1] : { no:'', t:'표지로' };
+  const prevHref = prev.no ? prev.no+'.html' : 'index.html';
+  const nextHref = next.no ? next.no+'.html' : 'index.html';
+  document.querySelector('.ch-foot').innerHTML =
+    `<a href="${prevHref}"><div class="dir">← 이전</div><div class="ti">${prev.t}</div></a>` +
+    `<a href="${nextHref}" class="next"><div class="dir">다음 →</div><div class="ti">${next.t}</div></a>`;
+}
+function progressBar() {
+  const bar = document.querySelector('.scroll-progress');
+  document.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max>0 ? (h.scrollTop/max)*100 : 0) + '%';
+  }, { passive: true });
+}
+window.addEventListener('load', () => { buildNav('compare'); progressBar(); });
+</script>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', themeVariables: { fontFamily: 'inherit' } });
+</script>
+</body>
+</html>

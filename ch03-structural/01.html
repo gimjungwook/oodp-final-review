@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>01 · 어댑터 패턴 — Chapter 3</title>
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+  .pattern-card { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: .8rem; margin: 1.4rem 0; }
+  .pc { background: var(--paper-2); border: 1px solid var(--line-soft); border-radius: 10px; padding: .9rem 1rem; }
+  .pc h5 { margin: 0 0 .35rem; font-family: var(--mono); font-size: .68rem; letter-spacing: .1em; color: var(--ink-faint); text-transform: uppercase; }
+  .pc p { margin: 0; font-size: .9rem; color: var(--ink); line-height: 1.5; }
+  .mermaid { display: flex; justify-content: center; padding: 1.2rem .8rem; background: #fff; }
+  .trap { border-left: 3px solid var(--style); background: var(--style-bg); border-radius: 0 10px 10px 0; padding: 1rem 1.2rem; margin: 1.4rem 0; }
+  .trap b { color: var(--style); }
+</style>
+</head>
+<body>
+<div class="scroll-progress"></div>
+<div class="topbar"></div>
+
+<div class="ch-layout">
+  <aside class="ch-nav"><nav><ol></ol></nav></aside>
+  <main class="ch-main">
+
+    <header class="ch-head">
+      <span class="kicker">Sub-Chapter 01 · 구조 패턴</span>
+      <h1>어댑터 패턴,<br><span class="t-style">맞지 않는 인터페이스를 끼워 맞추다</span></h1>
+      <p class="lede">잘 동작하는 외부 코드가 있는데 내 시스템이 기대하는 모양과 다르다. 원본을 고칠 수는 없다. 어댑터는 그 사이에 변환기를 끼워, 서로 모르던 두 인터페이스를 협력하게 만든다.</p>
+    </header>
+
+    <div class="prose">
+      <p>어댑터 패턴(Adapter Pattern)의 의도는 한 문장이다. <strong>한 클래스의 인터페이스를 클라이언트가 기대하는 다른 인터페이스로 변환한다.</strong> 인터페이스 불일치 때문에 함께 쓸 수 없던 클래스들을, 변환 계층 하나로 협력하게 만드는 것이 목적이다. 핵심 단어는 <em>변환(convert)</em>이다. 기능을 더하거나 빼는 것이 아니라, 같은 기능을 <strong>다른 모양의 호출</strong>로 바꿔 전달한다.</p>
+
+      <p>왜 필요한가? 현실의 코드는 처음부터 한 사람이 한 규칙으로 짠 것이 아니다. 이미 검증된 외부 라이브러리(legacy library)나 서드파티 모듈은 자기만의 메서드 이름과 인자 구조를 가진다. 그런데 내 시스템은 일관된 인터페이스를 기대한다. 예를 들어 외부 라이브러리는 <code>LegacyRectangle.display(x1, y1, x2, y2)</code>를 제공하는데, 내 코드는 모든 도형을 <code>Shape.draw()</code>로 그리도록 설계돼 있다. 라이브러리 원본은 손댈 수 없다(소스가 없거나, 고치면 다른 곳이 깨진다). 이때 <strong>둘 사이에 변환기를 끼워</strong> 불일치를 흡수하는 것이 어댑터다.</p>
+
+      <div class="analogy">
+        <b>해외여행용 전원 어댑터.</b> 한국 노트북 플러그(클라이언트가 기대하는 인터페이스)를 유럽 콘센트(외부 시스템의 인터페이스)에 그대로 꽂을 수 없다. 그렇다고 노트북 플러그를 잘라 고치거나 벽의 콘센트를 뜯을 수는 없다. 대신 사이에 <strong>전원 어댑터</strong>를 끼운다. 어댑터는 전기 자체를 바꾸지 않는다(기능은 그대로) — 단지 <em>모양만</em> 한쪽에서 받아 다른 쪽 모양으로 내보낸다. 소프트웨어 어댑터가 하는 일이 정확히 이것이다.
+      </div>
+
+      <h2>구조 — 위임으로 모양을 바꾼다</h2>
+      <p>객체 어댑터(object adapter)는 세 역할로 구성된다. <strong>Target</strong>은 클라이언트가 기대하는 인터페이스(<code>request()</code>)다. <strong>Adaptee</strong>는 이미 존재하지만 모양이 다른 기존 클래스(<code>specificRequest()</code>)다. <strong>Adapter</strong>는 Target을 구현하면서, 내부에 Adaptee를 멤버로 품는다(합성). 클라이언트가 <code>request()</code>를 부르면, Adapter는 그 호출을 자기가 품은 <code>adaptee.specificRequest()</code>로 <strong>위임(delegate)</strong>하면서 인자나 형식을 변환해 넘긴다. 클라이언트는 Adaptee의 존재조차 모른 채 익숙한 <code>request()</code>만 쓴다.</p>
+    </div>
+
+    <div class="widget">
+      <div class="widget-frame">
+        <div class="widget-label"><span class="lab-no">UML 01</span><span>객체 어댑터 클래스 다이어그램 · 합성으로 Adaptee를 품는다</span></div>
+        <pre class="mermaid">
+classDiagram
+    class Target {
+        +request()
+    }
+    class Adapter {
+        -adaptee : Adaptee
+        +request()
+    }
+    class Adaptee {
+        +specificRequest()
+    }
+    Target <|.. Adapter
+    Adapter o--> Adaptee : 위임
+        </pre>
+      </div>
+      <p class="widget-cap">Adapter는 Target을 구현(점선 실현 화살표)하면서 동시에 Adaptee를 합성(o--&gt; 마름모)한다. request() 안에서 품은 adaptee의 specificRequest()를 불러 변환한다. 이 "구현 + 합성" 조합이 객체 어댑터의 시각적 표식이다.</p>
+    </div>
+
+    <div class="prose">
+      <h2>코드 — request()가 specificRequest()로 위임된다</h2>
+      <p>핵심 메커니즘은 단순하다. Adapter의 <code>request()</code> 본문에서 품은 <code>adaptee</code>의 메서드를 호출해 결과를 돌려준다. 인터페이스가 다른 만큼, 이름과 인자 구조를 맞춰 주는 변환 코드가 그 사이에 들어간다. 아래는 모양이 다른 <code>LegacyRectangle</code>을 <code>Shape</code>로 끼워 맞추는 예다.</p>
+    </div>
+
+    <div class="widget">
+      <div class="widget-frame">
+        <div class="widget-label"><span class="lab-no">CODE 01</span><span>객체 어댑터 (합성 + 위임)</span></div>
+        <pre class="code"><code>interface Shape {                       // Target: 클라이언트가 기대하는 인터페이스
+    void draw(int x, int y, int w, int h);
+}
+
+class LegacyRectangle {                  // Adaptee: 모양이 다른 기존 클래스
+    void display(int x1, int y1, int x2, int y2) { /* 외부 라이브러리 */ }
+}
+
+class RectangleAdapter implements Shape {
+    private final LegacyRectangle adaptee;          // 합성: Adaptee를 멤버로 품는다
+    RectangleAdapter(LegacyRectangle a) { this.adaptee = a; }
+
+    public void draw(int x, int y, int w, int h) {  // Target 인터페이스 구현
+        adaptee.display(x, y, x + w, y + h);        // 위임 + 인자 변환 (w,h → x2,y2)
+    }
+}
+
+// 클라이언트는 Shape만 알면 된다 — Adaptee의 존재를 모른다
+Shape s = new RectangleAdapter(new LegacyRectangle());
+s.draw(10, 20, 100, 50);</code></pre>
+      </div>
+      <p class="widget-cap">클라이언트는 익숙한 draw(x,y,w,h)만 호출한다. Adapter가 너비·높이를 좌표쌍(x2,y2)으로 변환해 adaptee.display()로 넘긴다. 클래스 어댑터(다중 상속 기반)도 있으나, 다중 상속이 없는 자바에서는 이처럼 합성 기반 객체 어댑터가 표준이다.</p>
+    </div>
+
+    <div class="prose">
+      <h2>참여자와 결과</h2>
+      <div class="pattern-card">
+        <div class="pc"><h5>참여자</h5><p>Target(기대 인터페이스), Adaptee(기존 클래스), Adapter(변환 계층, Adaptee를 합성)</p></div>
+        <div class="pc"><h5>장점</h5><p>원본을 고치지 않고 재사용, 인터페이스 불일치 흡수, 클라이언트와 Adaptee 분리</p></div>
+        <div class="pc"><h5>단점</h5><p>변환 계층만큼 코드 증가, 변환이 복잡하면 어댑터가 무거워짐</p></div>
+      </div>
+
+      <div class="trap">
+        <b>시험 함정.</b> <strong>Adapter vs Decorator</strong> — 둘 다 객체를 합성으로 감싸지만 목적이 정반대다. 어댑터는 <em>인터페이스를 바꾸는 것</em>(목적: 호환)이고, 데커레이터는 <em>인터페이스를 유지한 채 기능을 더하는 것</em>(목적: 확장)이다. 즉 어댑터는 모양을 바꾸고 기능은 그대로, 데커레이터는 모양은 그대로 두고 기능을 보탠다. 또 객체 어댑터(합성)와 클래스 어댑터(상속)의 차이도 자주 출제된다 — 자바는 합성 기반이 기본이다.
+      </div>
+
+      <p>어댑터가 "모양만 바꾸는" 변환기라면, 다음 sub-chapter의 데커레이터는 모양은 그대로 유지하면서 <strong>기능을 동적으로 덧붙이는</strong> 껍질이다. 두 패턴이 같은 합성·위임 무기를 쓰면서도 완전히 다른 목적을 푼다는 점이, 구조 패턴을 이해하는 출발점이다.</p>
+    </div>
+
+    <nav class="ch-foot"></nav>
+  </main>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', themeVariables: { fontFamily: 'inherit' } });
+</script>
+<script>
+const SUBS = [
+  { no:'01', t:'어댑터 (Adapter)' },
+  { no:'02', t:'데커레이터 (Decorator)' },
+  { no:'03', t:'컴포지트 (Composite)' },
+];
+function buildNav(cur) {
+  const ol = document.querySelector('.ch-nav ol');
+  ol.innerHTML = SUBS.map(s => `<li><a href="${s.no}.html"${s.no===cur?' class="current"':''}>${s.t}</a></li>`).join('');
+  const tb = document.querySelector('.topbar');
+  tb.innerHTML = `<a class="home" href="index.html">← Ch.03 표지</a><span class="ch-mini">SUB ${cur} / ${String(SUBS.length).padStart(2,'0')}</span>`;
+  const i = SUBS.findIndex(s => s.no === cur);
+  const prev = i > 0 ? SUBS[i-1] : { no:'', t:'챕터 표지로' };
+  const next = i < SUBS.length-1 ? SUBS[i+1] : { no:'', t:'챕터 표지로' };
+  const prevHref = prev.no ? prev.no+'.html' : 'index.html';
+  const nextHref = next.no ? next.no+'.html' : 'index.html';
+  document.querySelector('.ch-foot').innerHTML =
+    `<a href="${prevHref}"><div class="dir">← 이전</div><div class="ti">${prev.t}</div></a>` +
+    `<a href="${nextHref}" class="next"><div class="dir">다음 →</div><div class="ti">${next.t}</div></a>`;
+}
+function progressBar() {
+  const bar = document.querySelector('.scroll-progress');
+  document.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max>0 ? (h.scrollTop/max)*100 : 0) + '%';
+  }, { passive: true });
+}
+window.addEventListener('load', () => { buildNav('01'); progressBar(); });
+</script>
+</body>
+</html>

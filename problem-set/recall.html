@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A · 패턴 백지작성 — Problem Set</title>
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+  .q { max-width: var(--measure); margin: 1.4rem auto; padding: 1.2rem 1.4rem; background: #fff; border: 1px solid var(--line); border-radius: 14px; }
+  .q .qn { font-family: var(--mono); font-size: .72rem; letter-spacing: .1em; color: var(--style); font-weight: 700; }
+  .q h3 { margin: .35rem 0 .5rem; font-size: 1.2rem; }
+  .q .ask { font-size: .92rem; color: var(--ink-soft); line-height: 1.6; margin: 0; }
+  details.ans { max-width: var(--measure); margin: -.4rem auto 0; }
+  details.ans > summary { list-style: none; display: inline-flex; align-items: center; gap: .4rem; cursor: pointer; font-family: var(--mono); font-size: .76rem; font-weight: 700; letter-spacing: .04em; padding: .5rem .95rem; border-radius: 999px; background: var(--ink); color: var(--paper); border: none; transition: transform .12s var(--ease), background .15s; }
+  details.ans > summary::-webkit-details-marker { display: none; }
+  details.ans > summary:hover { transform: translateY(-1px); background: #000; }
+  details.ans[open] > summary { background: var(--style); }
+  .ansbody { margin: .8rem 0 0; padding: 1.1rem 1.3rem; background: var(--structure-bg); border: 1px solid var(--structure-lo); border-radius: 14px; }
+  .ansbody dl { margin: 0; display: grid; grid-template-columns: 5.5rem 1fr; gap: .35rem .9rem; }
+  .ansbody dt { font-family: var(--mono); font-size: .72rem; letter-spacing: .04em; color: var(--structure); font-weight: 700; padding-top: .12rem; }
+  .ansbody dd { margin: 0; font-size: .92rem; color: var(--ink); line-height: 1.6; }
+  .ansbody dd b { color: #1B64DA; }
+  @media (max-width:540px){ .ansbody dl { grid-template-columns: 1fr; gap: .1rem; } .ansbody dt { margin-top: .5rem; } }
+</style>
+</head>
+<body>
+<div class="scroll-progress"></div>
+<div class="topbar"></div>
+
+<div class="ch-layout">
+  <aside class="ch-nav"><nav><ol></ol></nav></aside>
+  <main class="ch-main">
+
+    <header class="ch-head">
+      <span class="kicker">Course A · 백지작성</span>
+      <h1>패턴 백지작성,<br><span class="t-style">이름만 보고 꺼내기</span></h1>
+      <p class="lede">12개 패턴 각각에 대해, 이름만 주어졌을 때 의도 한 문장 / 핵심 참여자 / 클래스 다이어그램 / 장점 하나, 단점 하나를 백지에서 직접 써 보라. 다 쓴 다음에만 "정답 보기"를 펼친다.</p>
+    </header>
+
+    <div class="prose">
+      <p>이 코스는 회상 연습(retrieval practice)의 기본기다. 각 카드에는 <strong>패턴 이름만</strong> 주어진다. 종이나 머릿속 백지에 다음 네 가지를 먼저 써 본 뒤 정답을 펼쳐라. (1) <strong>의도</strong> — 이 패턴이 푸는 문제를 한 문장으로, (2) <strong>참여자</strong> — 핵심 클래스/역할 이름, (3) <strong>구조</strong> — 클래스 다이어그램 손그림(관계의 화살표 방향까지), (4) <strong>장점 1개, 단점 1개</strong>. 채점은 단어 일치가 아니라, <em>그 패턴이어야 하는 이유</em>를 말로 설명할 수 있는지로 한다.</p>
+    </div>
+
+    <section id="cards"></section>
+
+    <nav class="ch-foot"></nav>
+  </main>
+</div>
+
+<script>
+// 12개 패턴 — 문제(name)는 카드 머리에, 정답(의도/참여자/구조/장점/단점)은 details 접기 안에.
+const PATTERNS = [
+  { id:'A1', ko:'싱글톤', en:'Singleton',
+    intent:'어떤 클래스의 인스턴스가 오직 하나만 존재하도록 보장하고, 그 하나에 대한 전역 접근점을 제공한다.',
+    actors:'Singleton (private 생성자, static instance, static getInstance)',
+    struct:'클래스 하나. 자기 자신을 가리키는 연관(Singleton --&gt; Singleton)이 시각적 표식.',
+    pro:'유일성 보장, 전역 접근, 자원 절약.',
+    con:'전역 상태라 결합도가 오르고, 의존성이 숨겨져 테스트가 어렵다.' },
+  { id:'A2', ko:'팩토리 메서드', en:'Factory Method',
+    intent:'객체 생성 인터페이스만 정의하고, 어떤 구체 클래스를 만들지는 서브클래스가 결정하게 한다(상속으로 생성 위임).',
+    actors:'Creator(factoryMethod 선언), ConcreteCreator(재정의), Product/ConcreteProduct',
+    struct:'Creator &lt;|-- ConcreteCreator (상속), Product &lt;|.. ConcreteProduct (구현). Creator가 추상 Product에만 의존.',
+    pro:'생성 코드를 구체 클래스에서 분리해 OCP를 지킨다.',
+    con:'제품 종류마다 ConcreteCreator 서브클래스가 늘어난다.' },
+  { id:'A3', ko:'추상 팩토리', en:'Abstract Factory',
+    intent:'서로 관련된 제품군 전체를 구체 클래스 지정 없이 일관되게 생성한다.',
+    actors:'AbstractFactory, ConcreteFactory, 여러 AbstractProduct/ConcreteProduct',
+    struct:'AbstractFactory가 createA(), createB() 등 제품군 메서드를 선언하고 ConcreteFactory가 같은 군의 구현들을 묶어 반환.',
+    pro:'제품군 일관성 보장과 군 전체 교체가 쉽다.',
+    con:'새 제품 종류(메서드)를 더하면 팩토리 인터페이스 전체를 고쳐야 한다.' },
+  { id:'A4', ko:'어댑터', en:'Adapter',
+    intent:'기존 클래스의 인터페이스를 클라이언트가 기대하는 다른 인터페이스로 변환해 함께 동작하게 한다.',
+    actors:'Target(기대 인터페이스), Adapter, Adaptee(기존/수정 불가 클래스)',
+    struct:'Target &lt;|.. Adapter (구현), Adapter o--&gt; Adaptee (멤버로 보유 후 위임).',
+    pro:'수정할 수 없는 기존 코드를 그대로 재사용한다.',
+    con:'변환을 위한 어댑터 클래스가 추가된다.' },
+  { id:'A5', ko:'데커레이터', en:'Decorator',
+    intent:'객체에 동적으로 책임(기능)을 덧붙이되, 서브클래스 폭발 없이 조합으로 확장한다.',
+    actors:'Component, ConcreteComponent, Decorator, ConcreteDecorator',
+    struct:'Decorator가 Component를 구현(&lt;|..)하면서 동시에 Component를 멤버로 감싼다(o--&gt;). 이 "구현 + 감쌈"이 핵심.',
+    pro:'런타임 조합이 유연하고 클래스 폭발을 막는다.',
+    con:'작은 래퍼 객체가 많아져 디버깅이 복잡해진다.' },
+  { id:'A6', ko:'컴포지트', en:'Composite',
+    intent:'전체-부분 트리 구조를 만들어, 개별 객체와 복합 객체를 클라이언트가 동일하게 다루게 한다.',
+    actors:'Component, Leaf(개별), Composite(자식 보유)',
+    struct:'Component &lt;|-- Leaf, Component &lt;|-- Composite, Composite o--&gt; Component (자식 N개를 재귀 보유).',
+    pro:'재귀 구조 처리가 단순해진다(트리 전체에 같은 연산).',
+    con:'타입 안전성과 투명성 사이의 트레이드오프가 생긴다.' },
+  { id:'A7', ko:'스트래티지', en:'Strategy',
+    intent:'알고리즘군을 각각 캡슐화해 교체 가능하게 만들고, 사용하는 클라이언트와 독립적으로 바꾼다.',
+    actors:'Context, Strategy(인터페이스), ConcreteStrategy',
+    struct:'Context o--&gt; Strategy (합성, 위임), Strategy &lt;|.. ConcreteStrategy. 전략들끼리는 서로 모른다.',
+    pro:'조건 분기를 제거하고 새 알고리즘 추가가 OCP를 만족한다.',
+    con:'클라이언트가 전략들의 차이를 알아야 골라 끼울 수 있다.' },
+  { id:'A8', ko:'스테이트', en:'State',
+    intent:'객체의 내부 상태가 바뀌면 행동도 바뀌게 하여, 상태마다 다른 클래스가 행동을 책임지게 한다.',
+    actors:'Context, State(인터페이스), ConcreteState',
+    struct:'Context o--&gt; State, State &lt;|.. ConcreteState. ConcreteState가 context.setState로 다음 상태로 전이.',
+    pro:'거대한 상태 switch/if 분기를 제거한다.',
+    con:'상태 수만큼 클래스가 늘어난다.' },
+  { id:'A9', ko:'커맨드', en:'Command',
+    intent:'요청을 객체로 캡슐화해, 요청을 매개변수화하고 큐잉/로그/실행취소를 가능하게 한다.',
+    actors:'Command, ConcreteCommand, Invoker, Receiver',
+    struct:'Invoker o--&gt; Command (인보커는 커맨드만 안다), Command &lt;|.. ConcreteCommand, ConcreteCommand --&gt; Receiver (실제 일 위임).',
+    pro:'실행취소(undo), 큐잉, 로깅, 매크로가 가능해진다.',
+    con:'명령마다 ConcreteCommand 클래스가 늘어난다.' },
+  { id:'A10', ko:'옵서버', en:'Observer',
+    intent:'한 객체의 상태가 변하면 그에 의존하는 모든 객체에 일대다로 자동 통보되어 갱신되게 한다.',
+    actors:'Subject(관찰 대상), Observer(인터페이스), ConcreteSubject/ConcreteObserver',
+    struct:'Subject o--&gt; Observer (다수 등록), ConcreteSubject가 notify()로 모든 Observer.update() 호출.',
+    pro:'주체와 관찰자가 느슨하게 결합된다(서로 구체 타입을 모름).',
+    con:'통보 순서, 연쇄 갱신을 예측하기 어렵다.' },
+  { id:'A11', ko:'템플릿 메서드', en:'Template Method',
+    intent:'알고리즘의 골격은 상위 클래스에 고정하고, 일부 단계만 하위 클래스가 재정의하게 한다.',
+    actors:'AbstractClass(templateMethod + 추상 단계들), ConcreteClass(단계 구현)',
+    struct:'AbstractClass &lt;|-- ConcreteClass. templateMethod는 final로 흐름을 잠그고, 가변 단계만 추상 메서드.',
+    pro:'공통 흐름의 중복을 제거하고 골격을 통제한다.',
+    con:'상속 기반이라 런타임에 단계를 갈아끼울 수 없다.' },
+  { id:'A12', ko:'이터레이터', en:'Iterator',
+    intent:'집합 객체의 내부 표현을 노출하지 않고 원소를 순차적으로 접근하는 방법을 제공한다.',
+    actors:'Aggregate(컬렉션), Iterator(순회자), ConcreteAggregate/ConcreteIterator',
+    struct:'Aggregate가 createIterator()로 Iterator를 반환, Iterator는 hasNext()/next()로 순회. 순회 책임을 분리.',
+    pro:'순회 책임을 분리해(SRP) 컬렉션마다 다중 순회가 가능하다.',
+    con:'단순한 컬렉션에는 과설계가 될 수 있다.' },
+];
+const host = document.getElementById('cards');
+host.innerHTML = PATTERNS.map(p => `
+  <div class="q">
+    <span class="qn">${p.id}</span>
+    <h3>${p.ko} (${p.en})</h3>
+    <p class="ask">이름만 보고 ① 의도 한 문장 ② 핵심 참여자 ③ 클래스 다이어그램 손그림 ④ 장점 1개, 단점 1개를 백지에 써라.</p>
+  </div>
+  <details class="ans">
+    <summary>정답 보기 ▸ ${p.id}</summary>
+    <div class="ansbody">
+      <dl>
+        <dt>의도</dt><dd>${p.intent}</dd>
+        <dt>참여자</dt><dd>${p.actors}</dd>
+        <dt>구조</dt><dd>${p.struct}</dd>
+        <dt>장점</dt><dd>${p.pro}</dd>
+        <dt>단점</dt><dd>${p.con}</dd>
+      </dl>
+    </div>
+  </details>`).join('');
+</script>
+
+<script>
+const SUBS = [
+  { no:'recall',    t:'A. 패턴 백지작성' },
+  { no:'scenarios', t:'B. 시나리오→패턴' },
+  { no:'uml',       t:'C. UML 손그림' },
+  { no:'compare',   t:'D. 비교 빈칸' },
+];
+function buildNav(cur) {
+  const ol = document.querySelector('.ch-nav ol');
+  ol.innerHTML = SUBS.map(s => `<li><a href="${s.no}.html"${s.no===cur?' class="current"':''}>${s.t}</a></li>`).join('');
+  const tb = document.querySelector('.topbar');
+  const i = SUBS.findIndex(s => s.no === cur);
+  tb.innerHTML = `<a class="home" href="index.html">← Problem Set 표지</a><span class="ch-mini">SET · ${String(i+1).padStart(2,'0')} / ${String(SUBS.length).padStart(2,'0')}</span>`;
+  const prev = i > 0 ? SUBS[i-1] : { no:'', t:'표지로' };
+  const next = i < SUBS.length-1 ? SUBS[i+1] : { no:'', t:'표지로' };
+  const prevHref = prev.no ? prev.no+'.html' : 'index.html';
+  const nextHref = next.no ? next.no+'.html' : 'index.html';
+  document.querySelector('.ch-foot').innerHTML =
+    `<a href="${prevHref}"><div class="dir">← 이전</div><div class="ti">${prev.t}</div></a>` +
+    `<a href="${nextHref}" class="next"><div class="dir">다음 →</div><div class="ti">${next.t}</div></a>`;
+}
+function progressBar() {
+  const bar = document.querySelector('.scroll-progress');
+  document.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max>0 ? (h.scrollTop/max)*100 : 0) + '%';
+  }, { passive: true });
+}
+window.addEventListener('load', () => { buildNav('recall'); progressBar(); });
+</script>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', themeVariables: { fontFamily: 'inherit' } });
+</script>
+</body>
+</html>

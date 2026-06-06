@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>02 · 데커레이터 패턴 — Chapter 3</title>
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+  .pattern-card { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: .8rem; margin: 1.4rem 0; }
+  .pc { background: var(--paper-2); border: 1px solid var(--line-soft); border-radius: 10px; padding: .9rem 1rem; }
+  .pc h5 { margin: 0 0 .35rem; font-family: var(--mono); font-size: .68rem; letter-spacing: .1em; color: var(--ink-faint); text-transform: uppercase; }
+  .pc p { margin: 0; font-size: .9rem; color: var(--ink); line-height: 1.5; }
+  .mermaid { display: flex; justify-content: center; padding: 1.2rem .8rem; background: #fff; }
+  .trap { border-left: 3px solid var(--style); background: var(--style-bg); border-radius: 0 10px 10px 0; padding: 1rem 1.2rem; margin: 1.4rem 0; }
+  .trap b { color: var(--style); }
+</style>
+</head>
+<body>
+<div class="scroll-progress"></div>
+<div class="topbar"></div>
+
+<div class="ch-layout">
+  <aside class="ch-nav"><nav><ol></ol></nav></aside>
+  <main class="ch-main">
+
+    <header class="ch-head">
+      <span class="kicker">Sub-Chapter 02 · 구조 패턴</span>
+      <h1>데커레이터 패턴,<br><span class="t-style">기능을 양파처럼 겹쳐 입히다</span></h1>
+      <p class="lede">기능 조합이 늘어날 때마다 새 클래스를 만들면 클래스가 폭발한다. 데커레이터는 기능을 "감싸는 껍질"로 만들어, 같은 인터페이스를 유지한 채 런타임에 책임을 한 겹씩 동적으로 쌓는다.</p>
+    </header>
+
+    <div class="prose">
+      <p>데커레이터 패턴(Decorator Pattern)의 의도는 한 문장이다. <strong>객체에 동적으로 추가 책임(기능)을 부여하되, 같은 인터페이스를 유지한다.</strong> 서브클래싱(상속)으로 기능을 확장하는 것의 유연한 대안이다. 핵심은 두 가지다. 기능을 더하는 시점이 컴파일이 아니라 <em>런타임(dynamic)</em>이라는 것, 그리고 껍질을 씌워도 바깥에서 본 <em>타입은 변하지 않는다</em>는 것이다.</p>
+
+      <p>왜 필요한가? 커피 주문을 생각하자. 에스프레소에 우유를 추가하고, 거기에 휘핑을 얹고, 시럽까지 더해 가격을 계산한다고 하자. 이를 상속으로 풀면 <code>MilkCoffee</code>, <code>MilkWhipCoffee</code>, <code>MilkWhipSyrupCoffee</code>처럼 <strong>가능한 조합마다 클래스를 따로 만들어야 한다</strong>. 옵션이 N개면 조합은 기하급수로 늘어 클래스가 폭발(class explosion)한다. 게다가 주문 시점에 어떤 조합이 올지 미리 알 수도 없다. 데커레이터는 각 기능을 독립된 "껍질" 클래스로 만들고, 주문 들어올 때 필요한 껍질만 양파처럼 겹쳐 쌓아 이 문제를 푼다.</p>
+
+      <div class="analogy">
+        <b>양파 껍질, 또는 옷 껴입기.</b> 추우면 티셔츠 위에 스웨터를 덧입고, 그 위에 코트를 걸친다. 한 겹씩 더할 때마다 "보온"이라는 기능이 누적되지만, 입은 사람은 여전히 같은 "사람"이다(타입 유지). 코트가 보온을 처리한 뒤 안쪽 스웨터에게 일을 넘기고, 스웨터가 다시 티셔츠에게 넘긴다. 데커레이터의 위임 사슬이 정확히 이 "안으로 안으로 넘기는" 구조다. 그리고 옷은 아침에 자유롭게 조합해 입을 수 있다 — 런타임 조합이다.
+      </div>
+
+      <h2>구조 — 구현하면서 동시에 감싼다</h2>
+      <p>데커레이터의 정체성은 한 줄로 요약된다. <strong>Decorator는 Component를 구현하면서, 동시에 Component를 멤버로 가진다.</strong> 즉 자기 자신과 같은 타입을 품는다. 이것이 어댑터와 결정적으로 다른 점이다. 어댑터는 모양이 다른 Adaptee를 품지만, 데커레이터는 자기와 <em>같은 인터페이스</em>를 품기 때문에 껍질을 무한히 겹쳐 쌓을 수 있다.</p>
+      <p>역할은 넷이다. <strong>Component</strong>는 알맹이와 껍질이 공유하는 공통 인터페이스(<code>operation()</code>)다. <strong>ConcreteComponent</strong>는 껍질 없는 알맹이(예: 에스프레소). <strong>Decorator</strong>는 Component를 구현하면서 Component 하나를 멤버로 품는 추상 껍질이다. <strong>ConcreteDecorator</strong>는 구체 껍질(우유, 휘핑)로, <code>operation()</code>에서 품은 객체를 호출한 뒤 자기 기능(<code>addedBehavior()</code>)을 덧붙인다.</p>
+    </div>
+
+    <div class="widget">
+      <div class="widget-frame">
+        <div class="widget-label"><span class="lab-no">UML 02</span><span>데커레이터 클래스 다이어그램 · Component를 구현하면서 동시에 품는다</span></div>
+        <pre class="mermaid">
+classDiagram
+    class Component {
+        +operation()
+    }
+    class ConcreteComponent {
+        +operation()
+    }
+    class Decorator {
+        -component : Component
+        +operation()
+    }
+    class ConcreteDecorator {
+        +operation()
+        +addedBehavior()
+    }
+    Component <|.. ConcreteComponent
+    Component <|.. Decorator
+    Decorator o--> Component : 감싼다
+    Decorator <|-- ConcreteDecorator
+        </pre>
+      </div>
+      <p class="widget-cap">주목할 두 화살표: Decorator가 Component를 <b>구현</b>(점선 실현)하는 동시에 Component를 <b>합성</b>(o--&gt; 마름모, "감싼다")한다. 이 "구현 + 자기 타입 합성"이 데커레이터의 핵심 표식이다. 같은 타입을 품기에 껍질을 껍질로 또 감쌀 수 있다.</p>
+    </div>
+
+    <div class="prose">
+      <h2>코드 — 위임 사슬로 비용이 합산된다</h2>
+      <p>각 데커레이터의 <code>operation()</code>(여기서는 <code>cost()</code>)은 먼저 품은 내부 객체에게 일을 넘기고(위임), 그 결과에 자기 몫을 더해 돌려준다. 그래서 껍질을 겹친 순서대로 안에서 바깥으로 비용이 누적된다. 클라이언트는 알맹이든 여러 겹 껍질이든 똑같이 <code>Beverage</code> 타입 하나로만 다룬다.</p>
+    </div>
+
+    <div class="widget">
+      <div class="widget-frame">
+        <div class="widget-label"><span class="lab-no">CODE 02</span><span>데커레이터 — 구현 + 합성, 그리고 위임 사슬</span></div>
+        <pre class="code"><code>interface Beverage {                          // Component
+    int cost();
+}
+
+class Espresso implements Beverage {          // ConcreteComponent (알맹이)
+    public int cost() { return 2000; }
+}
+
+abstract class Addon implements Beverage {    // Decorator
+    protected final Beverage inner;           // 구현하면서 동시에 Component를 품는다
+    Addon(Beverage b) { this.inner = b; }     // 자기와 같은 타입을 감싼다
+}
+
+class Milk extends Addon {                     // ConcreteDecorator
+    Milk(Beverage b) { super(b); }
+    public int cost() { return inner.cost() + 500; }   // 위임 후 자기 몫 추가
+}
+
+class Whip extends Addon {
+    Whip(Beverage b) { super(b); }
+    public int cost() { return inner.cost() + 700; }
+}
+
+// 런타임에 양파처럼 겹쳐 쌓는다
+Beverage b = new Espresso();   // 2000
+b = new Milk(b);               // 우유 덧씌움  → 2500
+b = new Whip(b);               // 휘핑 덧씌움  → 3200
+b.cost();                      // Whip → Milk → Espresso 순으로 위임되며 합산</code></pre>
+      </div>
+      <p class="widget-cap"><code>b.cost()</code>는 가장 바깥 Whip이 받지만, Whip은 안쪽 Milk에게, Milk는 다시 Espresso에게 위임한 뒤 거꾸로 돌아오며 700+500+2000 = 3200을 합산한다. <code>b</code>의 타입은 끝까지 Beverage로 유지된다 — 인터페이스를 바꾸지 않은 채 기능만 누적했다.</p>
+    </div>
+
+    <div class="prose">
+      <h2>참여자와 결과</h2>
+      <div class="pattern-card">
+        <div class="pc"><h5>참여자</h5><p>Component(공통 인터페이스), ConcreteComponent(알맹이), Decorator(Component 구현+합성), ConcreteDecorator(구체 껍질)</p></div>
+        <div class="pc"><h5>장점</h5><p>런타임 동적 조합, 클래스 폭발 회피, 단일 책임 분리, 개방-폐쇄 원칙 준수</p></div>
+        <div class="pc"><h5>단점</h5><p>작은 객체가 많아져 디버깅 추적 어려움, 껍질 순서에 결과가 의존</p></div>
+      </div>
+
+      <h2>헷갈리는 비교 — 상속, 그리고 컴포지트</h2>
+      <p>데커레이터는 시험에서 두 패턴과 자주 대조된다. 첫째는 그 자신이 대체하려는 <strong>상속</strong>이고, 둘째는 구조가 닮은 <strong>컴포지트</strong>다. 둘 다 표로 핵심을 잡되, 뒤이어 산문으로 왜 그렇게 갈리는지 설명한다.</p>
+
+      <table class="cmp-table">
+        <thead><tr><th>비교 축</th><th>데커레이터 (Decorator)</th><th>상속 (Inheritance)</th></tr></thead>
+        <tbody>
+          <tr><td>확장 시점</td><td><b>런타임</b> — 객체를 감싸 동적 조합</td><td>컴파일 시점 — 클래스 관계로 정적 고정</td></tr>
+          <tr><td>조합 수</td><td>껍질을 자유롭게 겹쳐 N개 조합</td><td>조합마다 클래스 필요 → 클래스 폭발</td></tr>
+          <tr><td>결합도</td><td>느슨 — 합성으로 갈아끼움</td><td>강함 — 부모에 묶여 변경 어려움</td></tr>
+        </tbody>
+      </table>
+      <p>상속은 "이미 정해진" 확장이다. <code>MilkCoffee</code>라고 클래스를 만든 순간, 그 객체는 영원히 우유 든 커피다. 우유를 빼거나 휘핑을 더하려면 다른 클래스로 다시 만들어야 한다. 반면 데커레이터는 <strong>실행 중에</strong> 껍질을 끼우고 빼므로, 같은 알맹이를 상황에 맞게 다르게 꾸밀 수 있다. 이것이 "상속보다 합성을 선호하라"는 원칙이 데커레이터로 구현되는 지점이다.</p>
+
+      <table class="cmp-table">
+        <thead><tr><th>비교 축</th><th>데커레이터 (Decorator)</th><th>컴포지트 (Composite)</th></tr></thead>
+        <tbody>
+          <tr><td>공통점</td><td colspan="2">둘 다 Component를 구현하면서 Component를 합성한다 (재귀 합성 구조)</td></tr>
+          <tr><td>감싸는 개수</td><td><b>하나</b>를 감싼다</td><td><b>여럿</b>을 자식으로 모은다</td></tr>
+          <tr><td>목적</td><td>감싼 하나에 <b>기능을 추가</b></td><td>여럿을 <b>전체-부분 트리</b>로 묶음</td></tr>
+        </tbody>
+      </table>
+      <p>두 패턴의 UML은 거의 똑같이 생겨서 헷갈리기 쉽다. 결정적 차이는 <strong>품는 개수와 의도</strong>다. 데커레이터는 보통 Component를 정확히 하나만 품고, 그 하나에 기능을 한 겹 보탠다(껍질의 사슬). 컴포지트는 Component를 여러 개 자식으로 품어, 개별과 묶음을 동일하게 다루는 트리를 만든다(가지 친 나무). "기능을 더하려는가, 묶음을 만들려는가"가 둘을 가른다.</p>
+
+      <div class="trap">
+        <b>시험 함정.</b> <strong>Decorator vs 상속</strong> — 상속은 정적(컴파일 시점 고정)이고 데커레이터는 동적(런타임 조합)이다. <strong>Decorator vs Composite</strong> — 둘 다 재귀 합성이지만, 데커레이터는 <em>하나</em>를 감싸 기능을 더하고 컴포지트는 <em>여럿</em>을 모아 트리를 만든다. <strong>Decorator vs Adapter</strong> — 데커레이터는 인터페이스를 유지한 채 기능을 더하고(확장), 어댑터는 인터페이스 자체를 바꾼다(호환). UML에서 Decorator가 "자기와 같은 타입을 합성한다"는 점도 단골 포인트다.
+      </div>
+
+      <p>데커레이터가 같은 타입을 <em>하나</em> 감싸 기능을 누적한다면, 다음 sub-chapter의 컴포지트는 같은 타입을 <em>여럿</em> 모아 전체-부분 트리를 만든다. 구조가 닮은 두 패턴을 나란히 보면, "합성하는 개수와 목적"이라는 한 축이 구조 패턴 전체를 가르는 핵심임이 드러난다.</p>
+    </div>
+
+    <nav class="ch-foot"></nav>
+  </main>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', themeVariables: { fontFamily: 'inherit' } });
+</script>
+<script>
+const SUBS = [
+  { no:'01', t:'어댑터 (Adapter)' },
+  { no:'02', t:'데커레이터 (Decorator)' },
+  { no:'03', t:'컴포지트 (Composite)' },
+];
+function buildNav(cur) {
+  const ol = document.querySelector('.ch-nav ol');
+  ol.innerHTML = SUBS.map(s => `<li><a href="${s.no}.html"${s.no===cur?' class="current"':''}>${s.t}</a></li>`).join('');
+  const tb = document.querySelector('.topbar');
+  tb.innerHTML = `<a class="home" href="index.html">← Ch.03 표지</a><span class="ch-mini">SUB ${cur} / ${String(SUBS.length).padStart(2,'0')}</span>`;
+  const i = SUBS.findIndex(s => s.no === cur);
+  const prev = i > 0 ? SUBS[i-1] : { no:'', t:'챕터 표지로' };
+  const next = i < SUBS.length-1 ? SUBS[i+1] : { no:'', t:'챕터 표지로' };
+  const prevHref = prev.no ? prev.no+'.html' : 'index.html';
+  const nextHref = next.no ? next.no+'.html' : 'index.html';
+  document.querySelector('.ch-foot').innerHTML =
+    `<a href="${prevHref}"><div class="dir">← 이전</div><div class="ti">${prev.t}</div></a>` +
+    `<a href="${nextHref}" class="next"><div class="dir">다음 →</div><div class="ti">${next.t}</div></a>`;
+}
+function progressBar() {
+  const bar = document.querySelector('.scroll-progress');
+  document.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max>0 ? (h.scrollTop/max)*100 : 0) + '%';
+  }, { passive: true });
+}
+window.addEventListener('load', () => { buildNav('02'); progressBar(); });
+</script>
+</body>
+</html>

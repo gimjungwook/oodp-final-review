@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>02 · 두 설계 원칙 — Chapter 1</title>
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+  .pattern-card { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: .8rem; margin: 1.4rem 0; }
+  .pc { background: var(--paper-2); border: 1px solid var(--line-soft); border-radius: 10px; padding: .9rem 1rem; }
+  .pc h5 { margin: 0 0 .35rem; font-family: var(--mono); font-size: .68rem; letter-spacing: .1em; color: var(--ink-faint); text-transform: uppercase; }
+  .pc p { margin: 0; font-size: .9rem; color: var(--ink); line-height: 1.5; }
+  .mermaid { display: flex; justify-content: center; padding: 1.2rem .8rem; background: #fff; }
+  .trap { border-left: 3px solid var(--style); background: var(--style-bg); border-radius: 0 10px 10px 0; padding: 1rem 1.2rem; margin: 1.4rem 0; }
+  .trap b { color: var(--style); }
+</style>
+</head>
+<body>
+<div class="scroll-progress"></div>
+<div class="topbar"></div>
+
+<div class="ch-layout">
+  <aside class="ch-nav"><nav><ol></ol></nav></aside>
+  <main class="ch-main">
+
+    <header class="ch-head">
+      <span class="kicker">Sub-Chapter 02 · 토대</span>
+      <h1>모든 패턴을 관통하는<br><span class="t-style">두 설계 원칙</span></h1>
+      <p class="lede">23개 패턴은 제각각 따로 노는 것이 아니다. 두 가지 설계 격언 위에 서 있다. 구현이 아니라 인터페이스에 의존하라, 그리고 상속보다 합성을 선호하라. 이 둘을 잡으면 이후 모든 패턴이 같은 원칙의 변주로 읽힌다.</p>
+    </header>
+
+    <div class="prose">
+      <p>앞 페이지에서 패턴을 보는 큰 그림과 GoF 3분류를 잡았다. 이제 그 23개 패턴을 떠받치는 두 개의 토대를 살핀다. 이 둘은 단순한 표어가 아니라, 뒤에 나올 거의 모든 패턴이 "왜 그렇게 설계됐는가"를 설명하는 근거다. 특히 스트래티지, 데커레이터, 스테이트가 "상속으로도 되는데 왜 합성을 쓰나"라는 질문에 답할 때 이 원칙을 인용하게 된다.</p>
+
+      <h2>원칙 1 — 구현이 아니라 인터페이스에 의존하라</h2>
+      <p>첫 번째 격언은 <strong>"구현이 아니라 인터페이스에 의존하라(Program to an interface, not an implementation)"</strong>이다. 풀어 말하면, 코드가 구체 클래스(<code>ArrayList</code>, <code>MySQLDatabase</code>)에 직접 매달리지 말고, 그것이 만족하는 추상 타입(<code>List</code>, <code>Database</code>)에 의존하라는 뜻이다.</p>
+
+      <p>왜 그래야 하는가? 변하는 부분을 인터페이스 뒤로 숨기면, 변경이 한곳에 갇히기 때문이다. 코드가 <code>MySQLDatabase</code>라는 구체 클래스를 곳곳에서 직접 부르면, 데이터베이스를 PostgreSQL로 바꾸는 순간 그 모든 호출부를 찾아 고쳐야 한다. 반대로 모두가 <code>Database</code> 인터페이스에만 의존했다면, 구현 객체 하나만 갈아끼우면 끝난다. 호출하는 쪽 코드는 한 줄도 바뀌지 않는다. 이것이 바로 <strong>의존 역전 원칙(DIP, Dependency Inversion Principle)</strong>의 실천이다. 고수준 모듈이 저수준 구현이 아니라 추상에 의존하게 만드는 것이다.</p>
+
+      <div class="analogy">
+        <b>벽의 콘센트(인터페이스) vs 발전소(구현).</b> 우리는 전등을 벽의 표준 콘센트에 꽂는다. 그 전기가 화력발전소에서 오는지 태양광에서 오는지 전혀 모르고, 알 필요도 없다. 발전 방식(구현)이 바뀌어도 콘센트 규격(인터페이스)만 같으면 전등(클라이언트 코드)은 그대로 동작한다. 만약 전등이 특정 발전소에 직접 배선돼 있었다면, 발전소를 바꿀 때마다 전등 배선을 다 뜯어고쳐야 했을 것이다.
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-frame">
+        <div class="widget-label"><span class="lab-no">UML 01</span><span>구체가 아니라 추상에 의존한다 (DIP)</span></div>
+        <pre class="mermaid">
+classDiagram
+    class Client
+    class Database {
+        +query()
+    }
+    class MySQLDatabase {
+        +query()
+    }
+    class PostgresDatabase {
+        +query()
+    }
+    Client --&gt; Database : 인터페이스에 의존
+    Database &lt;|.. MySQLDatabase
+    Database &lt;|.. PostgresDatabase
+        </pre>
+      </div>
+      <p class="widget-cap">Client는 추상 Database만 바라본다. 구현이 MySQL이든 Postgres든 Client 코드는 모른다. 그래서 구현을 갈아끼워도 Client는 닫혀 있다 — 변경이 구현 클래스 한곳에 갇힌다.</p>
+    </div>
+
+    <div class="prose">
+      <h2>원칙 2 — 상속보다 합성을 선호하라</h2>
+      <p>두 번째 격언은 <strong>"상속보다 합성을 선호하라(Favor composition over inheritance)"</strong>이다. 두 가지 모두 코드를 재사용하고 확장하는 수단이지만, 결합의 성격이 근본적으로 다르다.</p>
+
+      <p><strong>상속(inheritance)</strong>은 컴파일 시점에 고정되는 강한 결합이다. <code>class Duck extends Bird</code>라고 쓰는 순간, Duck은 Bird의 모든 것을 물려받고 그 관계는 프로그램이 도는 동안 절대 바뀌지 않는다. 부모의 구현이 바뀌면 자식이 의도치 않게 깨질 수 있고(취약한 기반 클래스 문제), 행동을 런타임에 교체할 수도 없다. 반면 <strong>합성(composition)</strong>은 한 객체가 다른 객체를 멤버로 들고 그 일을 위임(delegation)하는 방식이다. 멤버로 가진 객체는 런타임에 다른 것으로 갈아끼울 수 있으므로, 느슨한 결합이 된다.</p>
+
+      <div class="analogy">
+        <b>혈연 vs 계약직.</b> 상속은 태어날 때 정해지는 혈연이고, 합성은 필요할 때 고용하는 계약직이다. 요구가 바뀔 때 혈연은 못 바꾸지만(부모를 갈아끼울 수 없다), 계약은 갈아끼울 수 있다(다른 사람을 고용한다). 오리에게 "나는 방식"을 혈연으로 물려주면 평생 한 방식에 묶이지만, "나는 행동"을 객체로 만들어 합성으로 들려주면 상황에 따라 날기/못 날기/로켓으로 날기를 런타임에 교체할 수 있다. 이것이 스트래티지 패턴의 발상이다.
+      </div>
+    </div>
+
+    <div class="prose">
+      <h2>두 원칙의 비교</h2>
+      <table class="cmp-table">
+        <thead>
+          <tr><th>기준</th><th>상속 (Inheritance)</th><th>합성 (Composition)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>결합 시점</td><td><b>컴파일 시점</b>에 고정</td><td><b>런타임</b>에 교체 가능</td></tr>
+          <tr><td>결합 강도</td><td>강한 결합(부모-자식)</td><td>느슨한 결합(위임)</td></tr>
+          <tr><td>비유</td><td>혈연 — 못 바꿈</td><td>계약직 — 갈아끼움</td></tr>
+          <tr><td>위험</td><td>부모 변경이 자식을 깨뜨림</td><td>위임 객체만 교체하면 됨</td></tr>
+          <tr><td>대표 패턴</td><td>Template Method</td><td>Strategy · Decorator · State</td></tr>
+        </tbody>
+      </table>
+
+      <p>표를 풀어 보면, 두 격언은 사실 한 방향을 가리킨다. 변하는 부분을 추상 뒤로 숨기고(원칙 1), 그 추상을 런타임에 갈아끼울 수 있게 합성으로 들고 있어라(원칙 2). 그래야 새 요구가 들어와도 기존 코드를 고치지 않고 새 구현을 추가하는 것으로 대응할 수 있다.</p>
+
+      <h2>OCP와의 연결 — 모든 길은 여기로 모인다</h2>
+      <p>이 두 원칙이 함께 실현하는 것이 바로 <strong>개방-폐쇄 원칙(OCP, Open-Closed Principle)</strong>이다. OCP는 "확장에는 열려 있고, 수정에는 닫혀 있어야 한다"는 원칙이다. 인터페이스에 의존하고(원칙 1) 합성으로 행동을 주입하면(원칙 2), 새 기능은 새 구현 클래스를 추가하는 것으로 <em>확장</em>되고, 기존 코드는 손대지 않으므로 <em>수정에 닫혀</em> 있게 된다.</p>
+
+      <div class="widget">
+        <div class="widget-frame">
+          <div class="widget-label"><span class="lab-no">MAP 02</span><span>두 원칙이 OCP를 떠받친다</span></div>
+          <pre class="mermaid">
+flowchart LR
+    A["인터페이스에 의존&lt;br/&gt;변하는 부분을 추상 뒤로"]
+    B["합성으로 주입&lt;br/&gt;런타임에 갈아끼움"]
+    A --&gt; O["OCP&lt;br/&gt;확장에 열림, 수정에 닫힘"]
+    B --&gt; O
+    O --&gt; P["새 기능 = 새 클래스 추가&lt;br/&gt;기존 코드는 그대로"]
+          </pre>
+        </div>
+        <p class="widget-cap">두 격언은 따로 노는 표어가 아니라 OCP라는 한 목표로 수렴한다. 이후 등장하는 Strategy, Decorator, State, Observer는 모두 이 그림을 구체적인 클래스 배치로 옮긴 것이다.</p>
+      </div>
+
+      <div class="pattern-card">
+        <div class="pc"><h5>원칙 1</h5><p>구현이 아니라 인터페이스에 의존하라 → DIP의 실천. 변경을 한곳에 가둔다</p></div>
+        <div class="pc"><h5>원칙 2</h5><p>상속보다 합성을 선호하라 → 런타임 교체 가능한 느슨한 결합</p></div>
+        <div class="pc"><h5>귀결</h5><p>두 원칙 → OCP(확장 개방, 수정 폐쇄)를 실현</p></div>
+      </div>
+
+      <div class="trap">
+        <b>시험 함정.</b> ① 원칙 1은 <em>DIP</em>, 두 원칙의 귀결은 <em>OCP</em>로 연결된다 — 어느 SOLID 원칙과 이어지는지 묻는다. ② 상속=컴파일 시점 고정/강결합, 합성=런타임 교체/느슨한 결합이라는 대비가 핵심. ③ "왜 상속 대신 합성인가"는 Strategy·Decorator·State의 단골 근거 — 패턴 문제에서 이 원칙으로 답하면 강하다. ④ "혈연 vs 계약직" 비유로 즉답할 수 있게 해 두자.
+      </div>
+
+      <p>여기까지가 설계 패턴의 토대다. 패턴은 코드 복사가 아니라 구조의 재사용이고(sub-chapter 01), 그 구조들은 모두 "인터페이스 의존"과 "합성 우선"이라는 두 원칙 위에서 OCP를 실현한다. 이 렌즈를 끼고 다음 장으로 가면, 생성 패턴부터 행위 패턴까지 모두 같은 원칙의 서로 다른 적용으로 보일 것이다.</p>
+    </div>
+
+    <nav class="ch-foot"></nav>
+  </main>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', themeVariables: { fontFamily: 'inherit' } });
+</script>
+<script>
+const SUBS = [
+  { no:'01', t:'패턴이란 + GoF 3분류' },
+  { no:'02', t:'두 설계 원칙' },
+];
+function buildNav(cur) {
+  const ol = document.querySelector('.ch-nav ol');
+  ol.innerHTML = SUBS.map(s => `<li><a href="${s.no}.html"${s.no===cur?' class="current"':''}>${s.t}</a></li>`).join('');
+  const tb = document.querySelector('.topbar');
+  tb.innerHTML = `<a class="home" href="index.html">← Ch.01 표지</a><span class="ch-mini">SUB ${cur} / ${String(SUBS.length).padStart(2,'0')}</span>`;
+  const i = SUBS.findIndex(s => s.no === cur);
+  const prev = i > 0 ? SUBS[i-1] : { no:'', t:'챕터 표지로' };
+  const next = i < SUBS.length-1 ? SUBS[i+1] : { no:'', t:'챕터 표지로' };
+  const prevHref = prev.no ? prev.no+'.html' : 'index.html';
+  const nextHref = next.no ? next.no+'.html' : 'index.html';
+  document.querySelector('.ch-foot').innerHTML =
+    `<a href="${prevHref}"><div class="dir">← 이전</div><div class="ti">${prev.t}</div></a>` +
+    `<a href="${nextHref}" class="next"><div class="dir">다음 →</div><div class="ti">${next.t}</div></a>`;
+}
+function progressBar() {
+  const bar = document.querySelector('.scroll-progress');
+  document.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max>0 ? (h.scrollTop/max)*100 : 0) + '%';
+  }, { passive: true });
+}
+window.addEventListener('load', () => { buildNav('02'); progressBar(); });
+</script>
+</body>
+</html>

@@ -663,7 +663,7 @@ pre.code code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, mono
 pre.code code, .mermaid code { background:none; border:none; padding:0; }
 
 /* Mermaid UML 컨테이너 */
-.mermaid { display:flex; justify-content:center; padding:1.2rem .8rem; background:#fff; }
+.mermaid { display:flex; justify-content:center; padding:1.2rem .8rem; background:#fff; overflow-x:auto; }
 .mermaid svg { max-width:100%; height:auto; }
 
 /* 시험 함정 박스 */

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>서술형 답안 연습 — Problem Set</title>
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+  .skeleton-guide { max-width: var(--measure); margin: 1.4rem auto; padding: 1.2rem 1.4rem; background: var(--paper-2); border: 1px solid var(--line); border-radius: 14px; }
+  .skeleton-guide h4 { margin: 0 0 .6rem; font-family: var(--serif); font-size: 1.1rem; color: var(--structure); }
+  .skeleton-guide ol { margin: 0; padding-left: 1.3rem; }
+  .skeleton-guide li { margin: .35rem 0; font-size: .94rem; color: var(--ink); line-height: 1.6; }
+  .skeleton-guide li b { color: var(--structure); }
+  .q { max-width: var(--measure); margin: 1.4rem auto; padding: 1.2rem 1.4rem; background: #fff; border: 1px solid var(--line); border-radius: 14px; }
+  .q .qn { font-family: var(--mono); font-size: .72rem; letter-spacing: .1em; color: var(--style); font-weight: 700; }
+  .q .qtype { font-family: var(--mono); font-size: .64rem; letter-spacing: .08em; color: var(--ink-faint); border: 1px solid var(--line); border-radius: 999px; padding: .12rem .55rem; margin-left: .5rem; }
+  .q .scn { margin: .55rem 0 0; font-size: 1.02rem; color: var(--ink); line-height: 1.7; font-weight: 500; }
+  details.ans { max-width: var(--measure); margin: -.4rem auto 0; }
+  details.ans > summary { list-style: none; display: inline-flex; align-items: center; gap: .4rem; cursor: pointer; font-family: var(--mono); font-size: .76rem; font-weight: 700; letter-spacing: .04em; padding: .5rem .95rem; border-radius: 999px; background: var(--ink); color: var(--paper); border: none; transition: transform .12s var(--ease), background .15s; }
+  details.ans > summary::-webkit-details-marker { display: none; }
+  details.ans > summary:hover { transform: translateY(-1px); background: #000; }
+  details.ans[open] > summary { background: var(--style); }
+  .ansbody { margin: .8rem 0 0; padding: 1.1rem 1.3rem; background: var(--structure-bg); border: 1px solid var(--structure-lo); border-radius: 14px; }
+  .ansbody .lead { font-family: var(--serif); font-size: 1.02rem; font-weight: 700; color: #1B64DA; margin: 0 0 .6rem; }
+  .ansbody ol { margin: 0; padding-left: 1.25rem; }
+  .ansbody li { margin: .4rem 0; font-size: .94rem; color: var(--ink); line-height: 1.65; }
+  .ansbody li b { color: #1B64DA; }
+  .ansbody .kw { margin: .7rem 0 0; font-family: var(--mono); font-size: .72rem; color: var(--ink-soft); letter-spacing: .02em; }
+</style>
+</head>
+<body>
+<div class="scroll-progress"></div>
+<div class="topbar"></div>
+
+<div class="ch-layout">
+  <aside class="ch-nav"><nav><ol></ol></nav></aside>
+  <main class="ch-main">
+
+    <header class="ch-head">
+      <span class="kicker">Course · 서술형 답안 연습</span>
+      <h1>외우지 말고,<br><span class="t-style">구조로 서술하기</span></h1>
+      <p class="lede">이 과목 기말은 대부분 서술형이다. 서술형은 "정의를 아느냐"가 아니라 "왜 그 구조이고, 언제 쓰며, 무엇과 어떻게 다른가를 논리적으로 풀어낼 수 있느냐"를 본다. 아래 예상 문제를 먼저 직접 써 본 뒤, 답안 골격을 펼쳐 빠진 축을 점검하라.</p>
+    </header>
+
+    <div class="skeleton-guide">
+      <h4>✍️ 서술형 답안 골격 — 이 순서로 쓰면 빠뜨리지 않는다</h4>
+      <ol>
+        <li><b>정의</b> — 패턴의 의도를 한 문장으로. ("…를 캡슐화하여 …하게 한다")</li>
+        <li><b>동기(왜)</b> — 이 패턴이 없을 때 생기는 문제(분기 폭발, 강결합, 클래스 폭발 등). 채점의 핵심.</li>
+        <li><b>구조</b> — 핵심 참여자와 관계. 합성/위임이 어디에 들어가는지.</li>
+        <li><b>결과</b> — 장점(어떤 변경에 강해지는가)과 단점(트레이드오프).</li>
+        <li><b>적용 예시</b> — 구체적 상황 하나. 추상 설명 뒤 반드시 예시.</li>
+        <li><b>원칙 연결</b> — OCP, DIP, "상속보다 합성" 중 어떤 것을 실현하는지 한 줄.</li>
+      </ol>
+      <p style="margin:.7rem 0 0;font-size:.9rem;color:var(--ink-soft);line-height:1.6">비교형 문제는 골격이 다르다: <b>공통점(구조/목적) → 의도의 결정적 차이 → 각각의 적용 상황 → 한 줄 요약</b>. "구조가 같아 보이지만 의도가 다르다"를 명시하는 것이 고득점 포인트다.</p>
+    </div>
+
+    <div class="prose">
+      <p>아래 12문항은 정의형(define-and-explain), 비교형(compare), 적용형(when-to-use), 원칙형(principle)으로 골고루 구성했다. 각 문항을 <strong>먼저 백지에 직접 서술</strong>하고 나서 "답안 골격 보기"를 펼쳐라. 골격은 모범답안 전문이 아니라 <em>반드시 들어가야 할 논점의 뼈대</em>다. 자신의 답에 빠진 축이 있으면 그 패턴의 본문으로 돌아가 보강하라.</p>
+    </div>
+
+    <section id="cards"></section>
+
+    <nav class="ch-foot"></nav>
+  </main>
+</div>
+
+<script>
+const QS = [
+  { id:'1', type:'정의형', q:'스트래티지 패턴(Strategy Pattern)을 정의하고, 어떤 설계 문제를 해결하는지 구체적 예를 들어 서술하라.',
+    lead:'알고리즘군을 캡슐화해 런타임에 교체 가능하게 만드는 패턴',
+    points:[
+      '<b>정의</b>: 동일한 목적의 알고리즘들을 각각 객체로 캡슐화하고, 사용하는 측(Context)과 독립적으로 교체할 수 있게 한다.',
+      '<b>동기</b>: 결제수단/정렬/할인정책처럼 "같은 일을 하는 여러 방법"을 if-else로 분기하면 새 방법 추가 때마다 분기문을 수정해야 한다(OCP 위반).',
+      '<b>구조</b>: Context가 Strategy 인터페이스만 의존하고 구체 전략을 합성으로 주입받아 위임한다.',
+      '<b>결과</b>: 분기 제거, 새 전략 추가가 기존 코드 수정 없이 가능. 단점은 클라이언트가 전략 종류를 알고 선택해야 함.',
+      '<b>예시</b>: 결제(카드/계좌/포인트)를 ConcreteStrategy로 두고 setStrategy로 갈아끼움.',
+      '<b>원칙</b>: OCP와 "상속보다 합성"을 직접 실현.' ],
+    kw:'키워드: 알고리즘 캡슐화 · 런타임 교체 · 합성/위임 · OCP' },
+
+  { id:'2', type:'비교형', q:'스트래티지 패턴과 스테이트 패턴은 클래스 다이어그램이 거의 동일하다. 두 패턴의 의도 차이를 설명하고, 각각이 적합한 상황을 서술하라.',
+    lead:'구조는 쌍둥이, 의도는 정반대 — 외부 선택 vs 자가 전이',
+    points:[
+      '<b>공통점</b>: 둘 다 Context가 인터페이스(Strategy/State)에 위임하는 동일 구조. 변하는 행위를 객체로 분리.',
+      '<b>의도 차이</b>: Strategy는 <b>외부(클라이언트)가 알고리즘을 골라 갈아끼운다</b>. State는 <b>상태 객체들이 스스로 다음 상태로 전이</b>한다.',
+      '<b>관계 차이</b>: Strategy의 전략들은 서로를 모른다. State의 상태들은 전이 관계로 서로를 안다.',
+      '<b>적용</b>: 정렬/결제처럼 방법 선택이면 Strategy. 자판기/주문 상태처럼 같은 요청에 상태별로 다르게 반응하며 상태가 흐르면 State.',
+      '<b>한 줄 요약</b>: "갈아끼우면 Strategy, 스스로 넘어가면 State."' ],
+    kw:'키워드: 외부 선택 vs 자가 전이 · 전략 무관계 vs 상태 전이연결' },
+
+  { id:'3', type:'비교형', q:'팩토리 메서드 패턴과 추상 팩토리 패턴의 차이를 구조와 목적 측면에서 비교 서술하라.',
+    lead:'메서드 상속으로 단일 제품 vs 객체 합성으로 제품군',
+    points:[
+      '<b>공통점</b>: 둘 다 객체 생성을 캡슐화해 구체 클래스와의 결합을 끊는다(new를 숨긴다).',
+      '<b>팩토리 메서드</b>: 하나의 제품을 만드는 메서드를 <b>상속/오버라이딩</b>으로 서브클래스가 결정(클래스 단위).',
+      '<b>추상 팩토리</b>: 서로 관련된 <b>제품군 전체</b>를 만드는 객체를 <b>합성</b>으로 주입(객체 단위). 각 메서드 구현이 종종 팩토리 메서드.',
+      '<b>목적 차이</b>: FM은 "무엇을 만들지 서브클래스가 결정", AF는 "제품군의 일관성 보장"(맥 버튼에 윈도우 체크박스 섞임 방지).',
+      '<b>한 줄 요약</b>: "메서드 하나로 한 제품 = Factory Method, 객체 하나로 제품군 = Abstract Factory."' ],
+    kw:'키워드: 상속 vs 합성 · 단일 제품 vs 제품군 · 일관성' },
+
+  { id:'4', type:'적용형', q:'데커레이터 패턴이 상속(subclassing)에 비해 갖는 장점을 서술하고, 클래스 폭발(class explosion) 문제와 연결해 설명하라.',
+    lead:'정적 상속 대신 런타임 동적 조합으로 기능을 쌓는다',
+    points:[
+      '<b>문제</b>: 기능 조합을 상속으로 풀면 "우유+휘핑+시럽커피"처럼 조합마다 클래스가 생겨 폭발한다(class explosion).',
+      '<b>데커레이터</b>: 기능을 "감싸는 껍질"로 만들어 런타임에 양파처럼 중첩한다. 데커레이터는 Component를 구현하면서 동시에 Component를 멤버로 감싼다.',
+      '<b>장점</b>: 조합이 런타임에 결정되어 유연. 새 기능을 새 데커레이터로 추가해도 기존 클래스 불변(OCP). 같은 인터페이스 유지로 클라이언트는 알맹이/껍질 구분 불필요.',
+      '<b>단점</b>: 작은 객체가 많아져 디버깅이 복잡.',
+      '<b>예시</b>: java.io의 BufferedReader(new FileReader(...)) 스트림 중첩.',
+      '<b>구분</b>: 인터페이스를 유지하며 기능 추가 = Decorator, 인터페이스를 변환 = Adapter.' ],
+    kw:'키워드: 동적 조합 · 클래스 폭발 회피 · 구현+감쌈 · OCP' },
+
+  { id:'5', type:'정의형', q:'옵서버 패턴(Observer Pattern)을 정의하고, 느슨한 결합(loose coupling)을 어떻게 달성하는지 서술하라.',
+    lead:'일대다 의존 — 한 주제의 변경이 여러 관찰자에 자동 통보',
+    points:[
+      '<b>정의</b>: 한 객체(Subject)의 상태가 변하면 의존하는 모든 객체(Observer)에 자동 통보·갱신되는 일대다(one-to-many) 의존을 정의.',
+      '<b>동기</b>: 주제가 각 화면을 직접 알고 호출하면 화면 추가마다 주제 코드를 고쳐야 한다(강결합).',
+      '<b>느슨한 결합</b>: Subject는 Observer 인터페이스(구독자 목록)만 알고 구체 관찰자 타입을 모른다. attach/detach/notify로만 상호작용.',
+      '<b>구조</b>: Subject가 Observer 리스트 유지, 변경 시 notify()로 각 update() 호출. push(통보에 상태 실음) vs pull(관찰자가 당겨감).',
+      '<b>예시</b>: 스프레드시트 값 변경 시 표/그래프/차트 동시 갱신, 이벤트 리스너, MVC.',
+      '<b>원칙</b>: DIP·OCP를 잘 보여줌(관찰자 추가가 주제 수정 없이 가능).' ],
+    kw:'키워드: 일대다 · 자동 통보 · 구독 목록 · 느슨한 결합' },
+
+  { id:'6', type:'정의형', q:'커맨드 패턴(Command Pattern)의 네 가지 역할을 설명하고, 실행 취소(undo)가 어떻게 가능해지는지 서술하라.',
+    lead:'요청을 객체로 캡슐화해 저장/되돌리기/큐잉을 가능하게',
+    points:[
+      '<b>정의</b>: 요청(request)을 객체로 캡슐화해 매개변수 전달, 큐 적재, 로그, undo를 가능하게 한다.',
+      '<b>네 역할</b>: Command(실행 인터페이스), ConcreteCommand(Receiver를 알고 execute에서 위임), Invoker(Command만 알고 호출), Receiver(실제 일 수행).',
+      '<b>핵심 분리</b>: Invoker는 누구에게 무엇을 시키는지 모른 채 execute()만 호출 → 호출부와 실행부의 결합을 끊는다.',
+      '<b>undo</b>: 각 Command가 execute의 역연산을 undo()에 구현하고, 실행한 명령을 스택에 쌓아 역순으로 되돌린다.',
+      '<b>예시</b>: 리모컨 버튼, 편집기 동작 기록, 매크로(여러 Command 묶음), 작업 큐.' ],
+    kw:'키워드: 요청의 객체화 · 4역할 · undo 스택 · 매크로' },
+
+  { id:'7', type:'정의형', q:'템플릿 메서드 패턴을 정의하고, 할리우드 원칙(Hollywood Principle)과의 관계를 서술하라.',
+    lead:'알고리즘 골격은 상위에, 달라지는 단계만 하위에',
+    points:[
+      '<b>정의</b>: 알고리즘의 뼈대(골격)를 상위 클래스의 templateMethod에 정의하고, 일부 단계의 구현은 서브클래스로 미룬다.',
+      '<b>동기</b>: 여러 절차가 큰 흐름은 같고 세부 단계만 다를 때(음료 끓이기) 공통 흐름 중복을 제거하고 흐름을 한곳에서 통제.',
+      '<b>구조</b>: templateMethod는 final로 흐름을 잠그고 내부에서 추상 primitiveOp()들을 호출. 선택 단계는 훅(hook) 메서드.',
+      '<b>할리우드 원칙</b>: "Don\'t call us, we\'ll call you" — 하위가 상위를 부르는 게 아니라 상위 흐름이 하위 단계를 부른다. 제어의 역전.',
+      '<b>비교</b>: Template Method는 상속(컴파일 시점 고정), Strategy는 합성(런타임 교체). 둘 다 "변하는 부분만 분리".' ],
+    kw:'키워드: 골격 상속 · 훅 · 할리우드 원칙 · 상속 vs 합성' },
+
+  { id:'8', type:'적용형', q:'컴포지트 패턴(Composite Pattern)이 해결하는 문제를 설명하고, add/remove 메서드를 어디에 둘지에 대한 트레이드오프를 서술하라.',
+    lead:'전체-부분 트리에서 개별과 묶음을 동일하게 다룬다',
+    points:[
+      '<b>정의</b>: 객체를 트리로 구성해 부분-전체(part-whole) 계층을 표현하고, 클라이언트가 개별(Leaf)과 복합(Composite)을 동일 인터페이스로 다루게 한다.',
+      '<b>동기</b>: 파일/폴더, 위젯/컨테이너처럼 "하나"와 "묶음"을 분기 없이 같은 방식으로 처리하고 싶을 때.',
+      '<b>구조</b>: Composite.operation()이 자식을 순회하며 각 operation() 호출(재귀). Leaf는 자기 일만.',
+      '<b>트레이드오프</b>: add/remove를 <b>Component에 두면(투명성)</b> 클라이언트가 Leaf/Composite를 구분 안 해도 되나 Leaf에선 무의미한 메서드가 생긴다. <b>Composite에만 두면(안전성)</b> 의미는 명확하나 형변환이 필요하다.',
+      '<b>구분</b>: Composite는 여럿을 모아 트리, Decorator는 하나를 감싸 기능 추가.' ],
+    kw:'키워드: 전체-부분 트리 · 재귀 · 투명성 vs 안전성' },
+
+  { id:'9', type:'원칙형', q:'"구현이 아니라 인터페이스에 의존하라"와 "상속보다 합성을 선호하라"는 두 설계 원칙이 디자인 패턴 전반에서 어떻게 구현되는지, 구체적 패턴을 들어 서술하라.',
+    lead:'대부분의 패턴은 이 두 원칙을 코드로 실현한 것',
+    points:[
+      '<b>인터페이스 의존(DIP)</b>: 변하는 부분을 인터페이스 뒤로 숨겨 변경을 한곳에 가둔다. 예: Strategy의 Context는 Strategy 인터페이스에만 의존.',
+      '<b>합성 선호</b>: 상속은 컴파일 시점에 고정되는 강결합, 합성은 런타임에 갈아끼울 수 있는 느슨한 결합.',
+      '<b>합성으로 푸는 패턴</b>: Strategy(전략 주입), State(상태 객체 위임), Decorator(Component 감쌈), Command(Receiver 보유) 모두 합성·위임으로 변경에 강한 구조를 만든다.',
+      '<b>상속으로 푸는 패턴</b>: Template Method, Factory Method는 의도적으로 상속을 쓴다(골격/생성 결정 위임).',
+      '<b>귀결</b>: 두 원칙은 결국 OCP(확장에 열림, 수정에 닫힘)를 실현하는 수단이다.',
+      '<b>비유</b>: 상속은 태어날 때 정해지는 혈연, 합성은 필요할 때 고용하는 계약직 — 요구가 바뀌면 계약을 갈아끼운다.' ],
+    kw:'키워드: DIP · 합성/위임 · OCP · 변경 격리' },
+
+  { id:'10', type:'원칙형', q:'개방-폐쇄 원칙(OCP)을 정의하고, 한 가지 디자인 패턴이 OCP를 어떻게 만족시키는지 코드 변경 관점에서 서술하라.',
+    lead:'확장에는 열려 있고 수정에는 닫혀 있어야 한다',
+    points:[
+      '<b>정의</b>: 소프트웨어 개체는 확장에는 열려 있고(extension) 수정에는 닫혀 있어야(modification) 한다. 새 기능 추가가 기존 코드 수정을 요구하지 않아야 한다.',
+      '<b>위반 사례</b>: 결제수단을 if-else로 분기하면 새 수단마다 그 분기문(기존 코드)을 고쳐야 한다.',
+      '<b>Strategy로 만족</b>: 결제수단을 Strategy 인터페이스로 추상화하면, 새 수단은 ConcreteStrategy 클래스를 <b>추가</b>만 하면 되고 Context와 기존 전략은 <b>수정하지 않는다</b>.',
+      '<b>핵심</b>: "변하는 부분을 인터페이스로 뽑아 추상화 뒤에 둔다"가 OCP 실현의 공통 기법.',
+      '<b>연결</b>: Observer(관찰자 추가), Decorator(기능 추가), Factory(제품 추가)도 같은 방식으로 OCP를 만족.' ],
+    kw:'키워드: 확장 개방 · 수정 폐쇄 · 추상화 · 추가 vs 수정' },
+
+  { id:'11', type:'정의형', q:'객체 설계(Object Design) 단계에서 분석 모델을 코드로 변환할 때 수행하는 작업들을 서술하라.',
+    lead:'분석 모델을 동작하는 코드로 옮기는 네 가지 변환 작업',
+    points:[
+      '<b>연관(Association) 구현</b>: 1-1, 1-다, 다-다 연관을 참조나 컬렉션으로 변환. 다-다는 별도 연관 클래스로 푼다.',
+      '<b>계약(Contract) 구현</b>: 불변식(invariant), 사전조건(precondition), 사후조건(postcondition)을 방어적 프로그래밍·단언으로 코드에 심는다.',
+      '<b>클래스 인터페이스 명세</b>: 가시성(public/private), 시그니처, 타입을 확정.',
+      '<b>객체 모델 최적화</b>: 자주 쓰는 접근 경로 단축, 중복 계산 캐시, 상속/위임 재구성.',
+      '<b>패턴의 투입</b>: 이 단계에서 디자인 패턴이 변경에 강한 구조를 만드는 도구로 쓰인다. 즉 패턴은 객체 설계의 실천 수단.' ],
+    kw:'키워드: 연관·계약·인터페이스·최적화 · 모델→코드' },
+
+  { id:'12', type:'적용형', q:'다음 상황에 가장 적합한 디자인 패턴을 고르고, 그 선택의 근거와 대안 패턴을 배제한 이유를 서술하라: "그래픽 편집기에서 도형(선, 원, 그룹)을 다루는데, 그룹은 여러 도형(또는 하위 그룹)을 담으며, 화면 그리기·이동·크기조절을 개별 도형과 그룹에 동일하게 적용하고 싶다."',
+    lead:'전체-부분을 동일 인터페이스로 — 컴포지트',
+    points:[
+      '<b>선택</b>: 컴포지트 패턴(Composite). 그룹(복합)과 개별 도형(Leaf)을 같은 Graphic 인터페이스로 두고 draw/move/resize를 재귀 적용.',
+      '<b>근거</b>: "그룹이 도형/하위그룹을 담는다"는 트리 구조 + "개별과 그룹을 동일하게 다룬다"는 두 신호가 정확히 Composite의 의도.',
+      '<b>대안 배제</b>: Decorator는 하나를 감싸 기능을 추가하는 것이라 "여럿을 담는 그룹"과 맞지 않는다. Strategy/State는 행위 교체/전이 문제로 구조 문제와 무관.',
+      '<b>구현 메모</b>: Group.draw()는 자식들의 draw()를 순회 호출(재귀). add/remove의 위치(투명성 vs 안전성)도 함께 언급하면 가점.',
+      '<b>원칙</b>: 클라이언트 코드가 Leaf/Composite 분기를 없애 단순해진다.' ],
+    kw:'키워드: 트리 · 동일 인터페이스 · 재귀 · 대안 배제 논증' },
+];
+
+const host = document.getElementById('cards');
+host.innerHTML = QS.map(s => `
+  <div class="q">
+    <span class="qn">서술 ${s.id}</span><span class="qtype">${s.type}</span>
+    <p class="scn">${s.q}</p>
+  </div>
+  <details class="ans">
+    <summary>답안 골격 보기 ▸ 서술 ${s.id}</summary>
+    <div class="ansbody">
+      <p class="lead">→ ${s.lead}</p>
+      <ol>${s.points.map(p=>`<li>${p}</li>`).join('')}</ol>
+      <p class="kw">${s.kw}</p>
+    </div>
+  </details>`).join('');
+</script>
+
+<script>
+const SUBS = [
+  { no:'essay',     t:'서술형 답안 연습' },
+  { no:'recall',    t:'A. 패턴 백지작성' },
+  { no:'scenarios', t:'B. 시나리오→패턴' },
+  { no:'uml',       t:'C. UML 손그림' },
+  { no:'compare',   t:'D. 비교 빈칸' },
+];
+function buildNav(cur) {
+  const ol = document.querySelector('.ch-nav ol');
+  ol.innerHTML = SUBS.map(s => `<li><a href="${s.no}.html"${s.no===cur?' class="current"':''}>${s.t}</a></li>`).join('');
+  const tb = document.querySelector('.topbar');
+  const i = SUBS.findIndex(s => s.no === cur);
+  tb.innerHTML = `<a class="home" href="index.html">← Problem Set 표지</a><span class="ch-mini">SET · ${String(i+1).padStart(2,'0')} / ${String(SUBS.length).padStart(2,'0')}</span>`;
+  const prev = i > 0 ? SUBS[i-1] : { no:'', t:'표지로' };
+  const next = i < SUBS.length-1 ? SUBS[i+1] : { no:'', t:'표지로' };
+  const prevHref = prev.no ? prev.no+'.html' : 'index.html';
+  const nextHref = next.no ? next.no+'.html' : 'index.html';
+  document.querySelector('.ch-foot').innerHTML =
+    `<a href="${prevHref}"><div class="dir">← 이전</div><div class="ti">${prev.t}</div></a>` +
+    `<a href="${nextHref}" class="next"><div class="dir">다음 →</div><div class="ti">${next.t}</div></a>`;
+}
+function progressBar() {
+  const bar = document.querySelector('.scroll-progress');
+  document.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max>0 ? (h.scrollTop/max)*100 : 0) + '%';
+  }, { passive: true });
+}
+window.addEventListener('load', () => { buildNav('essay'); progressBar(); });
+</script>
+</body>
+</html>

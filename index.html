@@ -3,220 +3,99 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>객체지향 설계패턴 — 기말고사 인터랙티브 복습</title>
+<title>객체지향 디자인 패턴 — 기말 인터랙티브 복습</title>
 <link rel="stylesheet" href="assets/site.css">
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link rel="stylesheet" href="assets/wiki.css">
+<script src="assets/wiki.js" defer></script>
 <style>
-  .masthead { position: relative; max-width: var(--wide); margin: 0 auto; padding: 1.5rem 1.4rem 0; }
-  .hero-wrap { position: relative; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); background: linear-gradient(180deg,#fff,var(--paper-2)); box-shadow: var(--shadow-plate); }
-  #hero { display: block; width: 100%; height: 380px; }
-  .hero-cap { position: absolute; left: 1.2rem; bottom: 1rem; font-family: var(--mono); font-size: .68rem; letter-spacing: .14em; color: var(--ink-faint); pointer-events: none; }
-  .hero-cap b { color: var(--structure); } .hero-cap em { color: var(--style); font-style: normal; }
-  .title-block { max-width: var(--wide); margin: 2.4rem auto 0; padding-inline: 1.4rem; }
-  .title-block .kicker { display: block; margin-bottom: 1rem; }
-  .title-block h1 { font-size: clamp(2.6rem, 7vw, 5rem); margin: 0; line-height: 1.05; }
-  .title-block h1 em { color: var(--style); font-style: normal; }
-  .paper-meta { display: flex; flex-wrap: wrap; gap: .5rem 1.6rem; margin-top: 1.4rem; font-family: var(--mono); font-size: .76rem; color: var(--ink-soft); letter-spacing: .02em; }
-  .paper-meta span b { color: var(--ink); font-weight: 500; }
-  .toc-section { max-width: var(--measure); margin: 2.6rem auto 1rem; padding-inline: 1.4rem; }
-  .toc-section h2 { margin-top: 0; }
-  .part-label { display: inline-block; margin: 2.6rem auto 0; padding: .35rem .9rem; font-family: var(--mono); font-size: .7rem; letter-spacing: .18em; color: var(--ink-faint); border: 1px solid var(--line); border-radius: 999px; }
-  .part-wrap { max-width: var(--wide); margin: 0 auto; padding: 0 1.4rem; }
-  .plates { max-width: var(--wide); margin: 1rem auto; padding: 1.4rem 0 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap: 1rem; }
-  .plate { position: relative; display: flex; flex-direction: column; text-decoration: none; color: inherit; background: #fff; border: 1px solid var(--line); border-radius: 13px; padding: 1.3rem 1.3rem 1.4rem; transition: transform .2s var(--ease), border-color .2s, box-shadow .2s; overflow: hidden; }
-  .plate:hover { transform: translateY(-4px); border-color: var(--structure-lo); box-shadow: var(--shadow-plate); }
-  .plate .pno { font-family: var(--mono); font-size: .74rem; letter-spacing: .14em; color: var(--ink-faint); }
-  .plate h3 { font-family: var(--serif); font-size: 1.3rem; margin: .5rem 0 .5rem; line-height: 1.2; }
-  .plate p { font-size: .9rem; color: var(--ink-soft); line-height: 1.5; margin: 0; }
-  .plate .spectrum { display: flex; height: 4px; border-radius: 2px; overflow: hidden; margin-bottom: 1rem; }
-  .plate .spectrum i { display: block; height: 100%; }
-  .plate .go { margin-top: 1rem; font-family: var(--mono); font-size: .72rem; letter-spacing: .1em; color: var(--structure); opacity: 0; transform: translateX(-4px); transition: .2s var(--ease); }
-  .plate:hover .go { opacity: 1; transform: translateX(0); }
-  .plate .kw { margin-top: .8rem; font-family: var(--mono); font-size: .68rem; color: var(--ink-faint); letter-spacing: .04em; }
-  .priority { max-width: var(--measure); margin: 2rem auto; padding: 1.2rem 1.4rem; border: 1px solid var(--line); border-radius: 12px; background: var(--paper-2); }
-  .priority h4 { margin: 0 0 .6rem; font-family: var(--serif); font-size: 1.1rem; color: var(--structure); }
-  .priority ol { margin: 0; padding-left: 1.2rem; }
-  .priority li { margin: .3rem 0; font-size: .92rem; color: var(--ink-soft); }
-  .priority li b { color: var(--ink); }
-  .qbank-banner { display: block; max-width: var(--measure); margin: 2rem auto; padding: 1.4rem 1.6rem; border-radius: 14px; text-decoration: none; color: inherit; background: linear-gradient(135deg, var(--structure-bg), var(--style-bg)); border: 1px solid var(--structure-lo); box-shadow: var(--shadow-plate); transition: transform .2s var(--ease), box-shadow .2s; }
-  .qbank-banner:hover { transform: translateY(-3px); box-shadow: 0 10px 36px -14px rgba(38,34,28,.3); }
-  .qbank-banner .bk { font-family: var(--mono); font-size: .7rem; letter-spacing: .16em; text-transform: uppercase; color: var(--style); }
-  .qbank-banner h3 { font-family: var(--serif); font-size: 1.5rem; margin: .4rem 0 .4rem; color: var(--ink); }
-  .qbank-banner p { margin: 0; font-size: .92rem; color: var(--ink-soft); line-height: 1.55; }
-  .qbank-banner .go { display: inline-block; margin-top: .7rem; font-family: var(--mono); font-size: .74rem; letter-spacing: .1em; color: var(--structure); }
-  footer.colophon { max-width: var(--measure); margin: 3rem auto 4rem; padding: 2rem 1.4rem 0; border-top: 1px solid var(--line); font-size: .85rem; color: var(--ink-soft); }
-  footer.colophon a { color: var(--structure); }
-  footer.colophon .src { font-family: var(--mono); font-size: .76rem; line-height: 1.8; }
+  .home-main { padding: 3rem 3rem 7rem; max-width: 920px; }
+  .hero {
+    border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+    background:
+      radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--structure) 14%, transparent), transparent 50%),
+      radial-gradient(120% 140% at 100% 100%, color-mix(in srgb, var(--style) 12%, transparent), transparent 50%),
+      var(--paper-2);
+    padding: 2.6rem 2.2rem; margin-bottom: 2.4rem;
+  }
+  .hero .kick { font-family: var(--mono); font-size: .76rem; color: var(--ink-faint); letter-spacing: .03em; }
+  .hero h1 { font-size: clamp(2rem, 5vw, 3.1rem); line-height: 1.08; letter-spacing: -0.035em; margin: .7rem 0 0; }
+  .hero h1 em { font-style: normal; color: var(--structure); }
+  .hero p { color: var(--ink-soft); margin: 1rem 0 0; max-width: 46rem; font-size: 1.04rem; }
+  .hero .meta { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.4rem; }
+  .hero .meta span { font-family: var(--mono); font-size: .72rem; color: var(--ink-soft); border: 1px solid var(--line); background: var(--paper); border-radius: 999px; padding: .32rem .7rem; }
+  .hero .meta b { color: var(--ink); }
+
+  .lead { font-size: 1.02rem; color: var(--ink-soft); margin: 0 0 1.6rem; }
+  .lead strong { color: var(--ink); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: .9rem; margin-top: .4rem; }
+  .card {
+    display: flex; flex-direction: column; text-decoration: none; color: inherit;
+    border: 1px solid var(--line); border-radius: 12px; background: var(--paper-2);
+    padding: 1.2rem 1.3rem; transition: border-color .15s, transform .15s;
+  }
+  .card:hover { border-color: var(--structure); transform: translateY(-2px); text-decoration: none; }
+  .card .no { font-family: var(--mono); font-size: .72rem; color: var(--ink-faint); letter-spacing: .04em; }
+  .card h3 { font-size: 1.08rem; margin: .45rem 0 .5rem; line-height: 1.3; letter-spacing: -0.015em; }
+  .card .pat { font-size: .84rem; color: var(--ink-soft); line-height: 1.55; margin: 0; }
+  .card .pat b { color: var(--ink); font-weight: 600; }
+  .card .arr { margin-top: .9rem; font-family: var(--mono); font-size: .72rem; color: var(--ink-faint); }
+  .card:hover .arr { color: var(--structure); }
+  .card.ps { background: color-mix(in srgb, var(--synth) 8%, var(--paper-2)); border-color: color-mix(in srgb, var(--synth) 30%, var(--line)); }
+
+  .colophon { margin-top: 3.4rem; border-top: 1px solid var(--line); padding-top: 1.6rem; font-size: .85rem; color: var(--ink-soft); }
+  .colophon .src { font-family: var(--mono); font-size: .72rem; line-height: 1.8; margin-top: .6rem; color: var(--ink-faint); }
+  @media (max-width: 860px) { .home-main { padding: 1.8rem 1.3rem 6rem; } }
 </style>
 </head>
 <body>
 
-<header class="masthead">
-  <div class="hero-wrap">
-    <canvas id="hero"></canvas>
-    <div class="hero-cap"><b>강한 결합 — 엉킨 코드</b> ↔ <em>느슨한 결합 — 패턴으로 정돈된 모듈</em> · 마우스 드래그</div>
-  </div>
-</header>
+<div class="topbar"><span class="ch-mini">기말 복습 · 6챕터 · 12패턴</span></div>
 
-<div class="title-block">
-  <span class="kicker">Object-Oriented Design Pattern · HanbitDP + GoF · 2026 1학기 · 기말고사 복습</span>
-  <h1>엉킨 코드에서<br><em>패턴</em>으로,<br>설계의 12가지 도구 🧩</h1>
-  <div class="paper-meta">
-    <span><b>객체지향 설계패턴</b> 기말고사 인터랙티브 복습</span>
-    <span>제작 <b>김정욱</b></span>
-    <span>시험 <b>2026-06-19 (금) 2교시</b></span>
-    <span>구성 <b>6 챕터 · mini 사이트</b></span>
-  </div>
+<div class="ch-layout">
+  <aside class="ch-nav"><nav></nav></aside>
+  <main class="ch-main home-main">
+
+    <div class="hero">
+      <span class="kick">객체지향 설계패턴 · GoF + Bruegge &amp; Dutoit · 기말고사 인터랙티브 복습</span>
+      <h1>의도에서 <em>구조</em>로,<br>구조에서 <em>코드</em>로</h1>
+      <p>GoF 12개 디자인 패턴을 의도 → 구조(UML) → 코드 → 자주 헷갈리는 함정 순서로 풀고, 시스템·객체 설계와 패턴 선택 의사결정까지 한 사이트로 정리했다. 각 패턴마다 클래스 다이어그램과 인터랙티브 위젯으로 "왜 그 구조인가"를 직접 확인한다.</p>
+      <div class="meta">
+        <span>챕터 <b>6</b></span>
+        <span>핵심 패턴 <b>12</b></span>
+        <span>Problem Set <b>백지 테스트</b></span>
+      </div>
+    </div>
+
+    <p class="lead">패턴은 외우는 게 아니라 <strong>"어떤 변화를 캡슐화하려는가"</strong>로 떠올린다. 각 챕터는 그 변화의 축이 무엇인지부터 시작한다.</p>
+
+    <div class="cards" id="grid"></div>
+
+    <div class="colophon">
+      <p>한빛 「Java 객체지향 디자인 패턴」, GoF 「Design Patterns」, Bruegge &amp; Dutoit 「Object-Oriented Software Engineering」 기반 기말 복습 자료.</p>
+      <p class="src">UML = Mermaid · 좌측 사이드바로 전체 패턴 이동 · 우상단 다크/라이트 토글</p>
+    </div>
+
+  </main>
 </div>
-
-<section class="toc-section">
-  <h2>📖 이 사이트의 사용법</h2>
-  <p>각 챕터는 <strong>독립된 mini 사이트</strong>다. 카드를 누르면 그 챕터의 표지로 이동하고, 표지에서 다시 패턴별 sub-chapter로 들어간다. 모든 패턴은 같은 순서로 풀린다 — <strong>의도 → 왜 필요한가(동기) → 구조(UML) → 참여자 → 결과(장단점) → 코드 → 시험 함정</strong>.</p>
-  <p>이 과목의 핵심은 패턴 이름을 외우는 것이 아니라, <em>설계 문제가 생겼을 때 적절한 패턴으로 구조를 재편하는 판단력</em>이다. 그래서 본문은 늘 <strong>“왜 이 구조인가”</strong>를 먼저 설명하고, 헷갈리는 패턴 쌍(Strategy vs State 등)을 끝까지 비교한다. UML은 클래스 다이어그램으로, 핵심은 Java 코드 스케치로 보여 준다.</p>
-</section>
-
-<section class="priority">
-  <h4>🚀 시험 우선순위 추천 경로</h4>
-  <ol>
-    <li><b>Ch.4 행위 패턴</b> — Strategy · State · Command · Observer · Template Method · Iterator. 가장 많이 나오고, 헷갈리는 쌍이 몰려 있다.</li>
-    <li><b>Ch.2 생성 패턴</b> — Singleton · Factory Method · Abstract Factory. 정의와 구분(FM vs AF)이 단골.</li>
-    <li><b>Ch.3 구조 패턴</b> — Adapter · Decorator · Composite. Decorator vs 상속, Adapter vs Decorator 구분.</li>
-    <li><b>Ch.6 패턴 선택 · 비교</b> — 시나리오→패턴 의사결정 + 헷갈리는 6쌍. 응용 문제 대비 1순위.</li>
-    <li><b>Ch.1 토대 · Ch.5 시스템/객체 설계</b> — 패턴을 받치는 원칙(인터페이스 의존, 합성>상속)과 설계 활동.</li>
-  </ol>
-</section>
-
-<a class="qbank-banner" href="problem-set/index.html">
-  <span class="bk">★ 서술형 답안 연습 + 백지 테스트 Problem Set</span>
-  <h3>기말 Problem Set — 서술형 답안 연습이 1순위</h3>
-  <p>이 과목 기말은 대부분 서술형이다. 정의형·비교형·적용형·원칙형 예상 문제를 답안 골격(정의→동기→구조→장단점→예시)과 함께 푼다. 더해서 패턴 백지작성, 시나리오→패턴, UML 손그림, 비교 빈칸까지. 시험 직전 최우선 코스.</p>
-  <span class="go">Problem Set 풀러 →</span>
-</a>
-
-<div class="part-wrap">
-  <span class="part-label">🧱 PART I · 토대와 생성 패턴</span>
-  <section class="plates" id="part1"></section>
-
-  <span class="part-label">🔧 PART II · 구조와 행위 패턴</span>
-  <section class="plates" id="part2"></section>
-
-  <span class="part-label">🧭 PART III · 설계와 종합</span>
-  <section class="plates" id="part3"></section>
-</div>
-
-<footer class="colophon">
-  <p>이 사이트는 한빛아카데미 「Java 객체지향 디자인 패턴」(HanbitDP) 6-13장, GoF 디자인 패턴, OOSE(Bruegge) 시스템·객체 설계를 바탕으로 작성한 객체지향 설계패턴 기말고사 복습 자료다. 모든 챕터는 동일한 라이트 테마와 위젯 문법을 따른다.</p>
-  <p class="src">
-    교재 · 한빛아카데미 「Java 객체지향 디자인 패턴」<br>
-    참고 · GoF, Design Patterns: Elements of Reusable Object-Oriented Software<br>
-    참고 · Bruegge & Dutoit, Object-Oriented Software Engineering
-  </p>
-</footer>
 
 <script>
-const CHAPTERS = [
-  { no:'01', dir:'ch01-foundations', t:'설계 패턴의 토대',        d:'패턴이란 무엇인가, GoF의 세 갈래(생성·구조·행위) 분류. 모든 패턴을 관통하는 두 원칙 — 인터페이스에 의존하라, 상속보다 합성.', sp:['ink-soft','structure'], part:1, kw:'GoF 분류 · 인터페이스 의존 · 합성>상속' },
-  { no:'02', dir:'ch02-creational', t:'생성 패턴 — 어떻게 만들 것인가', d:'Singleton(유일 인스턴스), Factory Method(상속으로 생성 위임), Abstract Factory(제품군 일관 생성). new를 인터페이스 뒤로 숨기기.', sp:['structure-lo','structure'], part:1, kw:'Singleton · Factory Method · Abstract Factory' },
-  { no:'03', dir:'ch03-structural', t:'구조 패턴 — 어떻게 조립할 것인가', d:'Adapter(인터페이스 변환), Decorator(동적 기능 추가), Composite(전체-부분 트리). 합성과 위임으로 유연한 구조를.', sp:['structure','synth'], part:2, kw:'Adapter · Decorator · Composite' },
-  { no:'04', dir:'ch04-behavioral', t:'행위 패턴 — 어떻게 협력할 것인가', d:'Strategy·State·Command·Observer·Template Method·Iterator. 변하는 행위를 객체로 뽑아내 책임을 나눈다. 시험 비중 1순위.', sp:['style','synth'], part:2, kw:'Strategy · State · Command · Observer · Template · Iterator' },
-  { no:'05', dir:'ch05-system-object-design', t:'시스템 · 객체 설계', d:'서브시스템 분해, 아키텍처, 설계 목표(ch6). 분석 모델을 코드로 옮기는 4가지 작업 — 연관·계약·인터페이스·최적화(ch8).', sp:['ink','structure-lo'], part:3, kw:'서브시스템 · 응집/결합 · 모델→코드 매핑' },
-  { no:'06', dir:'ch06-decision', t:'패턴 선택 · 비교', d:'시나리오를 읽고 적합 패턴을 고르는 의사결정 흐름. Strategy vs State 등 헷갈리는 6쌍의 결정적 차이를 끝까지 구분.', sp:['structure','style'], part:3, kw:'의사결정 흐름 · 헷갈리는 6쌍' },
+const CH = [
+  { no:'CHAPTER 1', dir:'ch01-foundations', t:'설계 패턴의 토대', pat:'패턴이란 무엇인가 · <b>GoF 3분류</b>(생성/구조/행위) · 두 설계 원칙(변하는 것 캡슐화, 합성 우선)' },
+  { no:'CHAPTER 2', dir:'ch02-creational', t:'생성 패턴', pat:'<b>싱글톤</b> · <b>팩토리 메서드</b> · <b>추상 팩토리</b> — 객체 생성의 변화를 캡슐화' },
+  { no:'CHAPTER 3', dir:'ch03-structural', t:'구조 패턴', pat:'<b>어댑터</b> · <b>데커레이터</b> · <b>컴포지트</b> — 객체를 조합해 구조를 확장' },
+  { no:'CHAPTER 4', dir:'ch04-behavioral', t:'행위 패턴', pat:'<b>스트래티지 · 스테이트 · 커맨드 · 옵서버 · 템플릿 메서드 · 이터레이터</b> — 책임과 알고리즘의 분배' },
+  { no:'CHAPTER 5', dir:'ch05-system-object-design', t:'시스템 · 객체 설계', pat:'서브시스템 분해 · 아키텍처 · 모델 → 코드 매핑' },
+  { no:'CHAPTER 6', dir:'ch06-decision', t:'패턴 선택 · 비교', pat:'시나리오 기반 의사결정 · 자주 헷갈리는 6쌍 구분' },
+  { no:'PROBLEM SET', dir:'problem-set', t:'백지 테스트 · 회상 연습', pat:'패턴 백지작성 · 시나리오→패턴 · UML 손그림 · 비교 빈칸 · 서술형 답안', ps:true },
 ];
-const colMap = { structure:'var(--structure)', 'structure-lo':'var(--structure-lo)', style:'var(--style)', 'style-lo':'var(--style-lo)', synth:'var(--synth)', ink:'var(--ink)', 'ink-soft':'var(--ink-soft)' };
-const CHEMOJI = { '01':'🧱','02':'🏭','03':'🔧','04':'🤝','05':'🏗️','06':'🧭' };
-
-['part1','part2','part3'].forEach((id, idx) => {
-  const part = idx + 1;
-  const host = document.getElementById(id);
-  CHAPTERS.filter(c => c.part === part).forEach(c => {
-    const sp = c.sp.length === 1 ? [c.sp[0], c.sp[0]] : c.sp;
-    const a = document.createElement('a');
-    a.className = 'plate';
-    a.href = c.dir + '/index.html';
-    a.innerHTML = `
-      <div class="spectrum">${sp.map(s=>`<i style="flex:1;background:${colMap[s]}"></i>`).join('')}</div>
-      <span class="pno">${CHEMOJI[c.no]||''} CHAPTER ${c.no}</span>
-      <h3>${c.t}</h3>
-      <p>${c.d}</p>
-      <span class="kw">${c.kw}</span>
-      <span class="go">읽기 →</span>`;
-    host.appendChild(a);
-  });
-});
-
-// 표지 히어로 — 강한 결합(엉킨 구름) ↔ 느슨한 결합(정돈된 모듈 격자) 모핑
-window.addEventListener('load', () => {
-  const canvas = document.getElementById('hero');
-  if (!canvas || !window.THREE) return;
-  const w = canvas.clientWidth || canvas.parentElement.clientWidth;
-  const h = 380;
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(50, w/h, 0.1, 100);
-  camera.position.set(0, 0, 20);
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
-  renderer.setSize(w, h, false);
-  renderer.setClearColor(0xffffff, 0);
-
-  const N = 1400;
-  const geo = new THREE.BufferGeometry();
-  const positions = new Float32Array(N * 3);
-  const colors = new Float32Array(N * 3);
-  const tangle = new Float32Array(N * 3);   // 엉킨 구름 (강결합)
-  const modular = new Float32Array(N * 3);   // 정돈된 모듈 격자 (느슨한 결합)
-  const COLS = 7, ROWS = 5, PER = Math.floor(N / (COLS*ROWS));
-  for (let i = 0; i < N; i++) {
-    // 엉킨 구름: 무작위 구형 분포 + 노이즈
-    const a = Math.random() * Math.PI * 2, b = Math.acos(2*Math.random()-1);
-    const rr = 4 + Math.random() * 3.5;
-    tangle[i*3]   = Math.sin(b)*Math.cos(a)*rr;
-    tangle[i*3+1] = Math.sin(b)*Math.sin(a)*rr*0.6;
-    tangle[i*3+2] = Math.cos(b)*rr*0.5;
-    // 정돈된 모듈: 격자 위 작은 박스 클러스터
-    const cell = Math.floor(i / PER) % (COLS*ROWS);
-    const cx = (cell % COLS) - (COLS-1)/2;
-    const cy = Math.floor(cell / COLS) - (ROWS-1)/2;
-    modular[i*3]   = cx * 2.5 + (Math.random()-0.5)*0.9;
-    modular[i*3+1] = cy * 2.2 + (Math.random()-0.5)*0.9;
-    modular[i*3+2] = (Math.random()-0.5)*0.6;
-    positions[i*3] = tangle[i*3]; positions[i*3+1] = tangle[i*3+1]; positions[i*3+2] = tangle[i*3+2];
-    const c = new THREE.Color().setHSL(0.58 - 0.13 * (i / N), 0.5, 0.55);
-    colors[i*3] = c.r; colors[i*3+1] = c.g; colors[i*3+2] = c.b;
-  }
-  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-  const mat = new THREE.PointsMaterial({ size: 0.1, vertexColors: true, transparent: true, opacity: 0.85 });
-  const pts = new THREE.Points(geo, mat);
-  scene.add(pts);
-
-  let t = 0, target = 0.5, drag = false, dragX = 0, sx = 0;
-  canvas.addEventListener('pointerdown', e => { drag = true; dragX = e.clientX; sx = target; });
-  window.addEventListener('pointermove', e => { if (!drag) return; target = Math.max(0, Math.min(1, sx + (e.clientX - dragX) / canvas.clientWidth)); });
-  window.addEventListener('pointerup', () => { drag = false; });
-
-  function tick() {
-    t += 0.005;
-    if (!drag) target = 0.5 + 0.45 * Math.sin(t);
-    const p = pts.geometry.attributes.position.array;
-    for (let i = 0; i < N; i++) {
-      const j = i * 3;
-      p[j]   = tangle[j]   * (1 - target) + modular[j]   * target;
-      p[j+1] = tangle[j+1] * (1 - target) + modular[j+1] * target;
-      p[j+2] = tangle[j+2] * (1 - target) + modular[j+2] * target;
-    }
-    pts.geometry.attributes.position.needsUpdate = true;
-    pts.rotation.y = (target - 0.5) * 0.5 + Math.sin(t*0.3)*0.1;
-    renderer.render(scene, camera);
-    requestAnimationFrame(tick);
-  }
-  tick();
-
-  window.addEventListener('resize', () => {
-    const w2 = canvas.parentElement.clientWidth;
-    renderer.setSize(w2, h, false);
-    camera.aspect = w2 / h;
-    camera.updateProjectionMatrix();
-  });
+const host = document.getElementById('grid');
+CH.forEach(c => {
+  const a = document.createElement('a');
+  a.className = 'card' + (c.ps ? ' ps' : '');
+  a.href = c.dir + '/index.html';
+  a.innerHTML = `<span class="no">${c.no}</span><h3>${c.t}</h3><p class="pat">${c.pat}</p><span class="arr">열기 →</span>`;
+  host.appendChild(a);
 });
 </script>
 </body>

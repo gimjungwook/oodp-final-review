@@ -186,7 +186,24 @@
     const cv = ov.querySelector('.wk-lb-canvas');
     let scale = 1, tx = 0, ty = 0, cur = null;
     const apply = () => { cv.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + scale + ')'; };
-    const open = svg => { cv.innerHTML = ''; const c = svg.cloneNode(true); cv.appendChild(c); cur = c; scale = 1; tx = 0; ty = 0; apply(); ov.classList.add('on'); document.documentElement.style.overflow = 'hidden'; };
+    const open = svg => {
+      cv.innerHTML = '';
+      const c = svg.cloneNode(true);
+      const vb = c.viewBox && c.viewBox.baseVal;
+      const r = svg.getBoundingClientRect();
+      const vw = (vb && vb.width) || r.width || 800;
+      const vh = (vb && vb.height) || r.height || 600;
+      c.removeAttribute('style');
+      c.setAttribute('width', vw); c.setAttribute('height', vh);
+      c.style.width = vw + 'px'; c.style.height = vh + 'px'; c.style.maxWidth = 'none';
+      cv.appendChild(c); cur = c;
+      const sw = stage.clientWidth || window.innerWidth;
+      const sh = stage.clientHeight || (window.innerHeight - 60);
+      scale = Math.min((sw * 0.88) / vw, (sh * 0.88) / vh);
+      if (!isFinite(scale) || scale <= 0) scale = 1;
+      tx = 0; ty = 0; apply();
+      ov.classList.add('on'); document.documentElement.style.overflow = 'hidden';
+    };
     const close = () => { ov.classList.remove('on'); document.documentElement.style.overflow = ''; };
     ov.querySelector('.wk-lb-close').addEventListener('click', close);
     ov.addEventListener('click', e => { if (e.target === ov || e.target === stage) close(); });

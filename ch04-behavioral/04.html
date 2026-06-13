@@ -6,8 +6,8 @@
 <title>04 · 옵서버 패턴 — Chapter 4</title>
 <link rel="stylesheet" href="../assets/site.css">
 <link rel="icon" type="image/svg+xml" href="/oodp-final-review/favicon.svg">
-<link rel="stylesheet" href="../assets/wiki.css?v=2">
-<script src="../assets/wiki.js?v=2" defer></script>
+<link rel="stylesheet" href="../assets/wiki.css?v=3">
+<script src="../assets/wiki.js?v=3" defer></script>
 </head>
 <body>
 <div class="scroll-progress"></div>
@@ -145,6 +145,12 @@ station.setTemp(26.5f);   // 두 화면이 동시에 자동 갱신된다</code><
       <p>옵서버는 "변화가 일어나는 쪽"과 "그 변화에 반응하는 쪽"을 통보로 느슨하게 이었다. 분리한 것은 <em>통보의 관계</em>다. 다음 sub-chapter의 <strong>템플릿 메서드 패턴(Template Method Pattern)</strong>은 분리의 결이 다르다 — 여기서는 알고리즘의 <em>골격은 고정해 두고 가변 단계만</em> 떼어 낸다. 옵서버가 합성(구독자 목록)으로 결합을 끊었다면, 템플릿 메서드는 상속으로 흐름을 통제한다. 같은 "변하는 부분을 분리한다"는 목표가 어떻게 다른 수단으로 갈라지는지를 다음 장에서 확인하자.</p>
     </div>
 
+    
+    <section id="case" class="prose case-study">
+      <h2>🛫 대한항공 예약시스템 — 실전 적용</h2>
+      <p class="case-note"><span class="term">EventPublisher</span> Subject와 Listener를 분리해, 결제 실패 자동취소·운항 변경 전파·e-Ticket 후 버스 발매를 이벤트 발행/구독으로 느슨하게 연결한다.</p>
+      <figure class="case-fig"><img class="wk-zoom" src="../assets/cases/dp3-observer.png" alt="DP#3 Observer — 도메인 이벤트 발행/구독" loading="lazy"><figcaption>DP#3 Observer — 도메인 이벤트 발행/구독 · 본인 설계 프로젝트(PlantUML) · 클릭해 확대</figcaption></figure>
+    </section>
     <nav class="ch-foot"></nav>
   </main>
 </div>

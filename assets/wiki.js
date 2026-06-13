@@ -184,22 +184,32 @@
     document.body.appendChild(ov);
     const stage = ov.querySelector('.wk-lb-stage');
     const cv = ov.querySelector('.wk-lb-canvas');
-    let scale = 1, tx = 0, ty = 0, cur = null;
+    let scale = 1, tx = 0, ty = 0, cur = null, curOrig = null;
     const apply = () => { cv.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + scale + ')'; };
-    const open = svg => {
+    const open = node => {
       cv.innerHTML = '';
-      const c = svg.cloneNode(true);
-      const vb = c.viewBox && c.viewBox.baseVal;
-      const r = svg.getBoundingClientRect();
-      const vw = (vb && vb.width) || r.width || 800;
-      const vh = (vb && vb.height) || r.height || 600;
-      c.removeAttribute('style');
-      c.setAttribute('width', vw); c.setAttribute('height', vh);
-      c.style.width = vw + 'px'; c.style.height = vh + 'px'; c.style.maxWidth = 'none';
-      cv.appendChild(c); cur = c;
+      curOrig = node;
+      let el, vw, vh;
+      if (node.tagName.toLowerCase() === 'img') {
+        el = node.cloneNode(true);
+        vw = node.naturalWidth || node.getBoundingClientRect().width || 1000;
+        vh = node.naturalHeight || node.getBoundingClientRect().height || 700;
+        el.removeAttribute('class');
+        el.style.cssText = 'width:' + vw + 'px;height:' + vh + 'px;max-width:none;display:block;background:#fff;border-radius:10px;';
+      } else {
+        el = node.cloneNode(true);
+        const vb = el.viewBox && el.viewBox.baseVal;
+        const r = node.getBoundingClientRect();
+        vw = (vb && vb.width) || r.width || 800;
+        vh = (vb && vb.height) || r.height || 600;
+        el.removeAttribute('style');
+        el.setAttribute('width', vw); el.setAttribute('height', vh);
+        el.style.width = vw + 'px'; el.style.height = vh + 'px'; el.style.maxWidth = 'none';
+      }
+      cv.appendChild(el); cur = el;
       const sw = stage.clientWidth || window.innerWidth;
       const sh = stage.clientHeight || (window.innerHeight - 60);
-      scale = Math.min((sw * 0.88) / vw, (sh * 0.88) / vh);
+      scale = Math.min((sw * 0.9) / vw, (sh * 0.9) / vh);
       if (!isFinite(scale) || scale <= 0) scale = 1;
       tx = 0; ty = 0; apply();
       ov.classList.add('on'); document.documentElement.style.overflow = 'hidden';
@@ -215,9 +225,14 @@
     stage.addEventListener('pointerdown', e => { drag = true; sx = e.clientX - tx; sy = e.clientY - ty; });
     window.addEventListener('pointermove', e => { if (!drag) return; tx = e.clientX - sx; ty = e.clientY - sy; apply(); });
     window.addEventListener('pointerup', () => { drag = false; });
-    ov.querySelector('.wk-lb-png').addEventListener('click', () => { if (cur) svgToPng(cur); });
+    ov.querySelector('.wk-lb-png').addEventListener('click', () => {
+      if (!curOrig) return;
+      if (curOrig.tagName.toLowerCase() === 'img') imgToPng(curOrig); else svgToPng(curOrig);
+    });
     document.addEventListener('click', e => {
       if (e.target.closest && e.target.closest('.wk-lightbox')) return;
+      const img = e.target.closest && e.target.closest('img.wk-zoom');
+      if (img) { open(img); return; }
       const box = e.target.closest && e.target.closest('pre.mermaid, .mermaid');
       if (box) { const svg = box.querySelector('svg'); if (svg) open(svg); }
     });
@@ -247,6 +262,21 @@
     };
     img.onerror = () => alert('PNG 변환 실패 — 다이어그램 라벨 형식 문제일 수 있음');
     img.src = url;
+  }
+
+  // 래스터 이미지 → 16:9 PNG (흰 배경, 중앙 맞춤)
+  function imgToPng(img) {
+    const W = 1920, H = 1080;
+    const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
+    const s = Math.min(W * 0.92 / w, H * 0.92 / h);
+    const dw = w * s, dh = h * s;
+    ctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
+    try {
+      c.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'diagram-16x9.png'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1500); }, 'image/png');
+    } catch (e) { alert('PNG 저장 실패: ' + e.message); }
   }
 
   function setTheme(t, persist) {

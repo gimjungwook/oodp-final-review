@@ -6,8 +6,8 @@
 <title>03 · 컴포지트 패턴 — Chapter 3</title>
 <link rel="stylesheet" href="../assets/site.css">
 <link rel="icon" type="image/svg+xml" href="/oodp-final-review/favicon.svg">
-<link rel="stylesheet" href="../assets/wiki.css?v=2">
-<script src="../assets/wiki.js?v=2" defer></script>
+<link rel="stylesheet" href="../assets/wiki.css?v=3">
+<script src="../assets/wiki.js?v=3" defer></script>
 <style>
   .pattern-card { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: .8rem; margin: 1.4rem 0; }
   .pc { background: var(--paper-2); border: 1px solid var(--line-soft); border-radius: 10px; padding: .9rem 1rem; }
@@ -139,6 +139,12 @@ root.getSize();   // 클라이언트는 분기 없이 호출 → 100 + (40) = 14
       <p>어댑터(모양 변환), 데커레이터(기능 누적), 컴포지트(트리 묶음) — 세 패턴 모두 합성과 위임이라는 한 무기로 서로 다른 목적을 풀었다. "객체를 무엇을 위해, 몇 개나 감싸는가"를 따라가면 셋의 구분이 또렷해진다. 다음 장에서는 객체들이 <em>어떻게 협력하며 행동하는가</em>를 다루는 행위 패턴(Behavioral Pattern)으로 넘어간다.</p>
     </div>
 
+    
+    <section id="case" class="prose case-study">
+      <h2>🛫 대한항공 예약시스템 — 실전 적용</h2>
+      <p class="case-note">직항·환승·다도시 여정을 segment 트리로 묶어, 단일 구간과 복합 여정을 클라이언트가 동일하게 다룬다.</p>
+      <figure class="case-fig"><img class="wk-zoom" src="../assets/cases/dp4-composite.png" alt="DP#4 Composite — 여정(Itinerary) 트리" loading="lazy"><figcaption>DP#4 Composite — 여정(Itinerary) 트리 · 본인 설계 프로젝트(PlantUML) · 클릭해 확대</figcaption></figure>
+    </section>
     <nav class="ch-foot"></nav>
   </main>
 </div>

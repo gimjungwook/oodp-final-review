@@ -248,3 +248,12 @@ pre.mermaid:hover::after { opacity: .95; }
 .wk-lb-stage:active { cursor: grabbing; }
 .wk-lb-canvas { transform-origin: center center; will-change: transform; }
 .wk-lb-canvas svg { background: #fff; border-radius: 10px; max-width: none !important; width: auto; height: auto; display: block; box-shadow: 0 12px 48px rgba(0,0,0,.55); padding: 1rem; }
+.wk-lb-canvas img { max-width: none !important; width: auto; height: auto; display: block; box-shadow: 0 12px 48px rgba(0,0,0,.55); }
+
+/* ---------- 케이스 도식 (대한항공 실전 적용 이미지) ---------- */
+.case-study h2 { color: var(--structure); }
+.case-fig { margin: 1.1rem 0 .4rem; }
+img.wk-zoom { max-width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 10px; background: #fff; padding: .7rem; cursor: zoom-in; transition: border-color .15s; }
+img.wk-zoom:hover { border-color: var(--structure); }
+.case-fig figcaption { font-family: var(--mono); font-size: .72rem; color: var(--ink-faint); margin-top: .5rem; }
+.case-study .case-note { font-size: .9rem; color: var(--ink-soft); background: var(--paper-2); border: 1px solid var(--line); border-radius: 10px; padding: .9rem 1.1rem; margin-top: 1rem; }

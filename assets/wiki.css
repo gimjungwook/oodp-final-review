@@ -225,3 +225,26 @@ input[type=range]::-webkit-slider-thumb { background: var(--structure); border-c
 /* 스크롤바 (webkit) */
 .ch-nav::-webkit-scrollbar, .wk-toc::-webkit-scrollbar { width: 8px; }
 .ch-nav::-webkit-scrollbar-thumb, .wk-toc::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+
+/* ---------- Mermaid: 클릭 확대 + 16:9 PNG ---------- */
+pre.mermaid { cursor: zoom-in; position: relative; max-width: 100%; overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: #fff; padding: .8rem; }
+pre.mermaid svg { max-width: 100%; height: auto; }
+pre.mermaid::after {
+  content: '🔍 클릭해 크게 보기'; position: absolute; top: 8px; right: 10px;
+  font-family: var(--mono); font-size: .66rem; color: var(--ink-soft);
+  background: var(--paper-2); border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px;
+  opacity: 0; transition: opacity .15s; pointer-events: none;
+}
+pre.mermaid:hover::after { opacity: .95; }
+
+.wk-lightbox { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,.84); backdrop-filter: blur(4px); display: none; flex-direction: column; }
+.wk-lightbox.on { display: flex; }
+.wk-lb-bar { display: flex; align-items: center; gap: .45rem; padding: .7rem 1rem; flex-wrap: wrap; }
+.wk-lb-hint { font-family: var(--mono); font-size: .72rem; color: rgba(255,255,255,.55); }
+.wk-lb-sp { flex: 1; }
+.wk-lightbox .wk-btn { background: rgba(255,255,255,.1); color: #fff; border: 1px solid rgba(255,255,255,.22); height: 32px; }
+.wk-lightbox .wk-btn:hover { background: rgba(255,255,255,.22); color: #fff; }
+.wk-lb-stage { flex: 1; overflow: hidden; display: flex; align-items: center; justify-content: center; touch-action: none; cursor: grab; }
+.wk-lb-stage:active { cursor: grabbing; }
+.wk-lb-canvas { transform-origin: center center; will-change: transform; }
+.wk-lb-canvas svg { background: #fff; border-radius: 10px; max-width: none !important; width: auto; height: auto; display: block; box-shadow: 0 12px 48px rgba(0,0,0,.55); padding: 1rem; }

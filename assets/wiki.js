@@ -148,6 +148,88 @@
         document.documentElement.classList.remove('wk-open');
       }
     });
+
+    buildFoot();
+    setupLightbox();
+  }
+
+  // ----- 하단 전역 네비게이터 (전체 순서 기준 prev/next) -----
+  function buildFoot() {
+    if (!curDir) return;
+    const FLAT = [];
+    GROUPS.forEach(g => g.items.forEach(it => FLAT.push({ dir: g.dir, f: it.f, t: it.t })));
+    const idx = FLAT.findIndex(x => x.dir === curDir && x.f === curFile);
+    if (idx < 0) return;
+    const prev = idx > 0 ? FLAT[idx - 1] : null;
+    const next = idx < FLAT.length - 1 ? FLAT[idx + 1] : null;
+    let foot = document.querySelector('.ch-foot');
+    const main = document.querySelector('.ch-main');
+    if (!foot) { foot = document.createElement('nav'); foot.className = 'ch-foot'; if (main) main.appendChild(foot); }
+    const link = (it, cls, dir) => it
+      ? '<a' + (cls ? ' class="' + cls + '"' : '') + ' href="' + base + it.dir + '/' + it.f + '"><div class="dir">' + dir + '</div><div class="ti">' + it.t + '</div></a>'
+      : '<a' + (cls ? ' class="' + cls + '"' : '') + ' href="' + base + 'index.html"><div class="dir">' + dir + '</div><div class="ti">전체 목록</div></a>';
+    foot.innerHTML = link(prev, '', '← 이전') + link(next, 'next', '다음 →');
+  }
+
+  // ----- Mermaid: 클릭 확대(줌/팬) + 16:9 PNG 저장 -----
+  function setupLightbox() {
+    const ov = document.createElement('div');
+    ov.className = 'wk-lightbox';
+    ov.innerHTML =
+      '<div class="wk-lb-bar"><span class="wk-lb-hint">스크롤 = 확대/축소 · 드래그 = 이동 · ESC = 닫기</span><span class="wk-lb-sp"></span>' +
+      '<button class="wk-btn wk-lb-png">⬇︎ 16:9 PNG 저장</button>' +
+      '<button class="wk-btn wk-lb-zout">－</button><button class="wk-btn wk-lb-zin">＋</button>' +
+      '<button class="wk-btn wk-lb-close">✕ 닫기</button></div>' +
+      '<div class="wk-lb-stage"><div class="wk-lb-canvas"></div></div>';
+    document.body.appendChild(ov);
+    const stage = ov.querySelector('.wk-lb-stage');
+    const cv = ov.querySelector('.wk-lb-canvas');
+    let scale = 1, tx = 0, ty = 0, cur = null;
+    const apply = () => { cv.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + scale + ')'; };
+    const open = svg => { cv.innerHTML = ''; const c = svg.cloneNode(true); cv.appendChild(c); cur = c; scale = 1; tx = 0; ty = 0; apply(); ov.classList.add('on'); document.documentElement.style.overflow = 'hidden'; };
+    const close = () => { ov.classList.remove('on'); document.documentElement.style.overflow = ''; };
+    ov.querySelector('.wk-lb-close').addEventListener('click', close);
+    ov.addEventListener('click', e => { if (e.target === ov || e.target === stage) close(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+    ov.querySelector('.wk-lb-zin').addEventListener('click', () => { scale = Math.min(8, scale * 1.25); apply(); });
+    ov.querySelector('.wk-lb-zout').addEventListener('click', () => { scale = Math.max(0.2, scale / 1.25); apply(); });
+    stage.addEventListener('wheel', e => { e.preventDefault(); scale = Math.min(8, Math.max(0.2, scale * (e.deltaY < 0 ? 1.1 : 0.9))); apply(); }, { passive: false });
+    let drag = false, sx = 0, sy = 0;
+    stage.addEventListener('pointerdown', e => { drag = true; sx = e.clientX - tx; sy = e.clientY - ty; });
+    window.addEventListener('pointermove', e => { if (!drag) return; tx = e.clientX - sx; ty = e.clientY - sy; apply(); });
+    window.addEventListener('pointerup', () => { drag = false; });
+    ov.querySelector('.wk-lb-png').addEventListener('click', () => { if (cur) svgToPng(cur); });
+    document.addEventListener('click', e => {
+      if (e.target.closest && e.target.closest('.wk-lightbox')) return;
+      const box = e.target.closest && e.target.closest('pre.mermaid, .mermaid');
+      if (box) { const svg = box.querySelector('svg'); if (svg) open(svg); }
+    });
+  }
+
+  // SVG → 16:9 PNG (흰 배경, 중앙 맞춤)
+  function svgToPng(svg) {
+    let w = (svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.width) || svg.getBoundingClientRect().width || 1200;
+    let h = (svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.height) || svg.getBoundingClientRect().height || 675;
+    const clone = svg.cloneNode(true);
+    clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    clone.setAttribute('width', w); clone.setAttribute('height', h);
+    const data = new XMLSerializer().serializeToString(clone);
+    const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(data);
+    const img = new Image();
+    img.onload = () => {
+      const W = 1920, H = 1080;
+      const c = document.createElement('canvas'); c.width = W; c.height = H;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
+      const s = Math.min(W * 0.92 / w, H * 0.92 / h);
+      const dw = w * s, dh = h * s;
+      ctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
+      try {
+        c.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'diagram-16x9.png'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1500); }, 'image/png');
+      } catch (e) { alert('PNG 저장 실패: ' + e.message); }
+    };
+    img.onerror = () => alert('PNG 변환 실패 — 다이어그램 라벨 형식 문제일 수 있음');
+    img.src = url;
   }
 
   function setTheme(t, persist) {

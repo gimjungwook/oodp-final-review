@@ -103,13 +103,6 @@ classDiagram
 
       <p>싱글톤은 생성 횟수를 통제하는 가장 단순한 생성 패턴이다. 다음 sub-chapter의 팩토리 메서드는 한 걸음 더 나아가 "무엇을 만들지"의 결정 자체를 서브클래스로 넘긴다. 두 패턴 모두 <code>new</code>를 사용하는 코드로부터 생성 책임을 떼어 낸다는 같은 목표를 공유한다.</p>
     </div>
-
-    
-    <section id="case" class="prose case-study">
-      <h2>🛫 대한항공 예약시스템 — 실전 적용</h2>
-      <p class="case-note">폰트·로케일·통화·테마 등 앱 전역 설정을 <span class="term">AppConfig</span> 하나로 모으고, 이중 검사 잠금(DCL) <span class="term">getInstance()</span>로 멀티스레드에서도 단일 인스턴스를 보장한다.</p>
-      <figure class="case-fig"><img class="wk-zoom" src="../assets/cases/dp5-singleton.png" alt="DP#5 Singleton — AppConfig 전역 설정" loading="lazy"><figcaption>DP#5 Singleton — AppConfig 전역 설정 · 본인 설계 프로젝트(PlantUML) · 클릭해 확대</figcaption></figure>
-    </section>
     <nav class="ch-foot"></nav>
   </main>
 </div>

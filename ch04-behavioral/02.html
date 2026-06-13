@@ -145,14 +145,6 @@ class HasCoin implements State {
       <h2>다음으로 — 커맨드 패턴</h2>
       <p>스트래티지와 스테이트가 "행위(알고리즘/상태)"를 객체로 뽑아냈다면, 다음 sub-chapter의 <strong>커맨드 패턴(Command Pattern)</strong>은 한 걸음 더 나아가 <strong>"요청 자체"를 객체로</strong> 만든다. "조명을 켜라"는 요청을 객체로 포장하면, 그 요청을 변수에 담고, 큐에 쌓고, 실행을 취소(undo)할 수 있게 된다. 행위의 캡슐화가 알고리즘에서 요청으로 확장되는 셈이다.</p>
     </div>
-
-    
-    <section id="case" class="prose case-study">
-      <h2>🛫 대한항공 예약시스템 — 실전 적용</h2>
-      <p class="case-note">Initiated→PendingPayment→Confirmed→Ticketed→…→Refunded 전이를 <span class="term">Reservation</span>의 if/switch 없이, 각 상태 객체가 자신이 허용하는 행동만 구현한다.</p>
-      <figure class="case-fig"><img class="wk-zoom" src="../assets/cases/dp1-state.png" alt="DP#1 State — 예약 생명주기 상태기계" loading="lazy"><figcaption>DP#1 State — 예약 생명주기 상태기계 · 본인 설계 프로젝트(PlantUML) · 클릭해 확대</figcaption></figure>
-      <figure class="case-fig"><img class="wk-zoom" src="../assets/cases/state-iter4.png" alt="전체 상태 전이도" loading="lazy"><figcaption>전체 상태 전이도 · 본인 설계 프로젝트(PlantUML) · 클릭해 확대</figcaption></figure>
-    </section>
     <nav class="ch-foot"></nav>
   </main>
 </div>

@@ -152,13 +152,6 @@ new Tea().prepare();      // 물끓임 -> 우림 -> 부음 (첨가물 생략)</c
       <h2>다음으로 — 흐름의 분리에서 순회의 분리로</h2>
       <p>템플릿 메서드는 알고리즘의 골격을 상속으로 고정하고 단계만 바꿨다. 분리한 것은 <em>알고리즘의 가변 단계</em>다. 마지막 sub-chapter의 <strong>이터레이터 패턴(Iterator Pattern)</strong>은 또 다른 책임을 떼어 낸다 — 컬렉션의 <em>순회 책임</em>이다. 데이터를 담는 일과 그것을 하나씩 훑는 일을 별도 객체로 나눠, 컬렉션의 내부 구조를 감춘 채 순차 접근하게 만든다. 변하는 부분을 분리한다는 행위 패턴의 큰 그림이 순회라는 마지막 책임에서 어떻게 마무리되는지 이어서 보자.</p>
     </div>
-
-    
-    <section id="case" class="prose case-study">
-      <h2>🛫 대한항공 예약시스템 — 실전 적용</h2>
-      <p class="case-note">공통 처리 절차의 뼈대를 상위에 고정하고, 가변 단계만 하위 클래스에서 구현하게 해 흐름의 일관성을 유지한다.</p>
-      <figure class="case-fig"><img class="wk-zoom" src="../assets/cases/dp7-template-method.png" alt="DP#7 Template Method — 처리 흐름 골격 고정" loading="lazy"><figcaption>DP#7 Template Method — 처리 흐름 골격 고정 · 본인 설계 프로젝트(PlantUML) · 클릭해 확대</figcaption></figure>
-    </section>
     <nav class="ch-foot"></nav>
   </main>
 </div>

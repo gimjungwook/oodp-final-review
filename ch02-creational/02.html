@@ -120,14 +120,6 @@ class SpreadsheetApplication extends Application {
 
       <p>팩토리 메서드는 "단일 제품 하나"의 생성 결정을 상속으로 위임한다. 그런데 현실에서는 여러 제품이 <em>세트로</em> 일관되게 만들어져야 하는 경우가 있다. 맥 버튼에는 맥 체크박스가 따라와야 한다. 다음 sub-chapter의 추상 팩토리는 한 객체가 제품군 전체를 책임지게 해 이 일관성을 강제한다.</p>
     </div>
-
-    
-    <section id="case" class="prose case-study">
-      <h2>🛫 대한항공 예약시스템 — 실전 적용</h2>
-      <p class="case-note">결제 수단에 따라 달라지는 결제 처리 객체의 생성을, 사용하는 코드에서 떼어내 팩토리가 책임진다. 새 결제 수단이 늘어도 생성 분기만 한곳에서 확장된다.</p>
-      <figure class="case-fig"><img class="wk-zoom" src="../assets/cases/dp6-factory-method.png" alt="DP#6 Factory Method — 결제 객체 생성 분리" loading="lazy"><figcaption>DP#6 Factory Method — 결제 객체 생성 분리 · 본인 설계 프로젝트(PlantUML) · 클릭해 확대</figcaption></figure>
-      <figure class="case-fig"><img class="wk-zoom" src="../assets/cases/sequence-payment-factory.png" alt="결제 생성 시퀀스" loading="lazy"><figcaption>결제 생성 시퀀스 · 본인 설계 프로젝트(PlantUML) · 클릭해 확대</figcaption></figure>
-    </section>
     <nav class="ch-foot"></nav>
   </main>
 </div>

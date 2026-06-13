@@ -121,13 +121,6 @@ int paid = c.finalPrice(10000);          // 8000</code></pre>
       <h2>다음으로 — Strategy vs State 예고</h2>
       <p>스트래티지의 클래스 다이어그램을 머릿속에 새겨 두자. <code>Context</code>가 인터페이스 타입 필드를 들고 위임하는 모양. 다음 sub-chapter의 <strong>스테이트 패턴(State Pattern)</strong>은 이 그림과 거의 동일한 구조를 갖는다. 그런데도 둘은 전혀 다른 패턴이다. 핵심 차이를 미리 한 줄로 박아 두면 — 스트래티지는 "<strong>외부가 전략을 골라 갈아끼운다</strong>", 스테이트는 "<strong>상태 객체가 스스로 다음 상태로 전이한다</strong>". 같은 뼈대에 다른 의도. 그 차이가 어떻게 코드로 갈라지는지 다음 장에서 충실히 비교한다.</p>
     </div>
-
-    
-    <section id="case" class="prose case-study">
-      <h2>🛫 대한항공 예약시스템 — 실전 적용</h2>
-      <p class="case-note">전액/부분/환불불가 정책을 같은 인터페이스로 두고, <span class="term">RefundHandler</span>가 운임 규칙에 따라 정책만 갈아끼워 환불액을 계산한다.</p>
-      <figure class="case-fig"><img class="wk-zoom" src="../assets/cases/dp2-strategy.png" alt="DP#2 Strategy — 환불 정책 교체" loading="lazy"><figcaption>DP#2 Strategy — 환불 정책 교체 · 본인 설계 프로젝트(PlantUML) · 클릭해 확대</figcaption></figure>
-    </section>
     <nav class="ch-foot"></nav>
   </main>
 </div>
